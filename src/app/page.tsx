@@ -1,6 +1,52 @@
-import React from "react";
+"use client";
+
+import React, { useState, useEffect } from "react";
 
 export default function Home() {
+  const [isFormOpen, setIsFormOpen] = useState(false);
+  const [email, setEmail] = useState("");
+  const [status, setStatus] = useState<"idle" | "loading" | "success" | "error">("idle");
+  const [message, setMessage] = useState("");
+  const [formMounted, setFormMounted] = useState(false);
+
+  useEffect(() => {
+    if (isFormOpen) {
+      setTimeout(() => setFormMounted(true), 10);
+    } else {
+      setFormMounted(false);
+    }
+  }, [isFormOpen]);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!email || !/^\S+@\S+\.\S+$/.test(email)) {
+      setStatus("error");
+      setMessage("Please enter a valid email address.");
+      return;
+    }
+    
+    setStatus("loading");
+    setMessage("");
+    try {
+      const response = await fetch('/api/waitlist', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email }),
+      });
+
+      if (response.ok) {
+        setStatus("success");
+        setMessage("You're on the waitlist! We'll be in touch soon.");
+        setEmail("");
+      } else {
+        throw new Error("Failed to join waitlist");
+      }
+    } catch (error) {
+      setStatus("error");
+      setMessage("Something went wrong. Please try again.");
+    }
+  };
+
   return (
     <div className="relative min-h-screen bg-black text-white font-sans overflow-hidden">
       {/* Background glowing effects */}
@@ -37,16 +83,50 @@ export default function Home() {
             Elevating the next generation of e-commerce. A seamless ecosystem designed for modern brands and creators to thrive together.
           </p>
 
-          <div className="pt-10">
-            <button className="group relative inline-flex items-center justify-center px-8 py-4 font-semibold text-white transition-all duration-300 ease-out bg-white/10 border border-white/20 rounded-full hover:bg-white/20 hover:scale-105 hover:shadow-[0_0_40px_rgba(255,255,255,0.15)] focus:outline-none focus:ring-2 focus:ring-white/50 focus:ring-offset-2 focus:ring-offset-black">
-              <span className="absolute inset-0 w-full h-full -mt-1 rounded-full opacity-30 bg-gradient-to-b from-transparent via-transparent to-black" />
-              <span className="relative flex items-center gap-2">
-                Join the Waitlist
-                <svg className="w-5 h-5 transition-transform duration-300 group-hover:translate-x-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
-                </svg>
-              </span>
-            </button>
+          <div className="pt-10 h-32 flex flex-col items-center justify-start">
+            {!isFormOpen ? (
+              <button 
+                onClick={() => setIsFormOpen(true)}
+                className="group relative inline-flex items-center justify-center px-8 py-4 font-semibold text-white transition-all duration-300 ease-out bg-white/10 border border-white/20 rounded-full hover:bg-white/20 hover:scale-105 hover:shadow-[0_0_40px_rgba(255,255,255,0.15)] focus:outline-none focus:ring-2 focus:ring-white/50 focus:ring-offset-2 focus:ring-offset-black"
+              >
+                <span className="absolute inset-0 w-full h-full -mt-1 rounded-full opacity-30 bg-gradient-to-b from-transparent via-transparent to-black" />
+                <span className="relative flex items-center gap-2">
+                  Join the Waitlist
+                  <svg className="w-5 h-5 transition-transform duration-300 group-hover:translate-x-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
+                  </svg>
+                </span>
+              </button>
+            ) : (
+              <form 
+                onSubmit={handleSubmit}
+                className={`flex flex-col sm:flex-row items-center gap-3 w-full max-w-md mx-auto transition-all duration-500 ease-out transform ${formMounted ? 'opacity-100 translate-y-0 scale-100' : 'opacity-0 translate-y-4 scale-95'}`}
+              >
+                <input
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="Enter your email address"
+                  disabled={status === "loading" || status === "success"}
+                  className="w-full px-6 py-4 bg-white/5 border border-white/20 rounded-full text-white placeholder-white/40 focus:outline-none focus:ring-2 focus:ring-purple-500/50 focus:border-transparent backdrop-blur-md transition-all"
+                  required
+                />
+                <button
+                  type="submit"
+                  disabled={status === "loading" || status === "success"}
+                  className="w-full sm:w-auto px-8 py-4 font-semibold text-white transition-all duration-300 ease-out bg-white/10 border border-white/20 rounded-full hover:bg-white/20 focus:outline-none focus:ring-2 focus:ring-white/50 focus:ring-offset-2 focus:ring-offset-black disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap"
+                >
+                  {status === "loading" ? "Sending..." : "Submit"}
+                </button>
+              </form>
+            )}
+            
+            {/* Status Message */}
+            {message && (
+              <p className={`mt-4 text-sm font-medium transition-all duration-300 ${status === "success" ? "text-green-400" : "text-red-400"}`}>
+                {message}
+              </p>
+            )}
           </div>
         </div>
       </main>
