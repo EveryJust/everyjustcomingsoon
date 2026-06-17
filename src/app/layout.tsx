@@ -13,9 +13,68 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
+import type { Viewport } from "next";
+
+export const viewport: Viewport = {
+  themeColor: "#000000",
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 1,
+};
+
 export const metadata: Metadata = {
-  title: "everyjust | The Future of Unified Commerce",
+  metadataBase: new URL("https://everyjust.com"),
+  title: {
+    default: "everyjust | The Future of Unified Commerce",
+    template: "%s | everyjust",
+  },
   description: "Elevating the next generation of e-commerce. A seamless ecosystem designed for modern brands and creators to thrive together. Join the waitlist today.",
+  keywords: [
+    "ecommerce",
+    "unified commerce",
+    "creators",
+    "brands",
+    "everyjust",
+    "marketplace",
+    "online store",
+    "digital commerce",
+    "B2B",
+    "B2C",
+    "omnichannel",
+  ],
+  authors: [{ name: "everyjust Team" }],
+  creator: "everyjust",
+  publisher: "everyjust",
+  formatDetection: {
+    email: false,
+    address: false,
+    telephone: false,
+  },
+  openGraph: {
+    title: "everyjust | The Future of Unified Commerce",
+    description: "Elevating the next generation of e-commerce. A seamless ecosystem designed for modern brands and creators to thrive together.",
+    url: "https://everyjust.com",
+    siteName: "everyjust",
+    locale: "en_US",
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "everyjust | The Future of Unified Commerce",
+    description: "Elevating the next generation of e-commerce. Join the waitlist today.",
+    creator: "@everyjust",
+  },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      "max-video-preview": -1,
+      "max-image-preview": "large",
+      "max-snippet": -1,
+    },
+  },
 };
 
 export default function RootLayout({
