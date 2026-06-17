@@ -4,8 +4,8 @@ export async function POST(request: Request) {
   try {
     const { email } = await request.json();
 
-    if (!email) {
-      return NextResponse.json({ error: 'Email is required' }, { status: 400 });
+    if (!email || !/^[a-zA-Z0-9._%+-]+@gmail\.com$/i.test(email)) {
+      return NextResponse.json({ error: 'A valid @gmail.com address is required' }, { status: 400 });
     }
 
     const scriptUrl = process.env.GOOGLE_WEB_APP_URL;

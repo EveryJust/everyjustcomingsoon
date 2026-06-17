@@ -19,9 +19,9 @@ export default function Home() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!email || !/^\S+@\S+\.\S+$/.test(email)) {
+    if (!email || !/^[a-zA-Z0-9._%+-]+@gmail\.com$/i.test(email)) {
       setStatus("error");
-      setMessage("Please enter a valid email address.");
+      setMessage("Please enter a valid @gmail.com address.");
       return;
     }
     
