@@ -75,69 +75,158 @@ export default function Home() {
       </nav>
 
       {/* Main Content */}
-      <main className="relative z-10 flex flex-col items-center justify-center min-h-screen px-6 text-center">
-        <div className="space-y-10 max-w-4xl">
-          <div className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-purple-500/20 border border-purple-400/40 text-sm font-semibold text-purple-200 mb-4 backdrop-blur-md shadow-lg shadow-purple-500/20">
-            <span className="w-2 h-2 rounded-full bg-purple-300 animate-pulse" />
-            The Future of Unified Commerce
-          </div>
-          
-          <h1 className="text-6xl md:text-8xl lg:text-9xl font-extrabold tracking-tighter">
-            <span className="block text-white drop-shadow-[0_1px_8px_rgba(0,0,0,0.4)]">
-              everyjust
-            </span>
-          </h1>
-          
-          <p className="text-xl md:text-2xl text-white/90 font-light leading-relaxed max-w-2xl mx-auto drop-shadow-[0_1px_6px_rgba(0,0,0,0.8)]">
-            Elevating the next generation of e-commerce. A seamless ecosystem designed for modern brands and creators to thrive together.
-          </p>
-
-          <div className="pt-10 h-32 flex flex-col items-center justify-start">
-            {!isFormOpen ? (
-              <button 
-                onClick={() => setIsFormOpen(true)}
-                className="group relative inline-flex items-center justify-center px-8 py-4 font-semibold text-white transition-all duration-300 ease-out bg-white/20 border border-white/40 rounded-full hover:bg-white/30 hover:scale-105 hover:shadow-[0_0_40px_rgba(255,255,255,0.25)] shadow-[0_4px_20px_rgba(0,0,0,0.5)] focus:outline-none focus:ring-2 focus:ring-white/50 focus:ring-offset-2 focus:ring-offset-black"
-              >
-                <span className="absolute inset-0 w-full h-full -mt-1 rounded-full opacity-30 bg-gradient-to-b from-transparent via-transparent to-black" />
-                <span className="relative flex items-center gap-2">
-                  Join the Waitlist
-                  <svg className="w-5 h-5 transition-transform duration-300 group-hover:translate-x-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
-                  </svg>
-                </span>
-              </button>
-            ) : (
-              <form 
-                onSubmit={handleSubmit}
-                className={`flex flex-col sm:flex-row items-center gap-3 w-full max-w-md mx-auto transition-all duration-500 ease-out transform ${formMounted ? 'opacity-100 translate-y-0 scale-100' : 'opacity-0 translate-y-4 scale-95'}`}
-              >
-                <input
-                  type="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  placeholder="Enter your email address"
-                  disabled={status === "loading" || status === "success"}
-                  className="w-full px-6 py-4 bg-black/30 border border-white/30 rounded-full text-white placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-purple-400/70 focus:border-transparent backdrop-blur-md transition-all shadow-[0_2px_12px_rgba(0,0,0,0.4)]"
-                  required
-                />
-                <button
-                  type="submit"
-                  disabled={status === "loading" || status === "success"}
-                  className="w-full sm:w-auto px-8 py-4 font-semibold text-white transition-all duration-300 ease-out bg-white/25 border border-white/40 rounded-full hover:bg-white/35 shadow-[0_4px_20px_rgba(0,0,0,0.4)] focus:outline-none focus:ring-2 focus:ring-white/50 focus:ring-offset-2 focus:ring-offset-black disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap"
-                >
-                  {status === "loading" ? "Sending..." : "Submit"}
-                </button>
-              </form>
-            )}
+      <main className="relative z-10 flex flex-col items-center w-full pb-32">
+        {/* Hero Section */}
+        <section className="flex flex-col items-center justify-center min-h-screen px-6 text-center w-full pt-20">
+          <div className="space-y-10 max-w-4xl">
+            <div className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-purple-500/20 border border-purple-400/40 text-sm font-semibold text-purple-200 mb-4 backdrop-blur-md shadow-lg shadow-purple-500/20">
+              <span className="w-2 h-2 rounded-full bg-purple-300 animate-pulse" />
+              The Future of Unified Commerce
+            </div>
             
-            {/* Status Message */}
-            {message && (
-              <p className={`mt-4 text-sm font-medium transition-all duration-300 ${status === "success" ? "text-green-400" : "text-red-400"}`}>
-                {message}
-              </p>
-            )}
+            <h1 className="text-6xl md:text-8xl lg:text-9xl font-extrabold tracking-tighter">
+              <span className="block text-white drop-shadow-[0_1px_8px_rgba(0,0,0,0.4)]">
+                everyjust
+              </span>
+            </h1>
+            
+            <p className="text-xl md:text-2xl text-white/90 font-light leading-relaxed max-w-2xl mx-auto drop-shadow-[0_1px_6px_rgba(0,0,0,0.8)]">
+              Elevating the next generation of e-commerce. A seamless ecosystem designed for modern brands and creators to thrive together.
+            </p>
+
+            <div className="pt-10 h-32 flex flex-col items-center justify-start">
+              {!isFormOpen ? (
+                <button 
+                  onClick={() => setIsFormOpen(true)}
+                  className="group relative inline-flex items-center justify-center px-8 py-4 font-semibold text-white transition-all duration-300 ease-out bg-white/20 border border-white/40 rounded-full hover:bg-white/30 hover:scale-105 hover:shadow-[0_0_40px_rgba(255,255,255,0.25)] shadow-[0_4px_20px_rgba(0,0,0,0.5)] focus:outline-none focus:ring-2 focus:ring-white/50 focus:ring-offset-2 focus:ring-offset-black"
+                >
+                  <span className="absolute inset-0 w-full h-full -mt-1 rounded-full opacity-30 bg-gradient-to-b from-transparent via-transparent to-black" />
+                  <span className="relative flex items-center gap-2">
+                    Join the Waitlist
+                    <svg className="w-5 h-5 transition-transform duration-300 group-hover:translate-x-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
+                    </svg>
+                  </span>
+                </button>
+              ) : (
+                <form 
+                  onSubmit={handleSubmit}
+                  className={`flex flex-col sm:flex-row items-center gap-3 w-full max-w-md mx-auto transition-all duration-500 ease-out transform ${formMounted ? 'opacity-100 translate-y-0 scale-100' : 'opacity-0 translate-y-4 scale-95'}`}
+                >
+                  <input
+                    type="email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    placeholder="Enter your email address"
+                    disabled={status === "loading" || status === "success"}
+                    className="w-full px-6 py-4 bg-black/30 border border-white/30 rounded-full text-white placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-purple-400/70 focus:border-transparent backdrop-blur-md transition-all shadow-[0_2px_12px_rgba(0,0,0,0.4)]"
+                    required
+                  />
+                  <button
+                    type="submit"
+                    disabled={status === "loading" || status === "success"}
+                    className="w-full sm:w-auto px-8 py-4 font-semibold text-white transition-all duration-300 ease-out bg-white/25 border border-white/40 rounded-full hover:bg-white/35 shadow-[0_4px_20px_rgba(0,0,0,0.4)] focus:outline-none focus:ring-2 focus:ring-white/50 focus:ring-offset-2 focus:ring-offset-black disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap"
+                  >
+                    {status === "loading" ? "Sending..." : "Submit"}
+                  </button>
+                </form>
+              )}
+              
+              {/* Status Message */}
+              {message && (
+                <p className={`mt-4 text-sm font-medium transition-all duration-300 ${status === "success" ? "text-green-400" : "text-red-400"}`}>
+                  {message}
+                </p>
+              )}
+            </div>
           </div>
-        </div>
+        </section>
+
+        {/* Jewelry Coming Soon Section */}
+        <section className="w-full max-w-6xl px-6 py-20 mx-auto">
+          <div className="flex flex-col items-center mb-16 text-center">
+            <h2 className="text-3xl md:text-5xl font-bold text-white mb-6 drop-shadow-[0_2px_8px_rgba(0,0,0,0.6)]">
+              Exclusive Collections
+            </h2>
+            <p className="text-white/80 text-lg md:text-xl max-w-2xl drop-shadow-md">
+              Discover a glimpse of the elegance that awaits. Our curated premium jewelry pieces are arriving soon.
+            </p>
+          </div>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 md:gap-12">
+            {/* Item 1 */}
+            <div className="group relative rounded-3xl overflow-hidden bg-white/10 border border-white/20 backdrop-blur-md transition-all duration-500 hover:-translate-y-3 hover:shadow-[0_20px_40px_rgba(0,0,0,0.4)]">
+              <div className="absolute top-5 right-5 z-20">
+                <span className="px-4 py-1.5 text-xs font-bold uppercase tracking-widest text-white bg-black/50 backdrop-blur-md border border-white/20 rounded-full shadow-lg">
+                  Coming Soon
+                </span>
+              </div>
+              <div className="aspect-[4/5] w-full relative overflow-hidden bg-black/20">
+                <img 
+                  src="/premium_necklace.png" 
+                  alt="Ethereal Diamond Necklace" 
+                  className="w-full h-full object-cover transition-transform duration-700 ease-in-out group-hover:scale-110 opacity-90 group-hover:opacity-100"
+                  loading="lazy"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-transparent opacity-80 transition-opacity duration-300 group-hover:opacity-90" />
+              </div>
+              <div className="absolute bottom-0 left-0 right-0 p-8 z-10 transform translate-y-2 transition-transform duration-500 group-hover:translate-y-0">
+                <h3 className="text-2xl font-semibold text-white mb-3 drop-shadow-md">Ethereal Diamond Necklace</h3>
+                <p className="text-sm text-white/80 leading-relaxed opacity-0 group-hover:opacity-100 transition-opacity duration-500 delay-100">
+                  A masterpiece of light and elegance, crafted for unforgettable moments.
+                </p>
+              </div>
+            </div>
+            
+            {/* Item 2 */}
+            <div className="group relative rounded-3xl overflow-hidden bg-white/10 border border-white/20 backdrop-blur-md transition-all duration-500 hover:-translate-y-3 hover:shadow-[0_20px_40px_rgba(0,0,0,0.4)]">
+              <div className="absolute top-5 right-5 z-20">
+                <span className="px-4 py-1.5 text-xs font-bold uppercase tracking-widest text-white bg-black/50 backdrop-blur-md border border-white/20 rounded-full shadow-lg">
+                  Coming Soon
+                </span>
+              </div>
+              <div className="aspect-[4/5] w-full relative overflow-hidden bg-black/20">
+                <img 
+                  src="/premium_ring.png" 
+                  alt="Radiant Sapphire Ring" 
+                  className="w-full h-full object-cover transition-transform duration-700 ease-in-out group-hover:scale-110 opacity-90 group-hover:opacity-100"
+                  loading="lazy"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-transparent opacity-80 transition-opacity duration-300 group-hover:opacity-90" />
+              </div>
+              <div className="absolute bottom-0 left-0 right-0 p-8 z-10 transform translate-y-2 transition-transform duration-500 group-hover:translate-y-0">
+                <h3 className="text-2xl font-semibold text-white mb-3 drop-shadow-md">Radiant Sapphire Ring</h3>
+                <p className="text-sm text-white/80 leading-relaxed opacity-0 group-hover:opacity-100 transition-opacity duration-500 delay-100">
+                  Deep ocean hues encased in platinum, a true statement piece.
+                </p>
+              </div>
+            </div>
+
+            {/* Item 3 */}
+            <div className="group relative rounded-3xl overflow-hidden bg-white/10 border border-white/20 backdrop-blur-md transition-all duration-500 hover:-translate-y-3 hover:shadow-[0_20px_40px_rgba(0,0,0,0.4)]">
+              <div className="absolute top-5 right-5 z-20">
+                <span className="px-4 py-1.5 text-xs font-bold uppercase tracking-widest text-white bg-black/50 backdrop-blur-md border border-white/20 rounded-full shadow-lg">
+                  Coming Soon
+                </span>
+              </div>
+              <div className="aspect-[4/5] w-full relative overflow-hidden bg-black/20">
+                <img 
+                  src="/premium_earrings.png" 
+                  alt="Luminous Pearl Earrings" 
+                  className="w-full h-full object-cover transition-transform duration-700 ease-in-out group-hover:scale-110 opacity-90 group-hover:opacity-100"
+                  loading="lazy"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-transparent opacity-80 transition-opacity duration-300 group-hover:opacity-90" />
+              </div>
+              <div className="absolute bottom-0 left-0 right-0 p-8 z-10 transform translate-y-2 transition-transform duration-500 group-hover:translate-y-0">
+                <h3 className="text-2xl font-semibold text-white mb-3 drop-shadow-md">Luminous Pearl Earrings</h3>
+                <p className="text-sm text-white/80 leading-relaxed opacity-0 group-hover:opacity-100 transition-opacity duration-500 delay-100">
+                  Classic sophistication meets modern design in these delicate drops.
+                </p>
+              </div>
+            </div>
+          </div>
+        </section>
       </main>
 
       {/* Social Footer */}
