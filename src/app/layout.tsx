@@ -96,6 +96,10 @@ export const metadata: Metadata = {
   },
 };
 
+import TopBar from "@/components/TopBar";
+import MainHeader from "@/components/MainHeader";
+import Navbar from "@/components/Navbar";
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -106,7 +110,10 @@ export default function RootLayout({
       lang="en"
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
-      <body className="min-h-full flex flex-col">
+      <body className="min-h-full flex flex-col bg-gray-50">
+        <TopBar />
+        <MainHeader />
+        <Navbar />
         {children}
         <Script src="https://www.googletagmanager.com/gtag/js?id=G-HBS2RGHPGF" strategy="afterInteractive" />
         <Script id="google-analytics" strategy="afterInteractive">
