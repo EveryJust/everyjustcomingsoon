@@ -99,6 +99,8 @@ export const metadata: Metadata = {
 import TopBar from "@/components/TopBar";
 import MainHeader from "@/components/MainHeader";
 import Navbar from "@/components/Navbar";
+import Newsletter from "@/components/Newsletter";
+import Footer from "@/components/Footer";
 
 export default function RootLayout({
   children,
@@ -110,11 +112,13 @@ export default function RootLayout({
       lang="en"
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
-      <body className="min-h-full flex flex-col bg-gray-50">
+      <body className="min-h-full flex flex-col">
         <TopBar />
         <MainHeader />
         <Navbar />
         {children}
+        <Newsletter />
+        <Footer />
         <Script src="https://www.googletagmanager.com/gtag/js?id=G-HBS2RGHPGF" strategy="afterInteractive" />
         <Script id="google-analytics" strategy="afterInteractive">
           {`

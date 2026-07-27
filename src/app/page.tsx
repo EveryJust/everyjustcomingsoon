@@ -1,6 +1,14 @@
 import React from 'react';
 import Image from 'next/image';
 import TrendingProducts from '@/components/TrendingProducts';
+import PromoBannersRow from '@/components/PromoBannersRow';
+import LatestProducts from '@/components/LatestProducts';
+import ShopByCategories from '@/components/ShopByCategories';
+import FeaturesRow from '@/components/FeaturesRow';
+import WidePromoBanner from '@/components/WidePromoBanner';
+import DealAndFeatured from '@/components/DealAndFeatured';
+import Testimonials from '@/components/Testimonials';
+import LatestBlog from '@/components/LatestBlog';
 
 export default function Home() {
   return (
@@ -81,6 +89,30 @@ export default function Home() {
 
         {/* Trending Products Section */}
         <TrendingProducts />
+
+        {/* Promo Banners Row */}
+        <PromoBannersRow />
+
+        {/* Latest Products Section */}
+        <LatestProducts />
+
+        {/* Shop By Categories Section */}
+        <ShopByCategories />
+
+        {/* Features Row */}
+        <FeaturesRow />
+
+        {/* Wide Promo Banner */}
+        <WidePromoBanner />
+
+        {/* Deal Of The Week & Featured Products */}
+        <DealAndFeatured />
+
+        {/* Testimonials */}
+        <Testimonials />
+
+        {/* Latest Blog */}
+        <LatestBlog />
       </main>
     </div>
   );
