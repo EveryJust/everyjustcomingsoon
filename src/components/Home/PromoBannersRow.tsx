@@ -6,7 +6,7 @@ export default function PromoBannersRow() {
       id: 1,
       title: 'DISC BRAKE',
       subtitle: 'FOR ANY VEHICLE',
-      price: 'From $240',
+      price: 'From ₹240',
       bgColor: 'bg-white', // using white/light gray as base
       textColor: 'text-gray-900',
       isPrimaryBg: false,
@@ -16,7 +16,7 @@ export default function PromoBannersRow() {
       id: 2,
       title: 'REAR SHOCK',
       subtitle: 'TEMPLEHORSE 280MM',
-      price: 'From $150',
+      price: 'From ₹150',
       bgColor: 'bg-primary',
       textColor: 'text-white',
       isPrimaryBg: true,
@@ -26,7 +26,7 @@ export default function PromoBannersRow() {
       id: 3,
       title: 'BLUE WHEEL',
       subtitle: 'XP/RANGER XP 900',
-      price: 'From $199',
+      price: 'From ₹199',
       bgColor: 'bg-white', // using white/light gray
       textColor: 'text-gray-900',
       isPrimaryBg: false,

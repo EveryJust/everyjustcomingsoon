@@ -1,8 +1,20 @@
-import React from 'react';
+'use client';
+import React, { useState } from 'react';
 import ProductCard from '@/components/ProductCard';
+import Dropdown from '@/components/Dropdown';
 import { MAJOR_CATEGORIES } from '@/utils/category';
 
 export default function ShopPage() {
+  const [sortOption, setSortOption] = useState('default');
+  
+  const sortOptions = [
+    { label: 'Default Sorting', value: 'default' },
+    { label: 'Sort by Popularity', value: 'popularity' },
+    { label: 'Sort by Latest', value: 'latest' },
+    { label: 'Price: Low to High', value: 'price_asc' },
+    { label: 'Price: High to Low', value: 'price_desc' }
+  ];
+
   // Mock Data for the grid
   const mockProducts = Array.from({ length: 12 }).map((_, i) => ({
     id: i,
@@ -54,8 +66,8 @@ export default function ShopPage() {
             <div className="space-y-4">
               <input type="range" className="w-full accent-primary" min="0" max="1000" />
               <div className="flex items-center justify-between text-sm text-gray-600 font-medium">
-                <span>$0</span>
-                <span>$1000+</span>
+                <span>₹0</span>
+                <span>₹1000+</span>
               </div>
               <button className="w-full bg-gray-100 hover:bg-gray-200 text-gray-800 font-bold py-2 rounded-sm text-xs tracking-wider transition-colors">
                 APPLY FILTER
@@ -85,13 +97,14 @@ export default function ShopPage() {
             <p className="text-sm text-gray-500 font-medium">Showing 1–12 of 145 results</p>
             <div className="flex items-center gap-2">
               <span className="text-sm text-gray-500 font-medium">Sort by:</span>
-              <select className="border border-gray-300 text-gray-700 text-sm rounded-sm px-3 py-1.5 focus:outline-none focus:border-primary cursor-pointer bg-white">
-                <option>Default Sorting</option>
-                <option>Sort by Popularity</option>
-                <option>Sort by Latest</option>
-                <option>Price: Low to High</option>
-                <option>Price: High to Low</option>
-              </select>
+              <div className="w-48">
+                <Dropdown 
+                  options={sortOptions}
+                  value={sortOption}
+                  onChange={setSortOption}
+                  variant="bordered"
+                />
+              </div>
             </div>
           </div>
 

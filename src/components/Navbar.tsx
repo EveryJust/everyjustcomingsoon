@@ -32,12 +32,13 @@ export default function Navbar() {
 
         {/* Main Links */}
         <div className="flex items-center gap-8 px-8 font-semibold flex-grow">
-          <a href="#" className="hover:text-white/80 transition-colors">Home</a>
-          <a href="#" className="hover:text-white/80 transition-colors flex items-center gap-1">Shop <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" /></svg></a>
-          <a href="#" className="hover:text-white/80 transition-colors">Collections</a>
-          <a href="#" className="hover:text-white/80 transition-colors flex items-center gap-1">Headlights <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" /></svg></a>
-          <a href="#" className="hover:text-white/80 transition-colors">Contact</a>
-          <a href="#" className="hover:text-white/80 transition-colors">Blog</a>
+          <a href="/" className="hover:text-white/80 transition-colors">Home</a>
+          <a href="/shop" className="hover:text-white/80 transition-colors">Shop</a>
+          <a href="/brands" className="hover:text-white/80 transition-colors">Brands</a>
+          <a href="/categories" className="hover:text-white/80 transition-colors">Categories</a>
+          <a href="/about-us" className="hover:text-white/80 transition-colors">About Us</a>
+          <a href="/contact" className="hover:text-white/80 transition-colors">Contact</a>
+          <a href="/blog" className="hover:text-white/80 transition-colors">Blog</a>
         </div>
 
         {/* Right Deal */}

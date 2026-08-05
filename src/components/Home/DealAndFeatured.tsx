@@ -7,8 +7,8 @@ export default function DealAndFeatured() {
       id: 1,
       image: '/dash_camera.png', // Placeholder
       title: 'AUTO-VOX 9.8ft Extension Cord Dash Cam Rear',
-      price: '$53.00',
-      originalPrice: '$57.00',
+      price: '₹53.00',
+      originalPrice: '₹57.00',
       discount: '-7%',
       rating: 0,
       status: 'ADD TO CART' as const
@@ -17,7 +17,7 @@ export default function DealAndFeatured() {
       id: 2,
       image: '/promo_bottom_banner.png', // Placeholder
       title: 'New Upgraded 1-Piece Rear Driveshaft & Parts',
-      price: '$15.00',
+      price: '₹15.00',
       rating: 0,
       status: 'ADD TO CART' as const
     },
@@ -25,7 +25,7 @@ export default function DealAndFeatured() {
       id: 3,
       image: '/dash_camera.png', // Placeholder (Halo headlights)
       title: 'SUPAREE 7 Round LED Headlights RGB Halo Angel',
-      price: '$12.00',
+      price: '₹12.00',
       rating: 0,
       status: 'OPTIONS' as const
     },
@@ -33,8 +33,8 @@ export default function DealAndFeatured() {
       id: 4,
       image: '/promo_top_banner.png', // Placeholder (Oil)
       title: 'Pennzoil Platinum High Mileage Synthetic Motor Oil',
-      price: '$72.00',
-      originalPrice: '$79.00',
+      price: '₹72.00',
+      originalPrice: '₹79.00',
       discount: '-9%',
       rating: 0,
       status: 'ADD TO CART' as const
@@ -43,7 +43,7 @@ export default function DealAndFeatured() {
       id: 5,
       image: '/turbo_charger.png', // Placeholder (Battery)
       title: 'New Hi-Power Maintenance Free Battery (Super Power)',
-      price: '$165.00',
+      price: '₹165.00',
       rating: 0,
       status: 'OPTIONS' as const
     },
@@ -51,8 +51,8 @@ export default function DealAndFeatured() {
       id: 6,
       image: '/turbo_charger.png', // Placeholder
       title: 'Savini Forged SV64-XC Wheels Rims On Sale',
-      price: '$35.00',
-      originalPrice: '$39.00',
+      price: '₹35.00',
+      originalPrice: '₹39.00',
       discount: '-10%',
       rating: 0,
       status: 'ADD TO CART' as const
@@ -101,8 +101,8 @@ export default function DealAndFeatured() {
               </div>
 
               <div className="flex items-center gap-2 mb-6">
-                <span className="text-gray-400 text-sm line-through">$58.00</span>
-                <span className="text-primary font-bold text-lg">$50.00</span>
+                <span className="text-gray-400 text-sm line-through">₹58.00</span>
+                <span className="text-primary font-bold text-lg">₹50.00</span>
               </div>
 
               {/* Countdown Timer */}

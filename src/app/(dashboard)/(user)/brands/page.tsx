@@ -1,6 +1,16 @@
-import React from 'react';
+'use client';
+import React, { useState } from 'react';
+import Dropdown from '@/components/Dropdown';
 
 export default function BrandsPage() {
+  const [category, setCategory] = useState('all');
+
+  const categoryOptions = [
+    { label: 'All Categories', value: 'all' },
+    { label: 'Electronics', value: 'electronics' },
+    { label: 'Fashion', value: 'fashion' },
+    { label: 'Home & Living', value: 'home_living' }
+  ];
   const mockBrands = [
     { id: 1, name: "Nexus Electronics", category: "Electronics & Gadgets", description: "Top tier consumer electronics and smart home devices.", logoColor: "bg-blue-600" },
     { id: 2, name: "Urban Threads", category: "Clothes & Apparel", description: "Sustainable and trendy urban street fashion.", logoColor: "bg-emerald-600" },
@@ -54,13 +64,13 @@ export default function BrandsPage() {
             <div className="w-20 h-1 bg-primary mt-4"></div>
           </div>
           
-          <div className="hidden sm:block">
-            <select className="border-2 border-gray-200 text-gray-700 font-bold rounded-sm px-4 py-2 focus:outline-none focus:border-primary cursor-pointer bg-white">
-              <option>All Categories</option>
-              <option>Electronics</option>
-              <option>Fashion</option>
-              <option>Home & Living</option>
-            </select>
+          <div className="hidden sm:block w-48">
+            <Dropdown
+              options={categoryOptions}
+              value={category}
+              onChange={setCategory}
+              variant="bordered"
+            />
           </div>
         </div>
 

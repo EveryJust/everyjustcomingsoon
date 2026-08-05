@@ -50,7 +50,7 @@ export default function MainHeader() {
                 <span className="absolute -top-1 -right-1 bg-primary text-white text-[10px] w-4 h-4 rounded-full flex items-center justify-center font-bold">0</span>
               </div>
               <div className="hidden sm:flex flex-col text-left leading-tight">
-                <span className="text-[10px] text-gray-500">$0.00</span>
+                <span className="text-[10px] text-gray-500">₹0.00</span>
                 <span className="text-xs font-bold text-gray-800">My Cart</span>
               </div>
             </button>

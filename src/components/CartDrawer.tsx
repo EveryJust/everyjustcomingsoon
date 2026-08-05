@@ -64,7 +64,7 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
                 </div>
                 <div className="flex-1">
                   <h4 className="text-sm font-bold text-gray-900 line-clamp-2 hover:text-primary transition-colors cursor-pointer">{item.name}</h4>
-                  <div className="text-primary font-bold mt-1">${item.price.toFixed(2)}</div>
+                  <div className="text-primary font-bold mt-1">₹{item.price.toFixed(2)}</div>
                   <div className="flex items-center gap-3 mt-2">
                     <div className="flex items-center border border-gray-200 rounded-sm">
                       <button className="px-2 py-0.5 text-gray-500 hover:text-gray-900 hover:bg-gray-100 transition-colors">-</button>
@@ -83,7 +83,7 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
         <div className="p-6 border-t border-gray-100 bg-gray-50">
           <div className="flex justify-between items-center mb-6">
             <span className="text-gray-600 font-semibold">Subtotal</span>
-            <span className="text-2xl font-black text-gray-900">${total.toFixed(2)}</span>
+            <span className="text-2xl font-black text-gray-900">₹{total.toFixed(2)}</span>
           </div>
           <p className="text-xs text-gray-500 mb-6 text-center">Taxes and shipping calculated at checkout.</p>
           <div className="flex flex-col gap-3">

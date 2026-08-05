@@ -14,7 +14,7 @@ export default function Newsletter() {
           </div>
           <div>
             <h3 className="text-white text-2xl lg:text-3xl font-bold mb-1">
-              Join Our Newsletter For $10 Off
+              Join Our Newsletter For ₹10 Off
             </h3>
             <p className="text-white/90 text-sm font-medium">
               Subscribe to our latest newsletter get news about upcoming sales

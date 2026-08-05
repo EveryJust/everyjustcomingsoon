@@ -7,8 +7,8 @@ export default function LatestProducts() {
       id: 1,
       image: '/promo_top_banner.png', // Placeholder
       title: 'Pilot Automotive Universal Fit Black with Red Trim',
-      price: '$17.00',
-      originalPrice: '$19.00',
+      price: '₹17.00',
+      originalPrice: '₹19.00',
       discount: '-11%',
       rating: 0,
       status: 'ADD TO CART' as const
@@ -17,7 +17,7 @@ export default function LatestProducts() {
       id: 2,
       image: '/dash_camera.png', // Placeholder
       title: 'SUPAREE 7 Round LED Headlights RGB Halo Angel',
-      price: '$12.00',
+      price: '₹12.00',
       rating: 0,
       status: 'OPTIONS' as const
     },
@@ -25,8 +25,8 @@ export default function LatestProducts() {
       id: 3,
       image: '/turbo_charger.png', // Placeholder
       title: 'Thrustmaster TH8S Shifter Add-On Manual Ge',
-      price: '$90.00',
-      originalPrice: '$97.00',
+      price: '₹90.00',
+      originalPrice: '₹97.00',
       discount: '-7%',
       rating: 0,
       status: 'ADD TO CART' as const
@@ -35,7 +35,7 @@ export default function LatestProducts() {
       id: 4,
       image: '/promo_bottom_banner.png', // Placeholder
       title: 'New Upgraded 1-Piece Rear Driveshaft & Parts',
-      price: '$15.00',
+      price: '₹15.00',
       rating: 0,
       status: 'ADD TO CART' as const
     }

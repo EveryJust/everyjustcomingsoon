@@ -10,7 +10,7 @@ export default function FeaturesRow() {
         </svg>
       ),
       title: 'Worldwide Shipping',
-      description: 'For all Orders Over $100'
+      description: 'For all Orders Over ₹100'
     },
     {
       id: 2,

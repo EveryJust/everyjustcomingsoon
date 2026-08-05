@@ -7,7 +7,7 @@ export default function TrendingProducts() {
       id: 1,
       image: '/dash_camera.png',
       title: 'Thinkware F770 2CH FHD Wi-Fi Dash Camera',
-      price: '$150.00',
+      price: '₹150.00',
       rating: 0,
       status: 'ADD TO CART' as const
     },
@@ -15,8 +15,8 @@ export default function TrendingProducts() {
       id: 2,
       image: '/turbo_charger.png',
       title: 'Savini Forged SV64-XC Wheels Rims On Sale',
-      price: '$35.00',
-      originalPrice: '$39.00',
+      price: '₹35.00',
+      originalPrice: '₹39.00',
       discount: '-10%',
       rating: 0,
       status: 'ADD TO CART' as const
@@ -25,8 +25,8 @@ export default function TrendingProducts() {
       id: 3,
       image: '/promo_top_banner.png', // using existing placeholder
       title: 'OMP Car Steering Aluminum Spacer Quick Steering',
-      price: '$70.00',
-      originalPrice: '$77.00',
+      price: '₹70.00',
+      originalPrice: '₹77.00',
       rating: 0,
       status: 'OPTIONS' as const
     },
@@ -34,7 +34,7 @@ export default function TrendingProducts() {
       id: 4,
       image: '/promo_top_banner.png', // using existing placeholder
       title: 'New Upgraded 1-Piece Rear Driveshaft & Parts',
-      price: '$15.00',
+      price: '₹15.00',
       rating: 0,
       status: 'ADD TO CART' as const
     },
@@ -42,7 +42,7 @@ export default function TrendingProducts() {
       id: 5,
       image: '/promo_bottom_banner.png', // using existing placeholder
       title: 'ESP Brakes 4301521R-BKCZ Brake System 1 Pack',
-      price: '$45.00',
+      price: '₹45.00',
       rating: 0,
       status: 'SOLD OUT' as const
     }
