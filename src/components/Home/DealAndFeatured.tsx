@@ -1,5 +1,5 @@
 import React from 'react';
-import HorizontalProductCard from './HorizontalProductCard';
+import HorizontalProductCard from '../HorizontalProductCard';
 
 export default function DealAndFeatured() {
   const featuredProducts = [

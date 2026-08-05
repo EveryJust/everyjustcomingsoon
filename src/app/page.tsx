@@ -1,14 +1,14 @@
 import React from 'react';
 import Image from 'next/image';
-import TrendingProducts from '@/components/TrendingProducts';
-import PromoBannersRow from '@/components/PromoBannersRow';
-import LatestProducts from '@/components/LatestProducts';
-import ShopByCategories from '@/components/ShopByCategories';
-import FeaturesRow from '@/components/FeaturesRow';
-import WidePromoBanner from '@/components/WidePromoBanner';
-import DealAndFeatured from '@/components/DealAndFeatured';
-import Testimonials from '@/components/Testimonials';
-import LatestBlog from '@/components/LatestBlog';
+import TrendingProducts from '@/components/Home/TrendingProducts';
+import PromoBannersRow from '@/components/Home/PromoBannersRow';
+import LatestProducts from '@/components/Home/LatestProducts';
+import ShopByCategories from '@/components/Home/ShopByCategories';
+import FeaturesRow from '@/components/Home/FeaturesRow';
+import WidePromoBanner from '@/components/Home/WidePromoBanner';
+import DealAndFeatured from '@/components/Home/DealAndFeatured';
+import Testimonials from '@/components/Home/Testimonials';
+import LatestBlog from '@/components/Home/LatestBlog';
 
 export default function Home() {
   return (
