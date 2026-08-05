@@ -63,7 +63,7 @@ export default function Dropdown({
         onClick={() => setIsOpen(!isOpen)}
         className={`${baseButtonStyles} ${variantStyles[variant]}`}
       >
-        <span className="truncate">
+        <span className="truncate flex-1 text-left flex items-center">
           {selectedOption ? selectedOption.label : placeholder}
         </span>
         <svg 
@@ -92,7 +92,9 @@ export default function Dropdown({
                     : 'text-gray-700 hover:bg-gray-50 hover:text-gray-900 font-medium'
                 }`}
               >
-                <span className="truncate">{option.label}</span>
+                <span className="truncate flex-1 text-left flex items-center">
+                  {option.label}
+                </span>
                 {value === option.value && (
                   <svg className="w-4 h-4 text-primary ml-3 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />

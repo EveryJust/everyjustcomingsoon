@@ -1,12 +1,14 @@
 export interface Language {
   code: string;
   name: string;
+  flag: string;
 }
 
 export const LANGUAGES: Language[] = [
   {
     code: 'en',
-    name: 'English'
+    name: 'English',
+    flag: 'https://flagcdn.com/w20/us.png'
   }
 ];
 

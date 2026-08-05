@@ -8,8 +8,24 @@ export default function TopBar() {
   const [currency, setCurrency] = useState(CURRENCIES[0].code);
   const [language, setLanguage] = useState(LANGUAGES[0].code);
 
-  const currencyOptions = CURRENCIES.map(c => ({ label: `${c.code} ${c.symbol}`, value: c.code }));
-  const languageOptions = LANGUAGES.map(l => ({ label: l.name, value: l.code }));
+  const currencyOptions = CURRENCIES.map(c => ({ 
+    label: (
+      <span className="flex items-center gap-2">
+        <img src={c.flag} alt={`${c.code} flag`} className="w-[18px] h-auto object-cover rounded-[2px]" />
+        <span>{c.code} {c.symbol}</span>
+      </span>
+    ),  
+    value: c.code 
+  }));
+  const languageOptions = LANGUAGES.map(l => ({ 
+    label: (
+      <span className="flex items-center gap-2">
+        <img src={l.flag} alt={`${l.code} flag`} className="w-[18px] h-auto object-cover rounded-[2px]" />
+        <span>{l.name}</span>
+      </span>
+    ),  
+    value: l.code 
+  }));
 
   return (
     <div className="bg-gray-100 border-b border-gray-200 text-xs py-2 px-6">
