@@ -38,7 +38,7 @@ export default function Testimonials() {
   ];
 
   return (
-    <div className="py-16 relative overflow-hidden bg-[#eef5f9] -mx-6 px-6 lg:-mx-12 lg:px-12 rounded-sm mb-12">
+    <div className="py-12 sm:py-16 relative overflow-hidden bg-[#eef5f9] -mx-4 px-4 sm:-mx-6 sm:px-6 lg:-mx-12 lg:px-12 rounded-sm mb-8 sm:mb-12">
       {/* Subtle Background Pattern Mock */}
       <div className="absolute inset-0 opacity-[0.05] pointer-events-none" 
            style={{ backgroundImage: 'radial-gradient(#000 1.5px, transparent 1.5px)', backgroundSize: '30px 30px' }} />

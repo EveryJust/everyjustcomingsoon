@@ -60,7 +60,7 @@ export default function DealAndFeatured() {
   ];
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 py-12 mb-12">
+    <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 py-8 sm:py-12 mb-8 sm:mb-12">
       
       {/* Deal Of The Week (Left Column) */}
       <div className="flex flex-col">
@@ -107,22 +107,22 @@ export default function DealAndFeatured() {
 
               {/* Countdown Timer */}
               <div className="flex gap-2 mb-6 justify-center">
-                 <div className="flex flex-col items-center border border-gray-200 px-3 py-1.5 rounded-sm">
+                 <div className="flex flex-col items-center border border-gray-200 px-2 sm:px-3 py-1 sm:py-1.5 rounded-sm">
                    <span className="font-bold text-gray-900 leading-none">492</span>
                    <span className="text-[10px] text-gray-500 uppercase mt-1">Days</span>
                  </div>
                  <span className="font-bold text-gray-400 mt-1">:</span>
-                 <div className="flex flex-col items-center border border-gray-200 px-3 py-1.5 rounded-sm">
+                 <div className="flex flex-col items-center border border-gray-200 px-2 sm:px-3 py-1 sm:py-1.5 rounded-sm">
                    <span className="font-bold text-gray-900 leading-none">05</span>
                    <span className="text-[10px] text-gray-500 uppercase mt-1">Hour</span>
                  </div>
                  <span className="font-bold text-gray-400 mt-1">:</span>
-                 <div className="flex flex-col items-center border border-gray-200 px-3 py-1.5 rounded-sm">
+                 <div className="flex flex-col items-center border border-gray-200 px-2 sm:px-3 py-1 sm:py-1.5 rounded-sm">
                    <span className="font-bold text-gray-900 leading-none">20</span>
                    <span className="text-[10px] text-gray-500 uppercase mt-1">Min</span>
                  </div>
                  <span className="font-bold text-primary mt-1">:</span>
-                 <div className="flex flex-col items-center border border-primary px-3 py-1.5 rounded-sm text-primary">
+                 <div className="flex flex-col items-center border border-primary px-2 sm:px-3 py-1 sm:py-1.5 rounded-sm text-primary">
                    <span className="font-bold leading-none">10</span>
                    <span className="text-[10px] uppercase mt-1">Sec</span>
                  </div>
@@ -149,7 +149,7 @@ export default function DealAndFeatured() {
            </div>
         </div>
         
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 flex-1">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 flex-1">
           {featuredProducts.map((product) => (
             <HorizontalProductCard 
               key={product.id}

@@ -33,7 +33,7 @@ export default function LatestBlog() {
   ];
 
   return (
-    <div className="py-12 mb-12 border-t border-gray-200 mt-12">
+    <div className="py-8 sm:py-12 mb-8 sm:mb-12 border-t border-gray-200 mt-8 sm:mt-12">
       <div className="flex items-center justify-between mb-8">
         <h2 className="text-2xl font-bold text-gray-900">Our Latest Blog</h2>
         <div className="flex gap-2">

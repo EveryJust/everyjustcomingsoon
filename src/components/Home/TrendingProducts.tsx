@@ -49,7 +49,7 @@ export default function TrendingProducts() {
   ];
 
   return (
-    <div className="py-12 border-t border-gray-200 mt-12">
+    <div className="py-8 sm:py-12 border-t border-gray-200 mt-8 sm:mt-12">
       <div className="flex flex-col md:flex-row md:items-center justify-between mb-8 gap-4">
         <h2 className="text-2xl font-bold text-gray-900">Trending Products</h2>
         <div className="flex flex-wrap gap-2 text-sm font-semibold tracking-wide">
@@ -72,7 +72,7 @@ export default function TrendingProducts() {
         </button>
 
         {/* Product Grid */}
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
           {products.map((product) => (
             <ProductCard 
               key={product.id}

@@ -1,7 +1,7 @@
 import React from 'react';
 import Image from 'next/image';
 import TrendingProducts from '@/components/Home/TrendingProducts';
-import PromoBannersRow from '@/components/Home/PromoBannersRow';
+
 import LatestProducts from '@/components/Home/LatestProducts';
 import ShopByCategories from '@/components/Home/ShopByCategories';
 import FeaturesRow from '@/components/Home/FeaturesRow';
@@ -15,16 +15,16 @@ export default function Home() {
     <div className="text-gray-900 font-sans">
 
       {/* Main Content Area */}
-      <main className="max-w-7xl mx-auto px-6 py-8">
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 py-8">
         {/* Hero Grid */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-12">
           
           {/* Main Banner (Spans 2 columns) */}
-          <div className="lg:col-span-2 relative rounded-lg overflow-hidden h-[300px] sm:h-[400px] lg:h-[500px] shadow-lg group bg-gray-200">
+          <div className="lg:col-span-2 relative rounded-lg overflow-hidden h-[250px] sm:h-[400px] lg:h-[500px] shadow-lg group bg-gray-200">
             <div className="absolute inset-0 bg-cover bg-center" style={{ backgroundImage: "url('/main_hero_banner.png')" }} />
-            <div className="absolute inset-0 bg-gradient-to-r from-white/95 via-white/80 to-transparent flex flex-col justify-center p-8 lg:p-12">
+            <div className="absolute inset-0 bg-gradient-to-r from-white/95 via-white/80 to-transparent flex flex-col justify-center p-6 sm:p-8 lg:p-12">
               <span className="text-primary font-bold text-lg lg:text-xl mb-2 lg:mb-4">Starting From $199</span>
-              <h2 className="text-4xl sm:text-5xl lg:text-6xl font-black text-gray-900 leading-tight mb-2 lg:mb-4 uppercase tracking-tighter">
+              <h2 className="text-3xl sm:text-5xl lg:text-6xl font-black text-gray-900 leading-tight mb-2 lg:mb-4 uppercase tracking-tighter">
                 Two Day Shipping<br/>On All Orders
               </h2>
               <p className="text-gray-800 font-semibold tracking-wider mb-6 lg:mb-8 text-sm sm:text-base lg:text-lg">
@@ -41,7 +41,7 @@ export default function Home() {
           {/* Side Banners (Stacked) */}
           <div className="flex flex-col gap-6 h-auto lg:h-[500px]">
             {/* Top Promo */}
-            <div className="flex-1 min-h-[200px] relative rounded-lg overflow-hidden shadow-lg group bg-gray-900">
+            <div className="flex-1 min-h-[160px] sm:min-h-[200px] relative rounded-lg overflow-hidden shadow-lg group bg-gray-900">
               <div className="absolute inset-0 bg-cover bg-center transition-transform duration-700 group-hover:scale-105" style={{ backgroundImage: "url('/promo_top_banner.png')" }} />
               <div className="absolute inset-0 bg-black/40 p-6 lg:p-8 flex flex-col justify-center">
                 <span className="text-white/80 font-medium mb-1">From $149</span>
@@ -56,7 +56,7 @@ export default function Home() {
             </div>
 
             {/* Bottom Promo */}
-            <div className="flex-1 min-h-[200px] relative rounded-lg overflow-hidden shadow-lg group bg-yellow-400">
+            <div className="flex-1 min-h-[160px] sm:min-h-[200px] relative rounded-lg overflow-hidden shadow-lg group bg-yellow-400">
               <div className="absolute inset-0 bg-cover bg-center transition-transform duration-700 group-hover:scale-105" style={{ backgroundImage: "url('/promo_bottom_banner.png')" }} />
               <div className="absolute inset-0 bg-gradient-to-r from-[#f5b300]/90 to-transparent p-6 lg:p-8 flex flex-col justify-center">
                 <span className="text-gray-800 font-medium mb-1">From $240</span>
@@ -75,7 +75,7 @@ export default function Home() {
 
         {/* Brands Carousel (Static mockup) */}
         <div className="border-t border-gray-200 py-10 mt-10">
-          <div className="flex flex-wrap items-center justify-center gap-10 lg:gap-20 opacity-60 grayscale hover:grayscale-0 transition-all duration-500">
+          <div className="flex flex-wrap items-center justify-center gap-6 sm:gap-10 lg:gap-20 opacity-60 grayscale hover:grayscale-0 transition-all duration-500">
             {/* Using text logos for mockup since we didn't generate 7 images */}
             <span className="text-2xl sm:text-3xl font-black tracking-tighter uppercase text-red-600">Honda</span>
             <span className="text-2xl sm:text-3xl font-black tracking-tighter uppercase text-blue-800">Nissan</span>
@@ -90,8 +90,7 @@ export default function Home() {
         {/* Trending Products Section */}
         <TrendingProducts />
 
-        {/* Promo Banners Row */}
-        <PromoBannersRow />
+
 
         {/* Latest Products Section */}
         <LatestProducts />

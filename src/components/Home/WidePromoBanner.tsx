@@ -9,11 +9,11 @@ export default function WidePromoBanner() {
       />
       <div className="absolute inset-0 bg-black/50" />
       
-      <div className="relative z-10 px-8 lg:px-16 py-12 flex flex-col items-start justify-center text-left">
+      <div className="relative z-10 px-6 sm:px-8 lg:px-16 py-8 sm:py-12 flex flex-col items-start justify-center text-left">
         <div className="bg-primary text-white text-xs font-bold px-3 py-1.5 mb-6 rounded-sm uppercase tracking-wider">
           DISCOUNT UP TO 40 % OFF
         </div>
-        <h2 className="text-3xl md:text-4xl lg:text-5xl font-black text-white uppercase leading-tight tracking-tight max-w-xl">
+        <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-black text-white uppercase leading-tight tracking-tight max-w-xl">
           CAR REAR BACK PILLAR LED <br/>BRAKE LIGHT
         </h2>
       </div>

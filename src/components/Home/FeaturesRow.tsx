@@ -45,8 +45,8 @@ export default function FeaturesRow() {
   ];
 
   return (
-    <div className="py-12 border-b border-gray-200 mt-12 mb-12">
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
+    <div className="py-8 sm:py-12 border-b border-gray-200 mt-8 sm:mt-12 mb-8 sm:mb-12">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 sm:gap-8">
         {features.map((feature) => (
           <div key={feature.id} className="flex items-center gap-4 group">
             <div className="text-gray-900 group-hover:text-primary transition-colors">

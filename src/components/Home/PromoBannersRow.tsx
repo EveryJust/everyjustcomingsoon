@@ -35,11 +35,11 @@ export default function PromoBannersRow() {
   ];
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-3 gap-6 py-10 mt-10">
+    <div className="grid grid-cols-1 md:grid-cols-3 gap-6 py-8 sm:py-10 mt-8 sm:mt-10">
       {banners.map((banner) => (
         <div 
           key={banner.id} 
-          className={`relative rounded-sm overflow-hidden flex flex-col justify-center p-8 min-h-[220px] shadow-sm group ${banner.bgColor}`}
+          className={`relative rounded-sm overflow-hidden flex flex-col justify-center p-6 sm:p-8 min-h-[160px] sm:min-h-[220px] shadow-sm group ${banner.bgColor}`}
         >
           {/* Background Image (right-aligned, half opacity/contain or similar if we had specific cutouts. For now just use absolute positioning) */}
           <div 

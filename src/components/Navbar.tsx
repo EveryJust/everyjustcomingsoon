@@ -1,4 +1,5 @@
 import React from 'react';
+import { MAJOR_CATEGORIES } from '../utils/category';
 
 export default function Navbar() {
   return (
@@ -9,6 +10,24 @@ export default function Navbar() {
           <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" /></svg>
           CATEGORIES
           <svg className="w-4 h-4 ml-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" /></svg>
+          
+          {/* Dropdown Menu */}
+          <div className="absolute top-full left-0 w-full bg-white shadow-lg border border-gray-100 rounded-b-sm opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
+            <ul className="py-2 flex flex-col">
+              {MAJOR_CATEGORIES.slice(0, 10).map(cat => (
+                <li key={cat.id}>
+                  <a href={`/category/${cat.slug}`} className="block px-6 py-2.5 text-sm font-semibold text-gray-600 hover:text-primary hover:bg-gray-50 transition-colors">
+                    {cat.name}
+                  </a>
+                </li>
+              ))}
+              <li>
+                <a href="/categories" className="block px-6 py-3 text-sm font-bold text-primary hover:bg-gray-50 transition-colors border-t border-gray-100 mt-1">
+                  VIEW ALL
+                </a>
+              </li>
+            </ul>
+          </div>
         </div>
 
         {/* Main Links */}
