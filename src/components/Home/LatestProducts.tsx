@@ -75,7 +75,7 @@ export default function LatestProducts() {
         </div>
 
         {/* Product Cards Grid */}
-        <div className="lg:col-span-4 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
+        <div className="lg:col-span-4 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2 sm:gap-4">
            {latestProducts.map((product) => (
             <ProductCard 
               key={product.id}

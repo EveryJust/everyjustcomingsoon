@@ -82,7 +82,7 @@ export default function Home() {
         </div>
 
         {/* Brands Carousel (Static mockup) */}
-        <div className="border-t border-gray-200 py-10 mt-10">
+        <div className="hidden lg:block border-t border-gray-200 py-10 mt-10">
           <div className="flex flex-wrap items-center justify-center gap-6 sm:gap-10 lg:gap-20 opacity-60 grayscale hover:grayscale-0 transition-all duration-500">
             {/* Using text logos for mockup since we didn't generate 7 images */}
             <span className="text-2xl sm:text-3xl font-black tracking-tighter uppercase text-red-600">Honda</span>

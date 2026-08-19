@@ -12,7 +12,7 @@ export default function MobileHero() {
   const [deliveryLocation, setDeliveryLocation] = useState('Nilambur');
 
   return (
-    <div className="lg:hidden mb-8 w-full overflow-hidden">
+    <div className="lg:hidden mb-2 w-full overflow-hidden">
       {/* Search Bar */}
       <div className="px-4 py-3">
         <div className="flex items-center bg-white border border-gray-300 rounded-lg overflow-hidden shadow-sm">
