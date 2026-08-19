@@ -28,16 +28,25 @@ export default function TopBar() {
   }));
 
   return (
-    <div className="bg-gray-100 border-b border-gray-200 text-xs py-2 px-6">
-      <div className="max-w-7xl mx-auto flex justify-between items-center text-gray-600">
-        <div>
-          Get Upto 25% Cashback On First Order: GET25OFF - <a href="#" className="font-semibold underline hover:text-primary">SHOP NOW</a>
+    <div className="bg-gray-100 border-b border-gray-200 text-xs py-2 px-2 lg:px-6">
+      <div className="max-w-7xl mx-auto flex flex-row justify-between items-center text-gray-600 overflow-hidden w-full gap-2">
+        {/* Left Side: Scrolling Text and Static Link on mobile */}
+        <div className="flex-1 flex items-center overflow-hidden relative mr-2">
+          <div className="flex-1 overflow-hidden mask-edges mr-1">
+            <div className="animate-marquee lg:animate-none lg:w-auto lg:transform-none lg:whitespace-normal">
+              <span className="pr-8 lg:pr-1">Get Upto 25% Cashback On First Order: GET25OFF -</span>
+              <span className="pr-8 lg:hidden">Get Upto 25% Cashback On First Order: GET25OFF -</span>
+            </div>
+          </div>
+          <a href="#" className="font-semibold underline hover:text-primary whitespace-nowrap flex-shrink-0 z-10">SHOP NOW</a>
         </div>
-        <div className="flex items-center gap-4">
-          <a href="#" className="hover:text-primary">Track Order</a>
-          <span className="text-gray-300">|</span>
-          <a href="#" className="hover:text-primary">Help Center</a>
-          <span className="text-gray-300">|</span>
+        
+        {/* Right Side: Selectors */}
+        <div className="flex items-center justify-end gap-2 lg:gap-4 flex-shrink-0 bg-gray-100 z-10 pl-2">
+          <a href="#" className="hidden lg:block hover:text-primary whitespace-nowrap">Track Order</a>
+          <span className="hidden lg:inline text-gray-300">|</span>
+          <a href="#" className="hidden lg:block hover:text-primary whitespace-nowrap">Help Center</a>
+          <span className="hidden lg:inline text-gray-300">|</span>
           <Dropdown 
             options={currencyOptions}
             value={currency}

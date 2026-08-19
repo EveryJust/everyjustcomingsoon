@@ -30,13 +30,13 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
     <>
       {/* Backdrop */}
       <div 
-        className={`fixed inset-0 bg-black/60 z-[60] backdrop-blur-sm transition-opacity duration-300 ${isOpen ? 'opacity-100 visible' : 'opacity-0 invisible'}`}
+        className={`fixed top-0 left-0 right-0 bottom-[72px] lg:bottom-0 bg-black/60 z-[1000] backdrop-blur-sm transition-opacity duration-300 ${isOpen ? 'opacity-100 visible' : 'opacity-0 invisible'}`}
         onClick={onClose}
       />
       
       {/* Drawer */}
       <div 
-        className={`fixed top-0 right-0 h-[100dvh] w-full sm:w-[400px] bg-white z-[70] shadow-2xl transform transition-transform duration-300 ease-in-out flex flex-col ${isOpen ? 'translate-x-0' : 'translate-x-full'}`}
+        className={`fixed top-0 right-0 h-[calc(100dvh-72px)] lg:h-[100dvh] w-full sm:w-[400px] bg-white z-[1010] shadow-2xl transform transition-transform duration-300 ease-in-out flex flex-col ${isOpen ? 'translate-x-0' : 'translate-x-full'}`}
       >
         {/* Header */}
         <div className="flex items-center justify-between p-6 border-b border-gray-100">
