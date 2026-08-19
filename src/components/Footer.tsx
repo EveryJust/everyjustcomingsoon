@@ -1,6 +1,15 @@
+'use client';
+
 import React from 'react';
+import { usePathname } from 'next/navigation';
 
 export default function Footer() {
+  const pathname = usePathname();
+
+  if (pathname === '/' || pathname === '/categories' || pathname === '/play' || pathname === '/reels' || pathname?.startsWith('/product/')) {
+    return null;
+  }
+
   return (
     <footer className="w-full bg-white pt-16 border-t border-gray-200">
       <div className="max-w-7xl mx-auto px-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-8 mb-12">

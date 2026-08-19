@@ -1,11 +1,15 @@
 'use client';
 import React, { useState } from 'react';
+import { usePathname } from 'next/navigation';
 import CartDrawer from './CartDrawer';
 
 export default function MainHeader() {
   const [isCartOpen, setIsCartOpen] = useState(false);
+  const pathname = usePathname();
+  const isHiddenOnMobile = pathname?.startsWith('/product/') || pathname === '/categories';
+
   return (
-    <header className="bg-white py-3 px-4 lg:py-6 lg:px-6 shadow-sm sticky top-0 z-40">
+    <header className={`bg-white py-3 px-4 lg:py-6 lg:px-6 shadow-sm sticky top-0 z-40 ${isHiddenOnMobile ? 'hidden lg:block' : ''}`}>
       <div className="max-w-7xl mx-auto flex items-center justify-between gap-4 lg:gap-8">
         {/* Logo */}
         <div className="flex-shrink-0">

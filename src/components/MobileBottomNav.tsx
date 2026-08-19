@@ -1,7 +1,14 @@
+'use client';
 import Link from 'next/link';
 import React from 'react';
+import { usePathname } from 'next/navigation';
 
 const MobileBottomNav = () => {
+  const pathname = usePathname();
+  const isProductPage = pathname?.startsWith('/product/');
+
+  if (isProductPage) return null;
+
   return (
     <nav className="fixed bottom-0 left-0 w-full bg-white border-t border-gray-200 z-[100] lg:hidden flex justify-between items-center px-1 py-2 pb-safe shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)]">
       <Link href="/" className="flex flex-col items-center justify-center w-full text-gray-500 hover:text-primary transition-colors">

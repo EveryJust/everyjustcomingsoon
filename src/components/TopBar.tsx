@@ -1,5 +1,6 @@
 'use client';
 import React, { useState } from 'react';
+import { usePathname } from 'next/navigation';
 import { CURRENCIES } from '../utils/currency';
 import { LANGUAGES } from '../utils/language';
 import Dropdown from './Dropdown';
@@ -27,8 +28,11 @@ export default function TopBar() {
     value: l.code 
   }));
 
+  const pathname = usePathname();
+  const isHiddenOnMobile = pathname?.startsWith('/product/') || pathname === '/categories';
+
   return (
-    <div className="bg-gray-100 border-b border-gray-200 text-xs py-2 px-2 lg:px-6">
+    <div className={`bg-gray-100 border-b border-gray-200 text-xs py-2 px-2 lg:px-6 ${isHiddenOnMobile ? 'hidden lg:block' : ''}`}>
       <div className="max-w-7xl mx-auto flex flex-row justify-between items-center text-gray-600 overflow-hidden w-full gap-2">
         {/* Left Side: Scrolling Text and Static Link on mobile */}
         <div className="flex-1 flex items-center overflow-hidden relative mr-2">
@@ -43,9 +47,9 @@ export default function TopBar() {
         
         {/* Right Side: Selectors */}
         <div className="flex items-center justify-end gap-2 lg:gap-4 flex-shrink-0 bg-gray-100 z-10 pl-2">
-          <a href="#" className="hidden lg:block hover:text-primary whitespace-nowrap">Track Order</a>
+          <a href="/orders" className="hidden lg:block hover:text-primary whitespace-nowrap">Track Order</a>
           <span className="hidden lg:inline text-gray-300">|</span>
-          <a href="#" className="hidden lg:block hover:text-primary whitespace-nowrap">Help Center</a>
+          <a href="/help" className="hidden lg:block hover:text-primary whitespace-nowrap">Help Center</a>
           <span className="hidden lg:inline text-gray-300">|</span>
           <Dropdown 
             options={currencyOptions}
