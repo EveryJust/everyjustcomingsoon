@@ -1,5 +1,6 @@
 import React from 'react';
 import Image from 'next/image';
+import MobileHero from '@/components/MobileHero';
 import TrendingProducts from '@/components/Home/TrendingProducts';
 
 import LatestProducts from '@/components/Home/LatestProducts';
@@ -15,9 +16,16 @@ export default function Home() {
     <div className="text-gray-900 font-sans">
 
       {/* Main Content Area */}
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 py-8">
-        {/* Hero Grid */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-12">
+      <main className="max-w-7xl mx-auto py-0 lg:py-8 overflow-hidden">
+        
+        {/* Mobile App-like Hero Section */}
+        <MobileHero />
+
+        {/* Content Wrapper for standard padding */}
+        <div className="px-4 sm:px-6 lg:px-4">
+
+        {/* Hero Grid (Desktop Only) */}
+        <div className="hidden lg:grid grid-cols-1 lg:grid-cols-3 gap-6 mb-12">
           
           {/* Main Banner (Spans 2 columns) */}
           <div className="lg:col-span-2 relative rounded-lg overflow-hidden h-[250px] sm:h-[400px] lg:h-[500px] shadow-lg group bg-gray-200">
@@ -112,6 +120,8 @@ export default function Home() {
 
         {/* Latest Blog */}
         <LatestBlog />
+        
+        </div>
       </main>
     </div>
   );
