@@ -8,38 +8,7 @@ import AdminDropdown from '@/components/Admin/AdminDropdown';
 import { Plus, Trash2 } from 'lucide-react';
 import { useRouter, usePathname, useSearchParams } from 'next/navigation';
 
-const productSchema = z.object({
-  name: z.string().min(2, 'Name is required'),
-  slug: z.string().min(2, 'Slug is required'),
-  description: z.string(),
-  categoryId: z.string().min(1, 'Category is required'),
-  brandId: z.string().min(1, 'Brand is required'),
-  price: z.coerce.number().min(0, 'Price must be positive'),
-  offerPrice: z.coerce.number().optional(),
-  images: z.array(z.string()).min(1, 'At least one image is required'),
-  status: z.enum(['active', 'draft']),
-  sizeVariants: z.array(z.object({
-    size: z.string().min(1, 'Size is required'),
-    sku: z.string().min(1, 'SKU is required'),
-    quantity: z.coerce.number().min(0, 'Quantity must be positive'),
-  })),
-  highlights: z.array(z.object({
-    name: z.string(),
-    value: z.string(),
-  })),
-  moreInfo: z.object({
-    manufactureInfo: z.string(),
-    importerInfo: z.string(),
-    packerInfo: z.string(),
-    netWeightValue: z.coerce.number(),
-    netWeightUnit: z.enum(['g', 'kg', 'ml', 'l']),
-    supplierInfo: z.string().optional(),
-    contactInfo: z.string().optional(),
-    legalDisclaimer: z.string().optional(),
-  })
-});
-
-type ProductFormValues = z.infer<typeof productSchema>;
+import { productSchema, type ProductFormValues } from '@/validations/product';
 
 interface ProductFormProps {
   initialData?: Partial<ProductFormValues>;
@@ -56,6 +25,9 @@ export default function ProductForm({ initialData, onSubmit, onCancel }: Product
   const validTabs = ['basic', 'media', 'variants', 'info'];
   const activeTab = validTabs.includes(tabQuery as string) ? tabQuery : 'basic';
 
+  // State for live slug uniqueness check
+  const [slugStatus, setSlugStatus] = useState<'idle' | 'checking' | 'available' | 'taken'>('idle');
+
   const handleTabChange = (tab: string) => {
     const params = new URLSearchParams(searchParams.toString());
     params.set('tab', tab);
@@ -64,10 +36,12 @@ export default function ProductForm({ initialData, onSubmit, onCancel }: Product
 
   const { register, control, handleSubmit, formState: { errors }, watch, setValue } = useForm<ProductFormValues>({
     resolver: zodResolver(productSchema),
+    mode: 'onChange',
     defaultValues: initialData || {
       images: [],
       sizeVariants: [],
       highlights: [],
+      additionalDetails: [],
       status: 'draft',
       moreInfo: {
         netWeightUnit: 'g'
@@ -75,8 +49,33 @@ export default function ProductForm({ initialData, onSubmit, onCancel }: Product
     }
   });
 
+  const watchSlug = watch('slug');
+
+  // Simulated live slug uniqueness check
+  React.useEffect(() => {
+    if (!watchSlug || watchSlug.length < 2 || errors.slug) {
+      setSlugStatus('idle');
+      return;
+    }
+
+    setSlugStatus('checking');
+    const timer = setTimeout(() => {
+      // Simulate API call delay
+      // In reality, this would be a Supabase check: 
+      // const { data } = await supabase.from('products').select('id').eq('slug', watchSlug).single();
+      if (watchSlug === 'test-product') {
+        setSlugStatus('taken');
+      } else {
+        setSlugStatus('available');
+      }
+    }, 600);
+
+    return () => clearTimeout(timer);
+  }, [watchSlug, errors.slug]);
+
   const { fields: sizeFields, append: appendSize, remove: removeSize } = useFieldArray({ control, name: 'sizeVariants' });
   const { fields: highlightFields, append: appendHighlight, remove: removeHighlight } = useFieldArray({ control, name: 'highlights' });
+  const { fields: additionalDetailFields, append: appendAdditionalDetail, remove: removeAdditionalDetail } = useFieldArray({ control, name: 'additionalDetails' });
   
   const currentImages = watch('images');
 
@@ -113,8 +112,16 @@ export default function ProductForm({ initialData, onSubmit, onCancel }: Product
               </div>
               <div>
                 <label className="block text-sm font-bold text-gray-700 mb-1">Slug</label>
-                <input {...register('slug')} className="w-full p-3 rounded-xl border border-gray-200 focus:border-[#6A43FB]/50 focus:ring-2 focus:ring-[#6A43FB]/20 outline-none transition-all shadow-sm" />
+                <div className="relative">
+                  <input {...register('slug')} className="w-full p-3 rounded-xl border border-gray-200 focus:border-[#6A43FB]/50 focus:ring-2 focus:ring-[#6A43FB]/20 outline-none transition-all shadow-sm pr-20" />
+                  <div className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center">
+                    {slugStatus === 'checking' && <span className="text-xs font-bold text-gray-400">Checking...</span>}
+                    {slugStatus === 'available' && <span className="text-xs font-bold text-green-500 bg-green-50 px-2 py-1 rounded-md">Available</span>}
+                    {slugStatus === 'taken' && <span className="text-xs font-bold text-red-500 bg-red-50 px-2 py-1 rounded-md">Taken</span>}
+                  </div>
+                </div>
                 {errors.slug && <p className="text-red-500 text-xs mt-1">{errors.slug.message}</p>}
+                {!errors.slug && slugStatus === 'taken' && <p className="text-red-500 text-xs mt-1">This slug is already in use.</p>}
               </div>
             </div>
 
@@ -230,6 +237,23 @@ export default function ProductForm({ initialData, onSubmit, onCancel }: Product
             </div>
 
             <div className="border-t border-gray-100 pt-8">
+              <div className="flex justify-between items-center mb-6">
+                <h3 className="text-xl font-bold text-gray-800">Additional Details</h3>
+                <button type="button" onClick={() => appendAdditionalDetail({ name: '', value: '' })} className="text-sm bg-[#3ED08C] hover:bg-[#32B879] transition-colors text-white px-4 py-2 rounded-xl font-bold flex items-center gap-1 shadow-md shadow-[#3ED08C]/30">
+                  <Plus size={16} /> Add Detail
+                </button>
+              </div>
+              {additionalDetailFields.map((field, index) => (
+                <div key={field.id} className="flex gap-4 mb-3">
+                  <input {...register(`additionalDetails.${index}.name`)} placeholder="Name (e.g. Care Instructions)" className="flex-1 p-3 text-sm rounded-xl border border-gray-200 outline-none focus:border-[#6A43FB]/50 transition-all" />
+                  <input {...register(`additionalDetails.${index}.value`)} placeholder="Value (e.g. Machine Wash Cold)" className="flex-1 p-3 text-sm rounded-xl border border-gray-200 outline-none focus:border-[#6A43FB]/50 transition-all" />
+                  <button type="button" onClick={() => removeAdditionalDetail(index)} className="p-3 text-red-500 hover:bg-red-50 rounded-xl transition-colors"><Trash2 size={20} /></button>
+                </div>
+              ))}
+              {additionalDetailFields.length === 0 && <p className="text-sm text-gray-400 italic">No additional details added yet.</p>}
+            </div>
+
+            <div className="border-t border-gray-100 pt-8">
               <h3 className="text-xl font-bold text-gray-800 mb-6">Fixed Information</h3>
               <div className="grid grid-cols-2 gap-6">
                 <div>
@@ -240,27 +264,33 @@ export default function ProductForm({ initialData, onSubmit, onCancel }: Product
                   <label className="block text-sm font-bold text-gray-700 mb-1">Packer Info</label>
                   <input {...register('moreInfo.packerInfo')} className="w-full p-3 rounded-xl border border-gray-200 text-sm outline-none focus:border-[#6A43FB]/50 transition-all shadow-sm" />
                 </div>
-                <div className="flex gap-3">
+                <div className="flex gap-4">
                   <div className="flex-1">
-                    <label className="block text-sm font-bold text-gray-700 mb-1">Net Weight</label>
-                    <input type="number" {...register('moreInfo.netWeightValue')} className="w-full p-3 rounded-xl border border-gray-200 text-sm outline-none focus:border-[#6A43FB]/50 transition-all shadow-sm" />
+                    <label className="block text-sm font-bold text-gray-700 mb-1">Net Weight / Volume</label>
+                    <input type="number" {...register('moreInfo.netWeightValue')} className="w-full p-3 rounded-xl border border-gray-200 text-sm outline-none focus:border-[#6A43FB]/50 transition-all shadow-sm h-[48px]" />
                   </div>
-                  <div className="w-28">
+                  <div className="w-[120px]">
                     <label className="block text-sm font-bold text-gray-700 mb-1">Unit</label>
                     <Controller
                       name="moreInfo.netWeightUnit"
                       control={control}
                       render={({ field }) => (
-                        <AdminDropdown
-                          value={field.value}
-                          onChange={field.onChange}
-                          options={[
-                            { label: 'g', value: 'g' },
-                            { label: 'kg', value: 'kg' },
-                            { label: 'ml', value: 'ml' },
-                            { label: 'l', value: 'l' }
-                          ]}
-                        />
+                        <div className="grid grid-cols-2 gap-2">
+                          {['g', 'kg', 'ml', 'l'].map((unit) => (
+                            <button
+                              key={unit}
+                              type="button"
+                              onClick={() => field.onChange(unit)}
+                              className={`py-1.5 text-xs font-bold rounded-full border transition-all flex items-center justify-center ${
+                                field.value === unit 
+                                  ? 'bg-[#6A43FB] text-white border-[#6A43FB] shadow-md shadow-[#6A43FB]/30' 
+                                  : 'bg-gray-50 text-gray-500 border-gray-200 hover:bg-gray-100 hover:border-gray-300'
+                              }`}
+                            >
+                              {unit}
+                            </button>
+                          ))}
+                        </div>
                       )}
                     />
                   </div>

@@ -4,6 +4,8 @@ import { Search, Bell, Menu, User as UserIcon, ChevronRight } from 'lucide-react
 import { User } from '@supabase/supabase-js';
 import { usePathname } from 'next/navigation';
 
+import Link from 'next/link';
+
 interface AdminNavbarProps {
   user: User | null;
   isSidebarOpen: boolean;
@@ -14,6 +16,21 @@ export default function AdminNavbar({ user, isSidebarOpen, setIsSidebarOpen }: A
   const pathname = usePathname();
   const segments = pathname.split('/').filter(p => p && p !== 'admin');
 
+  const breadcrumbs = [
+    { label: 'Dashboard', href: '/admin/dashboard' }
+  ];
+
+  let currentPath = '/admin';
+  segments.forEach((segment) => {
+    currentPath += `/${segment}`;
+    if (segment !== 'dashboard') {
+      breadcrumbs.push({
+        label: segment.replace(/-/g, ' '),
+        href: currentPath
+      });
+    }
+  });
+
   return (
     <header 
       className={`h-[90px] px-8 flex items-center justify-between fixed top-0 right-0 z-10 bg-[#F0F2F5]/90 backdrop-blur-md transition-all duration-300 ease-in-out ${
@@ -21,21 +38,23 @@ export default function AdminNavbar({ user, isSidebarOpen, setIsSidebarOpen }: A
       }`}
     >
        <div className="flex items-center gap-2">
-          {segments.length === 0 ? (
-            <span className="font-bold text-gray-800 text-lg capitalize">Dashboard</span>
-          ) : (
-            segments.map((segment, index) => {
-              const isLast = index === segments.length - 1;
-              return (
-                <React.Fragment key={index}>
-                  <span className={`capitalize ${isLast ? 'font-bold text-gray-800 text-lg' : 'font-medium text-gray-400'}`}>
-                    {segment.replace(/-/g, ' ')}
+          {breadcrumbs.map((crumb, index) => {
+            const isLast = index === breadcrumbs.length - 1;
+            return (
+              <React.Fragment key={crumb.href}>
+                {isLast ? (
+                  <span className="capitalize font-bold text-gray-800 text-lg">
+                    {crumb.label}
                   </span>
-                  {!isLast && <ChevronRight size={16} className="text-gray-400" />}
-                </React.Fragment>
-              );
-            })
-          )}
+                ) : (
+                  <Link href={crumb.href} className="capitalize font-medium text-gray-400 hover:text-[#6A43FB] transition-colors">
+                    {crumb.label}
+                  </Link>
+                )}
+                {!isLast && <ChevronRight size={16} className="text-gray-400" />}
+              </React.Fragment>
+            );
+          })}
        </div>
        
        <div className="flex items-center gap-6">
