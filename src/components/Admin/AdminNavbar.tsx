@@ -1,7 +1,8 @@
 "use client";
 import React from 'react';
-import { Search, Bell, Menu, User as UserIcon } from 'lucide-react';
+import { Search, Bell, Menu, User as UserIcon, ChevronRight } from 'lucide-react';
 import { User } from '@supabase/supabase-js';
+import { usePathname } from 'next/navigation';
 
 interface AdminNavbarProps {
   user: User | null;
@@ -10,22 +11,31 @@ interface AdminNavbarProps {
 }
 
 export default function AdminNavbar({ user, isSidebarOpen, setIsSidebarOpen }: AdminNavbarProps) {
+  const pathname = usePathname();
+  const segments = pathname.split('/').filter(p => p && p !== 'admin');
+
   return (
     <header 
       className={`h-[90px] px-8 flex items-center justify-between fixed top-0 right-0 z-10 bg-[#F0F2F5]/90 backdrop-blur-md transition-all duration-300 ease-in-out ${
         isSidebarOpen ? 'w-[calc(100%-280px)]' : 'w-[calc(100%-88px)]'
       }`}
     >
-       <div className="flex items-center gap-4">
-          <button className="bg-white text-gray-500 hover:text-gray-800 px-6 py-2.5 rounded-full text-sm font-semibold shadow-sm border border-gray-100 transition-all">
-             Global Search
-          </button>
-          <button className="bg-white text-gray-500 hover:text-gray-800 px-6 py-2.5 rounded-full text-sm font-semibold shadow-sm border border-gray-100 transition-all">
-             Filter
-          </button>
-          <button className="bg-[#3ED08C] text-white px-6 py-2.5 rounded-full text-sm font-semibold shadow-md shadow-[#3ED08C]/30 hover:bg-[#32B879] transition-all">
-             New Order
-          </button>
+       <div className="flex items-center gap-2">
+          {segments.length === 0 ? (
+            <span className="font-bold text-gray-800 text-lg capitalize">Dashboard</span>
+          ) : (
+            segments.map((segment, index) => {
+              const isLast = index === segments.length - 1;
+              return (
+                <React.Fragment key={index}>
+                  <span className={`capitalize ${isLast ? 'font-bold text-gray-800 text-lg' : 'font-medium text-gray-400'}`}>
+                    {segment.replace(/-/g, ' ')}
+                  </span>
+                  {!isLast && <ChevronRight size={16} className="text-gray-400" />}
+                </React.Fragment>
+              );
+            })
+          )}
        </div>
        
        <div className="flex items-center gap-6">
