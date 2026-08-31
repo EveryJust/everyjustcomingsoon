@@ -86,7 +86,13 @@ export default function CategoriesPage() {
             return (
               <button
                 key={category.id}
-                onClick={() => setActiveCategoryId(category.id)}
+                onClick={() => {
+                  setActiveCategoryId(category.id);
+                  const el = document.getElementById(`category-${category.id}`);
+                  if (el) {
+                    el.scrollIntoView({ behavior: 'smooth' });
+                  }
+                }}
                 className={`flex flex-col lg:flex-row items-center lg:items-start justify-center lg:justify-start py-4 lg:py-5 lg:px-6 gap-2 lg:gap-4 relative text-center lg:text-left transition-colors border-b border-gray-100/50 ${isActive ? 'bg-white' : 'hover:bg-gray-100'}`}
               >
                 {/* Active Indicator */}
@@ -107,17 +113,15 @@ export default function CategoriesPage() {
         </div>
 
         {/* Main Content Area */}
-        <div className="flex-1 bg-white overflow-y-auto p-4 lg:p-10 pb-32 lg:pb-24 min-h-[calc(100vh-72px)]">
-          {activeCategory && (
-            <div className="animate-in fade-in duration-300">
-              
-              {/* All Popular / Subcategories Section */}
-              <div>
-                <h2 className="text-lg lg:text-2xl font-bold text-gray-900 mb-5 lg:mb-8">All {activeCategory.name}</h2>
+        <div className="flex-1 bg-white overflow-y-auto p-4 lg:p-10 pb-32 lg:pb-24 h-[calc(100vh-72px)] lg:h-[calc(100vh-125px)] scroll-smooth">
+          <div className="space-y-16">
+            {categories.map((cat) => (
+              <div key={cat.id} id={`category-${cat.id}`} className="scroll-mt-6 lg:scroll-mt-10">
+                <h2 className="text-lg lg:text-2xl font-bold text-gray-900 mb-5 lg:mb-8">All {cat.name}</h2>
                 
                 <div className="grid grid-cols-3 md:grid-cols-4 xl:grid-cols-5 gap-y-8 gap-x-2 lg:gap-8">
-                  {activeCategory.subcategories?.map((sub: any, idx: number) => (
-                    <Link href={`/category/${activeCategory.slug}?sub=${sub.slug}`} key={sub.id || idx} className="flex flex-col items-center group cursor-pointer">
+                  {cat.subcategories?.map((sub: any, idx: number) => (
+                    <Link href={`/category/${cat.slug}?sub=${sub.slug}`} key={sub.id || idx} className="flex flex-col items-center group cursor-pointer">
                       <div className="w-[72px] h-[72px] lg:w-36 lg:h-36 rounded-full bg-white overflow-hidden mb-2 group-hover:shadow-md transition-all flex items-center justify-center border border-gray-100 p-1 lg:p-2">
                          <img src={sub.imageUrl || '/turbo_charger.png'} alt={sub.name} className="w-full h-full object-cover rounded-full hover:scale-105 transition-transform" />
                       </div>
@@ -127,16 +131,15 @@ export default function CategoriesPage() {
                     </Link>
                   ))}
                   
-                  {(!activeCategory.subcategories || activeCategory.subcategories.length === 0) && (
-                    <div className="col-span-full text-center py-12 text-gray-500 text-sm">
-                      No subcategories found.
+                  {(!cat.subcategories || cat.subcategories.length === 0) && (
+                    <div className="col-span-full text-center py-8 text-gray-500 text-sm">
+                      No subcategories found in {cat.name}.
                     </div>
                   )}
                 </div>
               </div>
-              
-            </div>
-          )}
+            ))}
+          </div>
         </div>
         </>
       )}
