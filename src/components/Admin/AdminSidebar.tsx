@@ -67,9 +67,20 @@ export default function AdminSidebar({ isOpen }: AdminSidebarProps) {
         {renderLink('/admin/dashboard', LayoutDashboard, 'Dashboard')}
         
         {renderSectionHeader('Product Management')}
+        {renderLink('/admin/categories', Tag, 'Categories')}
         {renderLink('/admin/products', Package, 'Products')}
         {renderLink('/admin/products/add', Plus, 'Add Product')}
-        {renderLink('/admin/brands', Tag, 'Brands')}
+        
+        {/* Brands Link with Coming Soon Badge */}
+        <Link href="/admin/brands" className={`flex items-center gap-4 py-3 text-sm rounded-r-full text-white/70 hover:text-white hover:bg-white/10 transition-all ${isOpen ? 'px-6' : 'justify-center px-0 rounded-full'}`} title="Brands">
+          <Tag size={20} className="flex-shrink-0" />
+          {isOpen && (
+            <div className="flex items-center justify-between w-full">
+              <span>Brands</span>
+              <span className="text-[9px] font-bold uppercase tracking-wider bg-[#F9BC16] text-[#1A1C29] px-2 py-0.5 rounded-full ml-2">Soon</span>
+            </div>
+          )}
+        </Link>
         
         {renderSectionHeader('User Management')}
         {renderLink('/admin/users', Users, 'Users')}

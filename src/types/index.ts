@@ -19,6 +19,7 @@ export interface Category {
   imageUrl?: string;
   parentId?: string | null;
   isActive: boolean;
+  isDeleted: boolean; // Soft delete flag
   createdAt: Date;
   updatedAt: Date;
 }
