@@ -13,13 +13,16 @@ import { createClient } from '@/utils/supabase/client';
 
 import { productSchema, type ProductFormValues } from '@/validations/product';
 
+import toast from 'react-hot-toast';
+
 interface ProductFormProps {
-  initialData?: Partial<ProductFormValues>;
+  initialData?: Partial<ProductFormValues> & { id?: string };
+  draftId?: string;
   onSubmit: (data: ProductFormValues) => void;
   onCancel: () => void;
 }
 
-export default function ProductForm({ initialData, onSubmit, onCancel }: ProductFormProps) {
+export default function ProductForm({ initialData, draftId, onSubmit, onCancel }: ProductFormProps) {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
@@ -40,7 +43,7 @@ export default function ProductForm({ initialData, onSubmit, onCancel }: Product
     defaultValues: initialData || {
       categoryIds: [],
       images: [],
-      sizeVariants: [{ size: 'Free Size', sku: '', quantity: 0 }],
+      sizeVariants: [{ size: 'Free Size', sku: '', quantity: 100 }],
       highlights: [],
       additionalDetails: [],
       status: 'draft',
@@ -53,7 +56,9 @@ export default function ProductForm({ initialData, onSubmit, onCancel }: Product
 
   const supabase = createClient();
   const [userId, setUserId] = useState<string | null>(null);
+  const [currentDraftId, setCurrentDraftId] = useState<string | null>(draftId || null);
   const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'saved' | 'error' | 'loading_draft'>('idle');
+  const [nextSkuBase, setNextSkuBase] = useState<string>('EJ-PR-001');
 
   React.useEffect(() => {
     async function initUserAndDraft() {
@@ -61,26 +66,48 @@ export default function ProductForm({ initialData, onSubmit, onCancel }: Product
       if (!user) return;
       setUserId(user.id);
 
-      // If we are not editing an existing product, check for a draft
-      if (!initialData) {
+      // Fetch next SKU base
+      const { data: skuData } = await supabase
+        .from('product_variants')
+        .select('sku')
+        .ilike('sku', 'EJ-PR-%')
+        .order('sku', { ascending: false })
+        .limit(1);
+
+      let upcomingSku = 'EJ-PR-001';
+      if (skuData && skuData.length > 0 && skuData[0].sku) {
+        const parts = skuData[0].sku.split('-');
+        if (parts.length === 3) {
+          const num = parseInt(parts[2], 10);
+          if (!isNaN(num)) {
+            upcomingSku = `EJ-PR-${String(num + 1).padStart(3, '0')}`;
+          }
+        }
+      }
+      setNextSkuBase(upcomingSku);
+
+      // If we have a specific draft ID to load
+      if (!initialData && draftId) {
         setSaveStatus('loading_draft');
         const { data: draft } = await supabase
           .from('product_drafts')
           .select('form_data')
-          .eq('user_id', user.id)
+          .eq('id', draftId)
           .single();
           
         if (draft && draft.form_data) {
-          // Keep existing values that aren't in draft, though draft should have everything
           reset({ ...draft.form_data });
           setSaveStatus('saved');
         } else {
           setSaveStatus('idle');
         }
+      } else if (!initialData && !draftId) {
+        // Set the initial SKU for new products without a draft
+        setValue('sizeVariants.0.sku', upcomingSku);
       }
     }
     initUserAndDraft();
-  }, [initialData, supabase, reset]);
+  }, [initialData, draftId, supabase, reset, setValue]);
 
   const allValues = watch();
   
@@ -90,32 +117,67 @@ export default function ProductForm({ initialData, onSubmit, onCancel }: Product
     
     setSaveStatus('saving');
     const timer = setTimeout(async () => {
-      const { error } = await supabase
-        .from('product_drafts')
-        .upsert(
-          { user_id: userId, form_data: allValues, updated_at: new Date().toISOString() },
-          { onConflict: 'user_id' } // Upsert based on the unique user_id
-        );
-        
-      if (error) {
-        console.error("Failed to save draft", error);
-        setSaveStatus('error');
+      const draftTitle = allValues.name || 'Untitled Draft';
+      
+      if (currentDraftId) {
+        // Update existing draft
+        const { error } = await supabase
+          .from('product_drafts')
+          .update({ form_data: allValues, title: draftTitle, updated_at: new Date().toISOString() })
+          .eq('id', currentDraftId);
+          
+        if (error) {
+          console.error("Failed to save draft", error);
+          setSaveStatus('error');
+        } else {
+          setSaveStatus('saved');
+        }
       } else {
-        setSaveStatus('saved');
+        // Create new draft
+        const { data, error } = await supabase
+          .from('product_drafts')
+          .insert({ user_id: userId, title: draftTitle, form_data: allValues })
+          .select('id')
+          .single();
+          
+        if (error || !data) {
+          console.error("Failed to create draft", error);
+          setSaveStatus('error');
+        } else {
+          setCurrentDraftId(data.id);
+          
+          // Optionally update URL so refreshing keeps this draft without reloading page
+          const params = new URLSearchParams(searchParams.toString());
+          params.set('draftId', data.id);
+          window.history.replaceState(null, '', `${pathname}?${params.toString()}`);
+          
+          setSaveStatus('saved');
+        }
       }
     }, 1500);
 
     return () => clearTimeout(timer);
-  }, [allValues, userId, dirtyFields, supabase]);
+  }, [allValues, userId, currentDraftId, dirtyFields, searchParams, pathname, supabase]);
 
   const watchSlug = watch('slug');
   const watchName = watch('name');
   const isFreeSize = watch('isFreeSize');
 
+  const generateVariantSku = (index: number) => {
+    const parts = nextSkuBase.split('-');
+    if (parts.length === 3) {
+      const num = parseInt(parts[2], 10);
+      if (!isNaN(num)) {
+        return `EJ-PR-${String(num + index).padStart(3, '0')}`;
+      }
+    }
+    return `${nextSkuBase}-${index}`;
+  };
+
   const handleFreeSizeToggle = (checked: boolean) => {
     setValue('isFreeSize', checked, { shouldValidate: true, shouldDirty: true });
     if (checked) {
-      setValue('sizeVariants', [{ size: 'Free Size', sku: '', quantity: 0 }], { shouldValidate: true, shouldDirty: true });
+      setValue('sizeVariants', [{ size: 'Free Size', sku: generateVariantSku(0), quantity: 100 }], { shouldValidate: true, shouldDirty: true });
     } else {
       setValue('sizeVariants', [], { shouldValidate: true, shouldDirty: true });
     }
@@ -132,7 +194,7 @@ export default function ProductForm({ initialData, onSubmit, onCancel }: Product
   const [slugStatus, setSlugStatus] = useState<'idle' | 'checking' | 'available' | 'taken'>('idle');
   const [slugSuggestions, setSlugSuggestions] = useState<string[]>([]);
 
-  // Simulated live slug uniqueness check
+  // Live slug uniqueness check
   React.useEffect(() => {
     if (!watchSlug || watchSlug.length < 2 || errors.slug) {
       setSlugStatus('idle');
@@ -141,19 +203,33 @@ export default function ProductForm({ initialData, onSubmit, onCancel }: Product
     }
 
     setSlugStatus('checking');
-    const timer = setTimeout(() => {
-      // Simulate API call delay
-      if (watchSlug === 'test-product') {
+    const timer = setTimeout(async () => {
+      let query = supabase.from('products').select('id').eq('slug', watchSlug);
+      
+      // If we are editing, exclude the current product's ID from the check
+      if (initialData?.id) {
+        query = query.neq('id', initialData.id);
+      }
+
+      const { data, error } = await query;
+      
+      if (error) {
+        console.error("Slug check error:", error);
+        setSlugStatus('idle');
+        return;
+      }
+
+      if (data && data.length > 0) {
         setSlugStatus('taken');
         setSlugSuggestions(generateSlugSuggestions(watchSlug));
       } else {
         setSlugStatus('available');
         setSlugSuggestions([]);
       }
-    }, 600);
+    }, 500);
 
     return () => clearTimeout(timer);
-  }, [watchSlug, errors.slug]);
+  }, [watchSlug, errors.slug, initialData?.id, supabase]);
 
   const { fields: sizeFields, append: appendSize, remove: removeSize } = useFieldArray({ control, name: 'sizeVariants' });
   const { fields: highlightFields, append: appendHighlight, remove: removeHighlight } = useFieldArray({ control, name: 'highlights' });
@@ -161,8 +237,21 @@ export default function ProductForm({ initialData, onSubmit, onCancel }: Product
   
   const currentImages = watch('images');
 
+  const onError = (errors: any) => {
+    toast.error('Please fix the missing or invalid fields before saving.');
+    // Find the first tab with an error and switch to it
+    const errorKeys = Object.keys(errors);
+    if (errorKeys.includes('name') || errorKeys.includes('slug') || errorKeys.includes('price') || errorKeys.includes('categoryIds')) {
+      handleTabChange('basic');
+    } else if (errorKeys.includes('images')) {
+      handleTabChange('media');
+    } else if (errorKeys.includes('sizeVariants')) {
+      handleTabChange('variants');
+    }
+  };
+
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col">
+    <form onSubmit={handleSubmit(onSubmit, onError)} className="flex flex-col">
       {/* Tabs as Pill Buttons */}
       <div className="flex gap-3 mb-6">
         {['basic', 'media', 'variants', 'info'].map((tab) => (
@@ -319,7 +408,7 @@ export default function ProductForm({ initialData, onSubmit, onCancel }: Product
             
             {!isFreeSize && (
               <div className="flex justify-end mb-4">
-                <button type="button" onClick={() => appendSize({ size: '', sku: '', quantity: 0 })} className="text-sm bg-[#3ED08C] hover:bg-[#32B879] transition-colors text-white px-4 py-2 rounded-xl font-bold flex items-center gap-1 shadow-md shadow-[#3ED08C]/30">
+                <button type="button" onClick={() => appendSize({ size: '', sku: generateVariantSku(sizeFields.length), quantity: 100 })} className="text-sm bg-[#3ED08C] hover:bg-[#32B879] transition-colors text-white px-4 py-2 rounded-xl font-bold flex items-center gap-1 shadow-md shadow-[#3ED08C]/30">
                    <Plus size={16} /> Add Size Variant
                 </button>
               </div>

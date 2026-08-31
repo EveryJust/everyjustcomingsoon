@@ -1,13 +1,13 @@
 import React from 'react';
-import { DollarSign, Users, ShoppingBag, ArrowUpRight } from 'lucide-react';
+import { IndianRupee, Users, ShoppingBag, ArrowUpRight } from 'lucide-react';
 
 export default function SummaryCards() {
   const metrics = [
     {
       title: 'Total Revenue',
-      value: '$24,560',
+      value: '₹24,560',
       change: '+14%',
-      icon: <DollarSign size={24} />,
+      icon: <IndianRupee size={24} />,
       gradient: 'from-[#F9D017] to-[#F1A900]',
     },
     {

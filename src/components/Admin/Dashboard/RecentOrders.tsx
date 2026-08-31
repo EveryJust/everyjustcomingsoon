@@ -2,10 +2,10 @@ import React from 'react';
 
 export default function RecentOrders() {
   const orders = [
-    { id: '#ORD-001', customer: 'John Doe', status: 'Delivered', amount: '$120.00', date: 'Oct 24, 2023' },
-    { id: '#ORD-002', customer: 'Jane Smith', status: 'Processing', amount: '$45.50', date: 'Oct 23, 2023' },
-    { id: '#ORD-003', customer: 'Alice Johnson', status: 'Shipped', amount: '$299.99', date: 'Oct 23, 2023' },
-    { id: '#ORD-004', customer: 'Bob Brown', status: 'Cancelled', amount: '$89.00', date: 'Oct 22, 2023' },
+    { id: '#ORD-001', customer: 'John Doe', status: 'Delivered', amount: '₹120.00', date: 'Oct 24, 2023' },
+    { id: '#ORD-002', customer: 'Jane Smith', status: 'Processing', amount: '₹45.50', date: 'Oct 23, 2023' },
+    { id: '#ORD-003', customer: 'Alice Johnson', status: 'Shipped', amount: '₹299.99', date: 'Oct 23, 2023' },
+    { id: '#ORD-004', customer: 'Bob Brown', status: 'Cancelled', amount: '₹89.00', date: 'Oct 22, 2023' },
   ];
 
   const getStatusColor = (status: string) => {

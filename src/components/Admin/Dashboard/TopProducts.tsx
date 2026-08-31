@@ -3,10 +3,10 @@ import { ShoppingBag } from 'lucide-react';
 
 export default function TopProducts() {
   const products = [
-    { name: 'Wireless Headphones', category: 'Electronics', price: '$120', sales: 345, color: 'bg-purple-500' },
-    { name: 'Cotton T-Shirt', category: 'Clothing', price: '$25', sales: 290, color: 'bg-green-500' },
-    { name: 'Smart Watch', category: 'Electronics', price: '$199', sales: 210, color: 'bg-yellow-500' },
-    { name: 'Running Shoes', category: 'Footwear', price: '$85', sales: 150, color: 'bg-pink-500' },
+    { name: 'Wireless Headphones', category: 'Electronics', price: '₹120', sales: 345, color: 'bg-purple-500' },
+    { name: 'Cotton T-Shirt', category: 'Clothing', price: '₹25', sales: 290, color: 'bg-green-500' },
+    { name: 'Smart Watch', category: 'Electronics', price: '₹199', sales: 210, color: 'bg-yellow-500' },
+    { name: 'Running Shoes', category: 'Footwear', price: '₹85', sales: 150, color: 'bg-pink-500' },
   ];
 
   return (
