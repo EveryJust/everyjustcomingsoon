@@ -14,17 +14,21 @@ interface CategoryListProps {
 export default function CategoryList({ categories, onToggleActive, onDelete }: CategoryListProps) {
   const [deleteCategoryId, setDeleteCategoryId] = useState<string | null>(null);
 
-  // Build a tree from flat categories list
-  const buildTree = (cats: Category[], parentId: string | null = null): (Category & { children: any[] })[] => {
-    return cats
-      .filter(c => c.parentId === parentId)
-      .map(c => ({
-        ...c,
-        children: buildTree(cats, c.id)
-      }));
+  // Safely build a tree even if some parents are filtered out
+  const activeCategories = categories.filter(c => !c.isDeleted);
+  const activeIds = new Set(activeCategories.map(c => c.id));
+  
+  // Roots are either nodes with no parent, or nodes whose parent is not in the current filtered list
+  const rootCategories = activeCategories.filter(c => !c.parentId || !activeIds.has(c.parentId));
+
+  const buildTreeSafe = (cats: Category[], currentRoots: Category[]): (Category & { children: any[] })[] => {
+    return currentRoots.map(root => ({
+      ...root,
+      children: buildTreeSafe(cats, cats.filter(c => c.parentId === root.id))
+    }));
   };
 
-  const categoryTree = buildTree(categories.filter(c => !c.isDeleted));
+  const categoryTree = buildTreeSafe(activeCategories, rootCategories);
 
   const renderCategoryRow = (category: any, depth = 0) => {
     return (
@@ -65,7 +69,7 @@ export default function CategoryList({ categories, onToggleActive, onDelete }: C
               </button>
               
               <Link 
-                href={`/admin/categories/edit/${category.id}`}
+                href={`/admin/categories/edit/${category.slug}`}
                 className="p-2 text-gray-500 hover:text-blue-500 hover:bg-blue-50 rounded-lg transition-colors"
               >
                 <Edit2 size={18} />

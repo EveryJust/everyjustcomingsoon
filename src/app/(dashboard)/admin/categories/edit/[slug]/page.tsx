@@ -1,22 +1,45 @@
 "use client";
-import React, { useEffect, useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import CategoryForm from '@/components/Admin/Categories/CategoryForm';
+import { createClient } from '@/utils/supabase/client';
 
 export default function EditCategoryPage() {
   const router = useRouter();
   const params = useParams();
   const [categoryData, setCategoryData] = useState<any>(null);
   const [parentCategories, setParentCategories] = useState<{id: string, name: string}[]>([]);
+  const supabase = createClient();
 
   useEffect(() => {
-    // TODO: Fetch real category data and parent categories from Supabase using params.id
-    // setCategoryData(data);
-    // setParentCategories(parentsData);
-  }, [params.id]);
+    const fetchCategoryAndParents = async () => {
+      // 1. Fetch the category by slug
+      const { data: catData, error: catError } = await supabase
+        .from('categories')
+        .select('*')
+        .eq('slug', params.slug)
+        .single();
+        
+      if (catData) setCategoryData(catData);
+      
+      // 2. Fetch potential parent categories
+      const { data: parentData } = await supabase
+        .from('categories')
+        .select('id, name')
+        .is('parentId', null)
+        .neq('slug', params.slug); // Prevent setting itself as parent
+        
+      if (parentData) setParentCategories(parentData);
+    };
+    
+    if (params.slug) {
+      fetchCategoryAndParents();
+    }
+  }, [params.slug]);
 
   const handleSubmit = async (data: any) => {
-    console.log("Updating category:", params.id, data);
+    if (!categoryData) return;
+    console.log("Updating category:", categoryData.id, data);
     // TODO: Supabase update logic
     router.push('/admin/categories');
   };
