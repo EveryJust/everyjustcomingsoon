@@ -159,7 +159,10 @@ export default function CategoryForm({ initialData, onSubmit, onCancel, categori
         </div>
 
         <div>
-          <label className="block text-sm font-bold text-gray-700 mb-1">Category Image</label>
+          <div className="flex items-center gap-3 mb-1">
+            <label className="block text-sm font-bold text-gray-700">Category Image</label>
+            <span className="text-[10px] font-bold uppercase tracking-wider bg-gray-100 text-gray-500 px-2 py-0.5 rounded-full">Optional</span>
+          </div>
           <p className="text-xs text-gray-400 mb-4">Upload a transparent PNG to be displayed on category cards.</p>
           <SingleImageUploader 
             image={currentImage}
