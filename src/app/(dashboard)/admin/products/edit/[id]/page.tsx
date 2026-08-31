@@ -38,7 +38,7 @@ export default function EditProductPage() {
          <p className="text-sm text-gray-500 font-medium mt-1">Update the details for this item.</p>
       </div>
       
-      <div className="bg-white rounded-3xl p-6 shadow-[0_8px_30px_rgb(0,0,0,0.04)] h-[700px]">
+      <div className="mt-8">
         <ProductForm 
           initialData={productData}
           onSubmit={handleSubmit} 

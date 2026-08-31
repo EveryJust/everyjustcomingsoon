@@ -1,9 +1,10 @@
 "use client";
 import React, { useState } from 'react';
-import { useForm, useFieldArray } from 'react-hook-form';
+import { useForm, useFieldArray, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import ImageUploader from './ImageUploader';
+import AdminDropdown from '@/components/Admin/AdminDropdown';
 import { Plus, Trash2 } from 'lucide-react';
 
 const productSchema = z.object({
@@ -31,9 +32,9 @@ const productSchema = z.object({
     packerInfo: z.string(),
     netWeightValue: z.coerce.number(),
     netWeightUnit: z.enum(['g', 'kg', 'ml', 'l']),
-    supplierInfo: z.string(),
-    contactInfo: z.string(),
-    legalDisclaimer: z.string(),
+    supplierInfo: z.string().optional(),
+    contactInfo: z.string().optional(),
+    legalDisclaimer: z.string().optional(),
   })
 });
 
@@ -67,17 +68,17 @@ export default function ProductForm({ initialData, onSubmit, onCancel }: Product
   const currentImages = watch('images');
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col h-full">
-      {/* Tabs */}
-      <div className="flex border-b border-gray-200 mb-6">
+    <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col">
+      {/* Tabs as Pill Buttons */}
+      <div className="flex gap-3 mb-6">
         {['basic', 'media', 'variants', 'info'].map((tab) => (
           <button
             key={tab}
             type="button"
-            className={`px-6 py-3 font-semibold text-sm capitalize transition-colors ${
+            className={`px-6 py-2.5 rounded-full font-bold text-sm capitalize transition-all ${
               activeTab === tab 
-                ? 'border-b-2 border-[#6A43FB] text-[#6A43FB]' 
-                : 'text-gray-500 hover:text-gray-700'
+                ? 'bg-[#6A43FB] text-white shadow-lg shadow-[#6A43FB]/30 scale-105' 
+                : 'bg-white text-gray-500 hover:bg-gray-50 border border-gray-200'
             }`}
             onClick={() => setActiveTab(tab as any)}
           >
@@ -86,54 +87,65 @@ export default function ProductForm({ initialData, onSubmit, onCancel }: Product
         ))}
       </div>
 
-      <div className="flex-1 overflow-y-auto pr-4 space-y-6">
+      {/* Content Wrapped in a Native Card */}
+      <div className="bg-white rounded-3xl p-8 shadow-sm border border-gray-100 mb-8">
         {/* BASIC TAB */}
         {activeTab === 'basic' && (
-          <div className="space-y-4">
-            <div className="grid grid-cols-2 gap-4">
+          <div className="space-y-6">
+            <div className="grid grid-cols-2 gap-6">
               <div>
                 <label className="block text-sm font-bold text-gray-700 mb-1">Product Name</label>
-                <input {...register('name')} className="w-full p-2.5 rounded-lg border border-gray-300 focus:ring-2 focus:ring-[#6A43FB]/20 outline-none" />
+                <input {...register('name')} className="w-full p-3 rounded-xl border border-gray-200 focus:border-[#6A43FB]/50 focus:ring-2 focus:ring-[#6A43FB]/20 outline-none transition-all shadow-sm" />
                 {errors.name && <p className="text-red-500 text-xs mt-1">{errors.name.message}</p>}
               </div>
               <div>
                 <label className="block text-sm font-bold text-gray-700 mb-1">Slug</label>
-                <input {...register('slug')} className="w-full p-2.5 rounded-lg border border-gray-300 focus:ring-2 focus:ring-[#6A43FB]/20 outline-none" />
+                <input {...register('slug')} className="w-full p-3 rounded-xl border border-gray-200 focus:border-[#6A43FB]/50 focus:ring-2 focus:ring-[#6A43FB]/20 outline-none transition-all shadow-sm" />
                 {errors.slug && <p className="text-red-500 text-xs mt-1">{errors.slug.message}</p>}
               </div>
             </div>
 
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-2 gap-6">
               <div>
                 <label className="block text-sm font-bold text-gray-700 mb-1">Price</label>
-                <input type="number" step="0.01" {...register('price')} className="w-full p-2.5 rounded-lg border border-gray-300 outline-none" />
+                <input type="number" step="0.01" {...register('price')} className="w-full p-3 rounded-xl border border-gray-200 focus:border-[#6A43FB]/50 focus:ring-2 focus:ring-[#6A43FB]/20 outline-none transition-all shadow-sm" />
               </div>
               <div>
                 <label className="block text-sm font-bold text-gray-700 mb-1">Offer Price</label>
-                <input type="number" step="0.01" {...register('offerPrice')} className="w-full p-2.5 rounded-lg border border-gray-300 outline-none" />
+                <input type="number" step="0.01" {...register('offerPrice')} className="w-full p-3 rounded-xl border border-gray-200 focus:border-[#6A43FB]/50 focus:ring-2 focus:ring-[#6A43FB]/20 outline-none transition-all shadow-sm" />
               </div>
             </div>
 
             <div>
               <label className="block text-sm font-bold text-gray-700 mb-1">Description</label>
-              <textarea {...register('description')} rows={4} className="w-full p-2.5 rounded-lg border border-gray-300 outline-none" />
+              <textarea {...register('description')} rows={4} className="w-full p-3 rounded-xl border border-gray-200 focus:border-[#6A43FB]/50 focus:ring-2 focus:ring-[#6A43FB]/20 outline-none transition-all shadow-sm" />
             </div>
             
-            <div className="grid grid-cols-3 gap-4">
+            <div className="grid grid-cols-3 gap-6">
               <div>
                 <label className="block text-sm font-bold text-gray-700 mb-1">Category ID</label>
-                <input {...register('categoryId')} className="w-full p-2.5 rounded-lg border border-gray-300 outline-none" />
+                <input {...register('categoryId')} className="w-full p-3 rounded-xl border border-gray-200 focus:border-[#6A43FB]/50 focus:ring-2 focus:ring-[#6A43FB]/20 outline-none transition-all shadow-sm" />
               </div>
               <div>
                 <label className="block text-sm font-bold text-gray-700 mb-1">Brand ID</label>
-                <input {...register('brandId')} className="w-full p-2.5 rounded-lg border border-gray-300 outline-none" />
+                <input {...register('brandId')} className="w-full p-3 rounded-xl border border-gray-200 focus:border-[#6A43FB]/50 focus:ring-2 focus:ring-[#6A43FB]/20 outline-none transition-all shadow-sm" />
               </div>
               <div>
                 <label className="block text-sm font-bold text-gray-700 mb-1">Status</label>
-                <select {...register('status')} className="w-full p-2.5 rounded-lg border border-gray-300 outline-none">
-                  <option value="draft">Draft</option>
-                  <option value="active">Active (Listed)</option>
-                </select>
+                <Controller
+                  name="status"
+                  control={control}
+                  render={({ field }) => (
+                    <AdminDropdown
+                      value={field.value}
+                      onChange={field.onChange}
+                      options={[
+                        { label: 'Draft', value: 'draft' },
+                        { label: 'Active (Listed)', value: 'active' }
+                      ]}
+                    />
+                  )}
+                />
               </div>
             </div>
           </div>
@@ -142,7 +154,7 @@ export default function ProductForm({ initialData, onSubmit, onCancel }: Product
         {/* MEDIA TAB */}
         {activeTab === 'media' && (
           <div>
-             <h3 className="text-lg font-bold text-gray-800 mb-4">Product Images</h3>
+             <h3 className="text-xl font-bold text-gray-800 mb-6">Product Images</h3>
              <ImageUploader 
                images={currentImages} 
                onChange={(urls) => setValue('images', urls, { shouldValidate: true })} 
@@ -154,29 +166,29 @@ export default function ProductForm({ initialData, onSubmit, onCancel }: Product
         {/* VARIANTS TAB */}
         {activeTab === 'variants' && (
           <div>
-            <div className="flex justify-between items-center mb-4">
-              <h3 className="text-lg font-bold text-gray-800">Size Variants</h3>
-              <button type="button" onClick={() => appendSize({ size: '', sku: '', quantity: 0 })} className="text-sm bg-[#E6F9F0] text-[#3ED08C] px-3 py-1.5 rounded-lg font-bold flex items-center gap-1">
+            <div className="flex justify-between items-center mb-6">
+              <h3 className="text-xl font-bold text-gray-800">Size Variants</h3>
+              <button type="button" onClick={() => appendSize({ size: '', sku: '', quantity: 0 })} className="text-sm bg-[#3ED08C] hover:bg-[#32B879] transition-colors text-white px-4 py-2 rounded-xl font-bold flex items-center gap-1 shadow-md shadow-[#3ED08C]/30">
                  <Plus size={16} /> Add Size
               </button>
             </div>
             
             {sizeFields.map((field, index) => (
-              <div key={field.id} className="flex items-end gap-4 mb-4 bg-gray-50 p-4 rounded-xl border border-gray-100">
+              <div key={field.id} className="flex items-end gap-4 mb-4 bg-gray-50/50 p-4 rounded-2xl border border-gray-100 transition-all hover:border-gray-200">
                 <div className="flex-1">
                   <label className="block text-xs font-bold text-gray-500 mb-1">Size</label>
-                  <input {...register(`sizeVariants.${index}.size`)} placeholder="e.g. XL, 10, One Size" className="w-full p-2 text-sm rounded border border-gray-300" />
+                  <input {...register(`sizeVariants.${index}.size`)} placeholder="e.g. XL, 10, One Size" className="w-full p-2.5 text-sm rounded-lg border border-gray-200 outline-none focus:border-[#6A43FB]/50" />
                 </div>
                 <div className="flex-1">
                   <label className="block text-xs font-bold text-gray-500 mb-1">SKU</label>
-                  <input {...register(`sizeVariants.${index}.sku`)} placeholder="SKU-123" className="w-full p-2 text-sm rounded border border-gray-300" />
+                  <input {...register(`sizeVariants.${index}.sku`)} placeholder="SKU-123" className="w-full p-2.5 text-sm rounded-lg border border-gray-200 outline-none focus:border-[#6A43FB]/50" />
                 </div>
                 <div className="flex-1">
                   <label className="block text-xs font-bold text-gray-500 mb-1">Quantity</label>
-                  <input type="number" {...register(`sizeVariants.${index}.quantity`)} className="w-full p-2 text-sm rounded border border-gray-300" />
+                  <input type="number" {...register(`sizeVariants.${index}.quantity`)} className="w-full p-2.5 text-sm rounded-lg border border-gray-200 outline-none focus:border-[#6A43FB]/50" />
                 </div>
-                <button type="button" onClick={() => removeSize(index)} className="p-2 text-red-500 hover:bg-red-50 rounded">
-                  <Trash2 size={18} />
+                <button type="button" onClick={() => removeSize(index)} className="p-2.5 text-red-500 hover:bg-red-50 hover:text-red-600 rounded-lg transition-colors">
+                  <Trash2 size={20} />
                 </button>
               </div>
             ))}
@@ -186,52 +198,63 @@ export default function ProductForm({ initialData, onSubmit, onCancel }: Product
 
         {/* INFO TAB */}
         {activeTab === 'info' && (
-          <div className="space-y-6">
+          <div className="space-y-8">
             <div>
-              <div className="flex justify-between items-center mb-4">
-                <h3 className="text-lg font-bold text-gray-800">Highlights</h3>
-                <button type="button" onClick={() => appendHighlight({ name: '', value: '' })} className="text-sm bg-[#E6F9F0] text-[#3ED08C] px-3 py-1.5 rounded-lg font-bold flex items-center gap-1">
+              <div className="flex justify-between items-center mb-6">
+                <h3 className="text-xl font-bold text-gray-800">Highlights</h3>
+                <button type="button" onClick={() => appendHighlight({ name: '', value: '' })} className="text-sm bg-[#3ED08C] hover:bg-[#32B879] transition-colors text-white px-4 py-2 rounded-xl font-bold flex items-center gap-1 shadow-md shadow-[#3ED08C]/30">
                   <Plus size={16} /> Add Highlight
                 </button>
               </div>
               {highlightFields.map((field, index) => (
-                <div key={field.id} className="flex gap-4 mb-2">
-                  <input {...register(`highlights.${index}.name`)} placeholder="Name (e.g. Material)" className="flex-1 p-2 text-sm rounded border border-gray-300" />
-                  <input {...register(`highlights.${index}.value`)} placeholder="Value (e.g. 100% Cotton)" className="flex-1 p-2 text-sm rounded border border-gray-300" />
-                  <button type="button" onClick={() => removeHighlight(index)} className="p-2 text-red-500"><Trash2 size={18} /></button>
+                <div key={field.id} className="flex gap-4 mb-3">
+                  <input {...register(`highlights.${index}.name`)} placeholder="Name (e.g. Material)" className="flex-1 p-3 text-sm rounded-xl border border-gray-200 outline-none focus:border-[#6A43FB]/50 transition-all" />
+                  <input {...register(`highlights.${index}.value`)} placeholder="Value (e.g. 100% Cotton)" className="flex-1 p-3 text-sm rounded-xl border border-gray-200 outline-none focus:border-[#6A43FB]/50 transition-all" />
+                  <button type="button" onClick={() => removeHighlight(index)} className="p-3 text-red-500 hover:bg-red-50 rounded-xl transition-colors"><Trash2 size={20} /></button>
                 </div>
               ))}
+              {highlightFields.length === 0 && <p className="text-sm text-gray-400 italic">No highlights added yet.</p>}
             </div>
 
-            <div className="border-t border-gray-200 pt-6">
-              <h3 className="text-lg font-bold text-gray-800 mb-4">Fixed Information</h3>
-              <div className="grid grid-cols-2 gap-4">
+            <div className="border-t border-gray-100 pt-8">
+              <h3 className="text-xl font-bold text-gray-800 mb-6">Fixed Information</h3>
+              <div className="grid grid-cols-2 gap-6">
                 <div>
                   <label className="block text-sm font-bold text-gray-700 mb-1">Manufacture Info</label>
-                  <input {...register('moreInfo.manufactureInfo')} className="w-full p-2.5 rounded-lg border border-gray-300 text-sm" />
+                  <input {...register('moreInfo.manufactureInfo')} className="w-full p-3 rounded-xl border border-gray-200 text-sm outline-none focus:border-[#6A43FB]/50 transition-all shadow-sm" />
                 </div>
                 <div>
                   <label className="block text-sm font-bold text-gray-700 mb-1">Packer Info</label>
-                  <input {...register('moreInfo.packerInfo')} className="w-full p-2.5 rounded-lg border border-gray-300 text-sm" />
+                  <input {...register('moreInfo.packerInfo')} className="w-full p-3 rounded-xl border border-gray-200 text-sm outline-none focus:border-[#6A43FB]/50 transition-all shadow-sm" />
                 </div>
-                <div className="flex gap-2">
+                <div className="flex gap-3">
                   <div className="flex-1">
                     <label className="block text-sm font-bold text-gray-700 mb-1">Net Weight</label>
-                    <input type="number" {...register('moreInfo.netWeightValue')} className="w-full p-2.5 rounded-lg border border-gray-300 text-sm" />
+                    <input type="number" {...register('moreInfo.netWeightValue')} className="w-full p-3 rounded-xl border border-gray-200 text-sm outline-none focus:border-[#6A43FB]/50 transition-all shadow-sm" />
                   </div>
-                  <div className="w-24">
+                  <div className="w-28">
                     <label className="block text-sm font-bold text-gray-700 mb-1">Unit</label>
-                    <select {...register('moreInfo.netWeightUnit')} className="w-full p-2.5 rounded-lg border border-gray-300 text-sm">
-                      <option value="g">g</option>
-                      <option value="kg">kg</option>
-                      <option value="ml">ml</option>
-                      <option value="l">l</option>
-                    </select>
+                    <Controller
+                      name="moreInfo.netWeightUnit"
+                      control={control}
+                      render={({ field }) => (
+                        <AdminDropdown
+                          value={field.value}
+                          onChange={field.onChange}
+                          options={[
+                            { label: 'g', value: 'g' },
+                            { label: 'kg', value: 'kg' },
+                            { label: 'ml', value: 'ml' },
+                            { label: 'l', value: 'l' }
+                          ]}
+                        />
+                      )}
+                    />
                   </div>
                 </div>
                 <div>
                    <label className="block text-sm font-bold text-gray-700 mb-1">Legal Disclaimer</label>
-                   <textarea {...register('moreInfo.legalDisclaimer')} rows={2} className="w-full p-2.5 rounded-lg border border-gray-300 text-sm" />
+                   <textarea {...register('moreInfo.legalDisclaimer')} rows={2} className="w-full p-3 rounded-xl border border-gray-200 text-sm outline-none focus:border-[#6A43FB]/50 transition-all shadow-sm" />
                 </div>
               </div>
             </div>
@@ -239,11 +262,12 @@ export default function ProductForm({ initialData, onSubmit, onCancel }: Product
         )}
       </div>
 
-      <div className="mt-8 pt-4 border-t border-gray-200 flex justify-end gap-4">
-        <button type="button" onClick={onCancel} className="px-6 py-2.5 rounded-full font-bold text-gray-600 hover:bg-gray-100 transition-colors">
+      {/* Floating Footer Actions */}
+      <div className="flex justify-end gap-4">
+        <button type="button" onClick={onCancel} className="px-8 py-3 rounded-xl font-bold text-gray-600 bg-white border border-gray-200 hover:bg-gray-50 transition-colors shadow-sm">
           Cancel
         </button>
-        <button type="submit" className="px-6 py-2.5 rounded-full font-bold text-white bg-[#6A43FB] hover:bg-[#5926EC] transition-colors shadow-lg shadow-[#6A43FB]/30">
+        <button type="submit" className="px-8 py-3 rounded-xl font-bold text-white bg-[#6A43FB] hover:bg-[#5926EC] transition-colors shadow-lg shadow-[#6A43FB]/30">
           Save Product
         </button>
       </div>

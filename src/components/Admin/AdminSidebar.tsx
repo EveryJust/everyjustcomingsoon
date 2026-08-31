@@ -22,7 +22,12 @@ export default function AdminSidebar({ isOpen }: AdminSidebarProps) {
   };
 
   const renderLink = (href: string, Icon: React.ElementType, label: string) => {
-    const isActive = pathname === href || pathname.startsWith(href + '/');
+    let isActive = pathname === href;
+    
+    // Special case: Keep "Products" highlighted when editing a product (but NOT when adding, since Add has its own link)
+    if (href === '/admin/products' && pathname.startsWith('/admin/products/edit/')) {
+      isActive = true;
+    }
     
     let className = `flex items-center gap-4 py-3 text-sm rounded-r-full text-white/70 hover:text-white hover:bg-white/10 transition-all ${isOpen ? 'px-6' : 'justify-center px-0 rounded-full'}`;
     
