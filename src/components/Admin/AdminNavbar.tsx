@@ -11,7 +11,11 @@ interface AdminNavbarProps {
 
 export default function AdminNavbar({ user, isSidebarOpen, setIsSidebarOpen }: AdminNavbarProps) {
   return (
-    <header className="h-[90px] px-8 flex items-center justify-between sticky top-0 z-10 bg-[#F0F2F5]/90 backdrop-blur-md">
+    <header 
+      className={`h-[90px] px-8 flex items-center justify-between fixed top-0 right-0 z-10 bg-[#F0F2F5]/90 backdrop-blur-md transition-all duration-300 ease-in-out ${
+        isSidebarOpen ? 'w-[calc(100%-280px)]' : 'w-[calc(100%-88px)]'
+      }`}
+    >
        <div className="flex items-center gap-4">
           <button className="bg-white text-gray-500 hover:text-gray-800 px-6 py-2.5 rounded-full text-sm font-semibold shadow-sm border border-gray-100 transition-all">
              Global Search

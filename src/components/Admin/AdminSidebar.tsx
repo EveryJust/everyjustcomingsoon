@@ -1,6 +1,6 @@
 "use client";
 import Link from 'next/link';
-import { Home, Shield, Lock, DollarSign, Settings } from 'lucide-react';
+import { LayoutDashboard, Users, Tag, Package, Settings } from 'lucide-react';
 
 interface AdminSidebarProps {
   isOpen: boolean;
@@ -34,20 +34,20 @@ export default function AdminSidebar({ isOpen }: AdminSidebarProps) {
 
       <nav className={`flex-1 space-y-1 font-medium ${isOpen ? 'px-4' : 'px-2'}`}>
         <Link href="/admin/dashboard" className={`flex items-center gap-4 py-4 rounded-r-full text-white/70 hover:text-white hover:bg-white/10 transition-all ${isOpen ? 'px-6' : 'justify-center px-0 rounded-full'}`} title="Dashboard">
-          <Home size={20} className="flex-shrink-0" />
+          <LayoutDashboard size={20} className="flex-shrink-0" />
           {isOpen && <span className="whitespace-nowrap">Dashboard</span>}
         </Link>
         <Link href="/admin/users" className={`flex items-center gap-4 py-4 rounded-r-full bg-[#4611C8] shadow-inner text-white transition-all relative ${isOpen ? 'px-6' : 'justify-center px-0 rounded-full'}`} title="Users">
            <div className={`absolute left-0 top-0 bottom-0 bg-[#F9BC16] ${isOpen ? 'w-1 rounded-r-full' : 'w-full h-full rounded-full opacity-20'}`}></div>
-          <Shield size={20} className="flex-shrink-0 relative z-10" />
+          <Users size={20} className="flex-shrink-0 relative z-10" />
           {isOpen && <span className="whitespace-nowrap relative z-10">Users</span>}
         </Link>
         <Link href="/admin/brands" className={`flex items-center gap-4 py-4 rounded-r-full text-white/70 hover:text-white hover:bg-white/10 transition-all ${isOpen ? 'px-6' : 'justify-center px-0 rounded-full'}`} title="Brands">
-          <Lock size={20} className="flex-shrink-0" />
+          <Tag size={20} className="flex-shrink-0" />
           {isOpen && <span className="whitespace-nowrap">Brands</span>}
         </Link>
         <Link href="/admin/products" className={`flex items-center gap-4 py-4 rounded-r-full text-white/70 hover:text-white hover:bg-white/10 transition-all ${isOpen ? 'px-6' : 'justify-center px-0 rounded-full'}`} title="Products">
-          <DollarSign size={20} className="flex-shrink-0" />
+          <Package size={20} className="flex-shrink-0" />
           {isOpen && <span className="whitespace-nowrap">Products</span>}
         </Link>
         <Link href="#" className={`flex items-center gap-4 py-4 rounded-r-full text-white/70 hover:text-white hover:bg-white/10 transition-all ${isOpen ? 'px-6' : 'justify-center px-0 rounded-full'}`} title="Settings">

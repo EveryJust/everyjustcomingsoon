@@ -18,7 +18,7 @@ export default function AdminLayoutWrapper({
       <AdminSidebar isOpen={isSidebarOpen} />
       
       <main 
-        className={`flex-1 transition-all duration-300 ease-in-out ${isSidebarOpen ? 'ml-[280px]' : 'ml-[88px]'} bg-[#F0F2F5] min-h-screen flex flex-col relative`}
+        className={`flex-1 transition-all duration-300 ease-in-out ${isSidebarOpen ? 'ml-[280px]' : 'ml-[88px]'} bg-[#F0F2F5] min-h-screen flex flex-col relative pt-[90px]`}
       >
         <AdminNavbar 
           user={user} 
