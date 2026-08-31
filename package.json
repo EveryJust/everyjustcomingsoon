@@ -18,6 +18,7 @@
     "next-cloudinary": "^6.18.8",
     "react": "19.2.4",
     "react-dom": "19.2.4",
+    "react-easy-crop": "^6.2.3",
     "react-hook-form": "^7.87.0",
     "zod": "^3.25.76"
   },
