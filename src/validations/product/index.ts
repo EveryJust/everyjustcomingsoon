@@ -16,7 +16,7 @@ export const productSchema = z.object({
   categoryIds: z.array(z.string())
     .min(1, 'Please select at least one category')
     .max(5, 'You can select a maximum of 5 categories'),
-  brandId: z.string().min(1, 'Please select a brand'),
+  brandId: z.string().optional(),
   
   price: z.coerce.number()
     .min(0.01, 'Price must be greater than 0'),

@@ -123,7 +123,7 @@ export default function ImageUploader({ images, onChange }: ImageUploaderProps) 
         <ImageCropperModal
           isOpen={true}
           imageSrc={selectedFileUrl}
-          aspectRatio={3 / 4} // Typical product aspect ratio, can be adjusted
+          aspectRatio={1} // Square for products
           onClose={() => setSelectedFileUrl(null)}
           onCropComplete={handleCropComplete}
         />

@@ -8,7 +8,7 @@ import AdminDropdown from '@/components/Admin/AdminDropdown';
 import CategoryMultiSelect from './CategoryMultiSelect';
 import { Plus, Trash2 } from 'lucide-react';
 import { useRouter, usePathname, useSearchParams } from 'next/navigation';
-import { generateSlugSuggestions } from '@/utils/slug';
+import { generateSlugSuggestions, createSlug } from '@/utils/slug';
 
 import { productSchema, type ProductFormValues } from '@/validations/product';
 
@@ -33,7 +33,7 @@ export default function ProductForm({ initialData, onSubmit, onCancel }: Product
     router.replace(`${pathname}?${params.toString()}`, { scroll: false });
   };
 
-  const { register, control, handleSubmit, formState: { errors }, watch, setValue } = useForm<ProductFormValues>({
+  const { register, control, handleSubmit, formState: { errors, dirtyFields }, watch, setValue } = useForm<ProductFormValues>({
     resolver: zodResolver(productSchema),
     mode: 'onChange',
     defaultValues: initialData || {
@@ -50,6 +50,14 @@ export default function ProductForm({ initialData, onSubmit, onCancel }: Product
   });
 
   const watchSlug = watch('slug');
+  const watchName = watch('name');
+
+  // Auto-generate slug when name changes, unless user manually edited slug
+  React.useEffect(() => {
+    if (watchName && !dirtyFields.slug && !initialData?.slug) {
+      setValue('slug', createSlug(watchName), { shouldValidate: true });
+    }
+  }, [watchName, dirtyFields.slug, initialData?.slug, setValue]);
 
   // State for live slug uniqueness check
   const [slugStatus, setSlugStatus] = useState<'idle' | 'checking' | 'available' | 'taken'>('idle');
