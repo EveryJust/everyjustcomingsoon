@@ -68,6 +68,45 @@ export default function CategoriesPage() {
     fetchCategories();
   }, []);
 
+  // Intersection Observer for scroll spy
+  useEffect(() => {
+    if (categories.length === 0) return;
+
+    const scrollContainer = document.getElementById('categories-scroll-container');
+    if (!scrollContainer) return;
+    
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            const id = entry.target.id.replace('category-', '');
+            setActiveCategoryId(id);
+            
+            // Scroll the sidebar so the active item is visible
+            const sidebarBtn = document.getElementById(`sidebar-btn-${id}`);
+            if (sidebarBtn) {
+              sidebarBtn.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+            }
+          }
+        });
+      },
+      {
+        root: scrollContainer,
+        rootMargin: '-5% 0px -80% 0px', // Trigger when section hits the top 5-20% of the screen
+      }
+    );
+
+    // Give the DOM a moment to render before observing
+    setTimeout(() => {
+      categories.forEach((cat) => {
+        const el = document.getElementById(`category-${cat.id}`);
+        if (el) observer.observe(el);
+      });
+    }, 100);
+
+    return () => observer.disconnect();
+  }, [categories]);
+
   const activeCategory = categories.find(c => c.id === activeCategoryId);
 
   return (
@@ -103,6 +142,7 @@ export default function CategoriesPage() {
             return (
               <button
                 key={category.id}
+                id={`sidebar-btn-${category.id}`}
                 onClick={() => {
                   setActiveCategoryId(category.id);
                   const el = document.getElementById(`category-${category.id}`);
@@ -130,7 +170,7 @@ export default function CategoriesPage() {
         </div>
 
         {/* Main Content Area */}
-        <div className="flex-1 bg-white overflow-y-auto p-4 lg:p-10 pb-32 lg:pb-24 h-[calc(100vh-72px)] lg:h-[calc(100vh-125px)] scroll-smooth">
+        <div id="categories-scroll-container" className="flex-1 bg-white overflow-y-auto p-4 lg:p-10 pb-32 lg:pb-24 h-[calc(100vh-72px)] lg:h-[calc(100vh-125px)] scroll-smooth">
           <div className="space-y-16">
             {categories.map((cat) => (
               <div key={cat.id} id={`category-${cat.id}`} className="scroll-mt-6 lg:scroll-mt-10">
