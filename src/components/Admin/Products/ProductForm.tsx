@@ -186,7 +186,8 @@ export default function ProductForm({ initialData, draftId, onSubmit, onCancel }
   // Auto-generate slug when name changes, unless user manually edited slug
   React.useEffect(() => {
     if (watchName && !dirtyFields.slug && !initialData?.slug) {
-      setValue('slug', createSlug(watchName), { shouldValidate: true });
+      const limitedName = watchName.trim().split(/\s+/).slice(0, 4).join(' ');
+      setValue('slug', createSlug(limitedName), { shouldValidate: true });
     }
   }, [watchName, dirtyFields.slug, initialData?.slug, setValue]);
 

@@ -37,11 +37,13 @@ export default function EditProductPage() {
       setProductData({
         ...product,
         categoryIds: product.product_categories?.map((pc: any) => pc.category_id) || [],
-        sizeVariants: product.product_variants?.length > 0 ? product.product_variants : [{ size: 'Free Size', sku: '', quantity: 0 }],
-        offerPrice: product.offer_price,
-        brandId: product.brand_id,
+        sizeVariants: product.product_variants?.length > 0 ? product.product_variants : [{ size: 'Free Size', sku: '', quantity: 100 }],
+        offerPrice: product.offer_price || 0,
+        brandId: product.brand_id || '',
         isFreeSize: product.is_free_size,
-        additionalDetails: product.additional_details,
+        images: product.images || [],
+        highlights: product.highlights || [],
+        additionalDetails: product.additional_details || [],
         moreInfo: product.more_info || { netWeightUnit: 'g' }
       });
       setLoading(false);
