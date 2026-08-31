@@ -6,6 +6,7 @@ import * as z from 'zod';
 import ImageUploader from './ImageUploader';
 import AdminDropdown from '@/components/Admin/AdminDropdown';
 import { Plus, Trash2 } from 'lucide-react';
+import { useRouter, usePathname, useSearchParams } from 'next/navigation';
 
 const productSchema = z.object({
   name: z.string().min(2, 'Name is required'),
@@ -47,7 +48,19 @@ interface ProductFormProps {
 }
 
 export default function ProductForm({ initialData, onSubmit, onCancel }: ProductFormProps) {
-  const [activeTab, setActiveTab] = useState<'basic' | 'variants' | 'media' | 'info'>('basic');
+  const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+
+  const tabQuery = searchParams.get('tab');
+  const validTabs = ['basic', 'media', 'variants', 'info'];
+  const activeTab = validTabs.includes(tabQuery as string) ? tabQuery : 'basic';
+
+  const handleTabChange = (tab: string) => {
+    const params = new URLSearchParams(searchParams.toString());
+    params.set('tab', tab);
+    router.replace(`${pathname}?${params.toString()}`, { scroll: false });
+  };
 
   const { register, control, handleSubmit, formState: { errors }, watch, setValue } = useForm<ProductFormValues>({
     resolver: zodResolver(productSchema),
@@ -80,7 +93,7 @@ export default function ProductForm({ initialData, onSubmit, onCancel }: Product
                 ? 'bg-[#6A43FB] text-white shadow-lg shadow-[#6A43FB]/30 scale-105' 
                 : 'bg-white text-gray-500 hover:bg-gray-50 border border-gray-200'
             }`}
-            onClick={() => setActiveTab(tab as any)}
+            onClick={() => handleTabChange(tab)}
           >
             {tab}
           </button>
