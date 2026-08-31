@@ -67,7 +67,7 @@ export interface Product {
   description: string;
   
   // Relations
-  categoryId: string;
+  categoryIds: string[];
   brandId: string;
   
   // Pricing

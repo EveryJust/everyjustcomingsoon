@@ -5,6 +5,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import ImageUploader from './ImageUploader';
 import AdminDropdown from '@/components/Admin/AdminDropdown';
+import CategoryMultiSelect from './CategoryMultiSelect';
 import { Plus, Trash2 } from 'lucide-react';
 import { useRouter, usePathname, useSearchParams } from 'next/navigation';
 import { generateSlugSuggestions } from '@/utils/slug';
@@ -36,6 +37,7 @@ export default function ProductForm({ initialData, onSubmit, onCancel }: Product
     resolver: zodResolver(productSchema),
     mode: 'onChange',
     defaultValues: initialData || {
+      categoryIds: [],
       images: [],
       sizeVariants: [],
       highlights: [],
@@ -163,9 +165,20 @@ export default function ProductForm({ initialData, onSubmit, onCancel }: Product
             </div>
             
             <div className="grid grid-cols-3 gap-6">
-              <div>
-                <label className="block text-sm font-bold text-gray-700 mb-1">Category ID</label>
-                <input {...register('categoryId')} className="w-full p-3 rounded-xl border border-gray-200 focus:border-[#6A43FB]/50 focus:ring-2 focus:ring-[#6A43FB]/20 outline-none transition-all shadow-sm" />
+              <div className="col-span-2">
+                <label className="block text-sm font-bold text-gray-700 mb-1">Categories (Max 5)</label>
+                <Controller
+                  name="categoryIds"
+                  control={control}
+                  render={({ field }) => (
+                    <CategoryMultiSelect 
+                      value={field.value} 
+                      onChange={field.onChange} 
+                      maxSelections={5} 
+                    />
+                  )}
+                />
+                {errors.categoryIds && <p className="text-red-500 text-xs mt-1">{errors.categoryIds.message}</p>}
               </div>
               <div>
                 <label className="block text-sm font-bold text-gray-700 mb-1">Brand ID</label>
