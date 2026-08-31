@@ -9,6 +9,7 @@ import CategoryMultiSelect from './CategoryMultiSelect';
 import { Plus, Trash2 } from 'lucide-react';
 import { useRouter, usePathname, useSearchParams } from 'next/navigation';
 import { generateSlugSuggestions, createSlug } from '@/utils/slug';
+import { createClient } from '@/utils/supabase/client';
 
 import { productSchema, type ProductFormValues } from '@/validations/product';
 
@@ -33,7 +34,7 @@ export default function ProductForm({ initialData, onSubmit, onCancel }: Product
     router.replace(`${pathname}?${params.toString()}`, { scroll: false });
   };
 
-  const { register, control, handleSubmit, formState: { errors, dirtyFields }, watch, setValue } = useForm<ProductFormValues>({
+  const { register, control, handleSubmit, formState: { errors, dirtyFields }, watch, setValue, reset } = useForm<ProductFormValues>({
     resolver: zodResolver(productSchema),
     mode: 'onChange',
     defaultValues: initialData || {
@@ -48,6 +49,63 @@ export default function ProductForm({ initialData, onSubmit, onCancel }: Product
       }
     }
   });
+
+  const supabase = createClient();
+  const [userId, setUserId] = useState<string | null>(null);
+  const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'saved' | 'error' | 'loading_draft'>('idle');
+
+  React.useEffect(() => {
+    async function initUserAndDraft() {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+      setUserId(user.id);
+
+      // If we are not editing an existing product, check for a draft
+      if (!initialData) {
+        setSaveStatus('loading_draft');
+        const { data: draft } = await supabase
+          .from('product_drafts')
+          .select('form_data')
+          .eq('user_id', user.id)
+          .single();
+          
+        if (draft && draft.form_data) {
+          // Keep existing values that aren't in draft, though draft should have everything
+          reset({ ...draft.form_data });
+          setSaveStatus('saved');
+        } else {
+          setSaveStatus('idle');
+        }
+      }
+    }
+    initUserAndDraft();
+  }, [initialData, supabase, reset]);
+
+  const allValues = watch();
+  
+  // Debounced Auto-Save to Drafts
+  React.useEffect(() => {
+    if (!userId || Object.keys(dirtyFields).length === 0) return;
+    
+    setSaveStatus('saving');
+    const timer = setTimeout(async () => {
+      const { error } = await supabase
+        .from('product_drafts')
+        .upsert(
+          { user_id: userId, form_data: allValues, updated_at: new Date().toISOString() },
+          { onConflict: 'user_id' } // Upsert based on the unique user_id
+        );
+        
+      if (error) {
+        console.error("Failed to save draft", error);
+        setSaveStatus('error');
+      } else {
+        setSaveStatus('saved');
+      }
+    }, 1500);
+
+    return () => clearTimeout(timer);
+  }, [allValues, userId, dirtyFields, supabase]);
 
   const watchSlug = watch('slug');
   const watchName = watch('name');
@@ -348,13 +406,21 @@ export default function ProductForm({ initialData, onSubmit, onCancel }: Product
       </div>
 
       {/* Floating Footer Actions */}
-      <div className="flex justify-end gap-4">
-        <button type="button" onClick={onCancel} className="px-8 py-3 rounded-xl font-bold text-gray-600 bg-white border border-gray-200 hover:bg-gray-50 transition-colors shadow-sm">
-          Cancel
-        </button>
-        <button type="submit" className="px-8 py-3 rounded-xl font-bold text-white bg-[#6A43FB] hover:bg-[#5926EC] transition-colors shadow-lg shadow-[#6A43FB]/30">
-          Save Product
-        </button>
+      <div className="flex justify-between items-center bg-white p-4 rounded-3xl border border-gray-100 shadow-sm mt-4">
+        <div className="flex items-center text-sm font-medium pl-4">
+          {saveStatus === 'saving' && <span className="text-[#6A43FB] flex items-center gap-2"><div className="w-2 h-2 bg-[#6A43FB] rounded-full animate-ping"></div> Saving draft...</span>}
+          {saveStatus === 'saved' && <span className="text-[#3ED08C]">✓ Draft saved</span>}
+          {saveStatus === 'error' && <span className="text-red-500">Failed to save draft</span>}
+          {saveStatus === 'idle' && <span className="text-gray-400">All changes will be auto-saved</span>}
+        </div>
+        <div className="flex gap-4">
+          <button type="button" onClick={onCancel} className="px-8 py-3 rounded-xl font-bold text-gray-600 bg-white border border-gray-200 hover:bg-gray-50 transition-colors shadow-sm">
+            Cancel
+          </button>
+          <button type="submit" className="px-8 py-3 rounded-xl font-bold text-white bg-[#6A43FB] hover:bg-[#5926EC] transition-colors shadow-lg shadow-[#6A43FB]/30">
+            Save Product
+          </button>
+        </div>
       </div>
     </form>
   );

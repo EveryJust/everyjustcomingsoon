@@ -3,12 +3,23 @@ import React from 'react';
 import ProductForm from '@/components/Admin/Products/ProductForm';
 import { useRouter } from 'next/navigation';
 
+import { createClient } from '@/utils/supabase/client';
+
 export default function AddProductPage() {
   const router = useRouter();
+  const supabase = createClient();
 
   const handleSubmit = async (data: any) => {
     console.log("Submitting new product:", data);
-    // TODO: Supabase insertion logic
+    
+    // TODO: Supabase insertion logic for actual product
+
+    // Clear the draft once successfully submitted
+    const { data: { user } } = await supabase.auth.getUser();
+    if (user) {
+      await supabase.from('product_drafts').delete().eq('user_id', user.id);
+    }
+
     router.push('/admin/products');
   };
 
