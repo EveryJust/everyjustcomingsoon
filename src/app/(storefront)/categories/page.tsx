@@ -1,13 +1,57 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { MAJOR_CATEGORIES } from '@/utils/category';
+import { createClient } from '@/utils/supabase/client';
 
 export default function CategoriesPage() {
-  const [activeCategoryId, setActiveCategoryId] = useState(MAJOR_CATEGORIES[0]?.id);
+  const [activeCategoryId, setActiveCategoryId] = useState<string | null>(null);
+  const [categories, setCategories] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  const activeCategory = MAJOR_CATEGORIES.find(c => c.id === activeCategoryId);
+  useEffect(() => {
+    async function fetchCategories() {
+      const supabase = createClient();
+      const { data, error } = await supabase
+        .from('categories')
+        .select('*')
+        .eq('isActive', true)
+        .eq('isDeleted', false);
+        
+      if (error) {
+        console.error(error);
+        setLoading(false);
+        return;
+      }
+
+      if (data) {
+        // Handle both camelCase and snake_case mapping just in case
+        const normalizedData = data.map(c => ({
+          ...c,
+          parentId: c.parentId || c.parent_id,
+          imageUrl: c.imageUrl || c.image_url
+        }));
+        
+        const mainCats = normalizedData.filter(c => !c.parentId);
+        const subCats = normalizedData.filter(c => c.parentId);
+
+        const formatted = mainCats.map(main => ({
+          ...main,
+          subcategories: subCats.filter(sub => sub.parentId === main.id)
+        })).sort((a, b) => new Date(a.createdAt || a.created_at).getTime() - new Date(b.createdAt || b.created_at).getTime());
+
+        setCategories(formatted);
+        if (formatted.length > 0) {
+          setActiveCategoryId(formatted[0].id);
+        }
+      }
+      setLoading(false);
+    }
+    
+    fetchCategories();
+  }, []);
+
+  const activeCategory = categories.find(c => c.id === activeCategoryId);
 
   return (
     <div className="bg-white lg:min-h-screen flex flex-col">
@@ -29,90 +73,73 @@ export default function CategoriesPage() {
       </div>
 
       <div className="flex items-start flex-1">
-      
-      {/* Sidebar */}
-      <div className="w-[85px] lg:w-72 flex-shrink-0 bg-[#f9f9f9] flex flex-col border-r border-gray-100 sticky top-[72px] lg:top-[125px] h-[calc(100vh-72px)] lg:h-[calc(100vh-125px)] overflow-y-auto scrollbar-hide">
-        {MAJOR_CATEGORIES.map((category) => {
-          const isActive = category.id === activeCategoryId;
-          return (
-            <button
-              key={category.id}
-              onClick={() => setActiveCategoryId(category.id)}
-              className={`flex flex-col lg:flex-row items-center lg:items-start justify-center lg:justify-start py-4 lg:py-5 lg:px-6 gap-2 lg:gap-4 relative text-center lg:text-left transition-colors border-b border-gray-100/50 ${isActive ? 'bg-white' : 'hover:bg-gray-100'}`}
-            >
-              {/* Active Indicator */}
-              {isActive && (
-                <div className="absolute left-0 top-0 bottom-0 w-1 lg:w-1.5 bg-primary rounded-r-md"></div>
-              )}
-              
-              <div className="w-[45px] h-[45px] lg:w-12 lg:h-12 rounded-full bg-white lg:bg-transparent overflow-hidden flex-shrink-0 flex items-center justify-center p-1 border border-gray-200 lg:border-none shadow-sm lg:shadow-none">
-                 <img src={'/dash_camera.png'} alt={category.name} className="w-full h-full object-contain opacity-80" />
-              </div>
-              
-              <span className={`text-[10px] lg:text-sm leading-tight px-1 lg:px-0 lg:mt-1 ${isActive ? 'text-primary font-semibold' : 'text-gray-600 font-medium'}`}>
-                {category.name}
-              </span>
-            </button>
-          )
-        })}
-      </div>
-
-      {/* Main Content Area */}
-      <div className="flex-1 bg-white overflow-y-auto p-4 lg:p-10 pb-32 lg:pb-24 min-h-[calc(100vh-72px)]">
-        {activeCategory && (
-          <div className="animate-in fade-in duration-300">
-            
-            {/* Featured Section */}
-            <div className="mb-10 lg:mb-14">
-              <h3 className="text-[11px] lg:text-sm font-semibold text-gray-400 mb-1 lg:mb-2 uppercase tracking-wide">Popular</h3>
-              <h2 className="text-lg lg:text-2xl font-bold text-gray-900 mb-5 lg:mb-8">Featured On {activeCategory.name}</h2>
-              
-              <div className="grid grid-cols-3 md:grid-cols-4 xl:grid-cols-5 gap-y-6 gap-x-2 lg:gap-8">
-                {[1, 2, 3].map((item, idx) => (
-                  <Link href={`/category/${activeCategory.slug}`} key={idx} className="flex flex-col items-center group cursor-pointer relative">
-                    <div className="w-[72px] h-[72px] lg:w-36 lg:h-36 rounded-full bg-white overflow-hidden mb-2 group-hover:shadow-md transition-all flex items-center justify-center border border-gray-200 p-2 lg:p-4">
-                       <img src={`/dash_camera.png`} alt={`Featured ${item}`} className="w-full h-full object-contain hover:scale-105 transition-transform" />
-                    </div>
-                    {idx === 0 && (
-                       <span className="absolute top-[60px] lg:top-[125px] bg-blue-600 text-white text-[9px] lg:text-xs font-bold px-1.5 lg:px-3 py-0.5 rounded-full flex items-center gap-1 shadow-sm border border-white">
-                         <svg className="w-2.5 h-2.5" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg> Mall
-                       </span>
-                    )}
-                    <span className="text-[11px] lg:text-[15px] text-center font-medium text-gray-800 leading-tight group-hover:text-primary transition-colors mt-2">
-                      Top Brand {item}
-                    </span>
-                  </Link>
-                ))}
-              </div>
-            </div>
-
-            {/* All Popular / Subcategories Section */}
-            <div>
-              <h2 className="text-lg lg:text-2xl font-bold text-gray-900 mb-5 lg:mb-8">All Popular</h2>
-              
-              <div className="grid grid-cols-3 md:grid-cols-4 xl:grid-cols-5 gap-y-8 gap-x-2 lg:gap-8">
-                {activeCategory.subcategories?.map((sub, idx) => (
-                  <Link href={`/category/${activeCategory.slug}?sub=${sub.toLowerCase().replace(/\s+/g, '-')}`} key={idx} className="flex flex-col items-center group cursor-pointer">
-                    <div className="w-[72px] h-[72px] lg:w-36 lg:h-36 rounded-full bg-white overflow-hidden mb-2 group-hover:shadow-md transition-all flex items-center justify-center border border-gray-100 p-1 lg:p-2">
-                       <img src={`/turbo_charger.png`} alt={sub} className="w-full h-full object-cover rounded-full hover:scale-105 transition-transform" />
-                    </div>
-                    <span className="text-[11px] lg:text-[15px] text-center font-medium text-gray-800 leading-tight group-hover:text-primary transition-colors mt-1 max-w-[80%] lg:max-w-full">
-                      {sub}
-                    </span>
-                  </Link>
-                ))}
-                
-                {(!activeCategory.subcategories || activeCategory.subcategories.length === 0) && (
-                  <div className="col-span-full text-center py-12 text-gray-500 text-sm">
-                    No subcategories found.
-                  </div>
+      {loading ? (
+        <div className="flex-1 flex justify-center items-center py-32">
+          <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-primary"></div>
+        </div>
+      ) : (
+        <>
+        {/* Sidebar */}
+        <div className="w-[85px] lg:w-72 flex-shrink-0 bg-[#f9f9f9] flex flex-col border-r border-gray-100 sticky top-[72px] lg:top-[125px] h-[calc(100vh-72px)] lg:h-[calc(100vh-125px)] overflow-y-auto scrollbar-hide">
+          {categories.map((category) => {
+            const isActive = category.id === activeCategoryId;
+            return (
+              <button
+                key={category.id}
+                onClick={() => setActiveCategoryId(category.id)}
+                className={`flex flex-col lg:flex-row items-center lg:items-start justify-center lg:justify-start py-4 lg:py-5 lg:px-6 gap-2 lg:gap-4 relative text-center lg:text-left transition-colors border-b border-gray-100/50 ${isActive ? 'bg-white' : 'hover:bg-gray-100'}`}
+              >
+                {/* Active Indicator */}
+                {isActive && (
+                  <div className="absolute left-0 top-0 bottom-0 w-1 lg:w-1.5 bg-primary rounded-r-md"></div>
                 )}
+                
+                <div className="w-[45px] h-[45px] lg:w-12 lg:h-12 rounded-full bg-white lg:bg-transparent overflow-hidden flex-shrink-0 flex items-center justify-center p-1 border border-gray-200 lg:border-none shadow-sm lg:shadow-none">
+                   <img src={category.imageUrl || '/dash_camera.png'} alt={category.name} className="w-full h-full object-contain opacity-80" />
+                </div>
+                
+                <span className={`text-[10px] lg:text-sm leading-tight px-1 lg:px-0 lg:mt-1 ${isActive ? 'text-primary font-semibold' : 'text-gray-600 font-medium'}`}>
+                  {category.name}
+                </span>
+              </button>
+            )
+          })}
+        </div>
+
+        {/* Main Content Area */}
+        <div className="flex-1 bg-white overflow-y-auto p-4 lg:p-10 pb-32 lg:pb-24 min-h-[calc(100vh-72px)]">
+          {activeCategory && (
+            <div className="animate-in fade-in duration-300">
+              
+              {/* All Popular / Subcategories Section */}
+              <div>
+                <h2 className="text-lg lg:text-2xl font-bold text-gray-900 mb-5 lg:mb-8">All {activeCategory.name}</h2>
+                
+                <div className="grid grid-cols-3 md:grid-cols-4 xl:grid-cols-5 gap-y-8 gap-x-2 lg:gap-8">
+                  {activeCategory.subcategories?.map((sub: any, idx: number) => (
+                    <Link href={`/category/${activeCategory.slug}?sub=${sub.slug}`} key={sub.id || idx} className="flex flex-col items-center group cursor-pointer">
+                      <div className="w-[72px] h-[72px] lg:w-36 lg:h-36 rounded-full bg-white overflow-hidden mb-2 group-hover:shadow-md transition-all flex items-center justify-center border border-gray-100 p-1 lg:p-2">
+                         <img src={sub.imageUrl || '/turbo_charger.png'} alt={sub.name} className="w-full h-full object-cover rounded-full hover:scale-105 transition-transform" />
+                      </div>
+                      <span className="text-[11px] lg:text-[15px] text-center font-medium text-gray-800 leading-tight group-hover:text-primary transition-colors mt-1 max-w-[80%] lg:max-w-full">
+                        {sub.name}
+                      </span>
+                    </Link>
+                  ))}
+                  
+                  {(!activeCategory.subcategories || activeCategory.subcategories.length === 0) && (
+                    <div className="col-span-full text-center py-12 text-gray-500 text-sm">
+                      No subcategories found.
+                    </div>
+                  )}
+                </div>
               </div>
+              
             </div>
-            
-          </div>
-        )}
-      </div>
+          )}
+        </div>
+        </>
+      )}
       </div>
       
     </div>
