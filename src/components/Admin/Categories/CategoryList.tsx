@@ -1,8 +1,9 @@
 "use client";
-import React from 'react';
+import React, { useState } from 'react';
 import { Edit2, Trash2, Eye, EyeOff } from 'lucide-react';
 import Link from 'next/link';
 import { Category } from '@/types';
+import ConfirmationDialog from '@/components/Admin/ConfirmationDialog';
 
 interface CategoryListProps {
   categories: Category[];
@@ -11,6 +12,8 @@ interface CategoryListProps {
 }
 
 export default function CategoryList({ categories, onToggleActive, onDelete }: CategoryListProps) {
+  const [deleteCategoryId, setDeleteCategoryId] = useState<string | null>(null);
+
   // Build a tree from flat categories list
   const buildTree = (cats: Category[], parentId: string | null = null): (Category & { children: any[] })[] => {
     return cats
@@ -69,11 +72,7 @@ export default function CategoryList({ categories, onToggleActive, onDelete }: C
               </Link>
               
               <button 
-                onClick={() => {
-                  if(confirm('Are you sure you want to delete this category? (This is a soft delete)')) {
-                    onDelete(category.id);
-                  }
-                }}
+                onClick={() => setDeleteCategoryId(category.id)}
                 className="p-2 text-gray-500 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors"
               >
                 <Trash2 size={18} />
@@ -89,21 +88,35 @@ export default function CategoryList({ categories, onToggleActive, onDelete }: C
   };
 
   return (
-    <div className="bg-white rounded-3xl shadow-sm border border-gray-100 overflow-hidden">
-      <div className="p-6 border-b border-gray-100 bg-gray-50/50">
-        <h3 className="font-bold text-gray-800">Category Hierarchy</h3>
-        <p className="text-xs text-gray-500 mt-1">Manage main categories and their sub-categories.</p>
+    <>
+      <div className="bg-white rounded-3xl shadow-sm border border-gray-100 overflow-hidden">
+        <div className="p-6 border-b border-gray-100 bg-gray-50/50">
+          <h3 className="font-bold text-gray-800">Category Hierarchy</h3>
+          <p className="text-xs text-gray-500 mt-1">Manage main categories and their sub-categories.</p>
+        </div>
+        
+        <div className="flex flex-col">
+          {categoryTree.length > 0 ? (
+            categoryTree.map(cat => renderCategoryRow(cat, 0))
+          ) : (
+            <div className="p-8 text-center text-gray-400 font-medium">
+              No categories found. Click "Add Category" to create one.
+            </div>
+          )}
+        </div>
       </div>
-      
-      <div className="flex flex-col">
-        {categoryTree.length > 0 ? (
-          categoryTree.map(cat => renderCategoryRow(cat, 0))
-        ) : (
-          <div className="p-8 text-center text-gray-400 font-medium">
-            No categories found. Click "Add Category" to create one.
-          </div>
-        )}
-      </div>
-    </div>
+
+      <ConfirmationDialog 
+        isOpen={deleteCategoryId !== null}
+        title="Delete Category"
+        message="Are you sure you want to delete this category? This will hide it from the storefront and admin panel. This action is reversible in the database."
+        confirmText="Delete"
+        isDestructive={true}
+        onConfirm={() => {
+          if (deleteCategoryId) onDelete(deleteCategoryId);
+        }}
+        onCancel={() => setDeleteCategoryId(null)}
+      />
+    </>
   );
 }

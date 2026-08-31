@@ -1,46 +1,20 @@
 "use client";
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { Plus } from 'lucide-react';
 import CategoryList from '@/components/Admin/Categories/CategoryList';
 import { Category } from '@/types';
 
-// Mock data for development
-const mockCategories: Category[] = [
-  {
-    id: '1',
-    name: 'Electronics',
-    slug: 'electronics',
-    parentId: null,
-    isActive: true,
-    isDeleted: false,
-    createdAt: new Date(),
-    updatedAt: new Date()
-  },
-  {
-    id: '2',
-    name: 'Smartphones',
-    slug: 'smartphones',
-    parentId: '1',
-    isActive: true,
-    isDeleted: false,
-    createdAt: new Date(),
-    updatedAt: new Date()
-  },
-  {
-    id: '3',
-    name: 'Apple',
-    slug: 'apple',
-    parentId: '2',
-    isActive: true,
-    isDeleted: false,
-    createdAt: new Date(),
-    updatedAt: new Date()
-  }
-];
-
 export default function CategoriesPage() {
-  const [categories, setCategories] = useState<Category[]>(mockCategories);
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    // TODO: Fetch real categories from Supabase here
+    // const { data } = await supabase.from('categories').select('*');
+    // setCategories(data || []);
+    setIsLoading(false);
+  }, []);
 
   const handleToggleActive = (id: string, currentStatus: boolean) => {
     setCategories(prev => 

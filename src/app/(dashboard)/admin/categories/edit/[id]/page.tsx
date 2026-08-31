@@ -7,15 +7,12 @@ export default function EditCategoryPage() {
   const router = useRouter();
   const params = useParams();
   const [categoryData, setCategoryData] = useState<any>(null);
+  const [parentCategories, setParentCategories] = useState<{id: string, name: string}[]>([]);
 
   useEffect(() => {
-    // TODO: Fetch real category data from Supabase using params.id
-    setCategoryData({
-       name: 'Example Category',
-       slug: 'example-category',
-       isActive: true,
-       parentId: null
-    });
+    // TODO: Fetch real category data and parent categories from Supabase using params.id
+    // setCategoryData(data);
+    // setParentCategories(parentsData);
   }, [params.id]);
 
   const handleSubmit = async (data: any) => {
@@ -24,14 +21,12 @@ export default function EditCategoryPage() {
     router.push('/admin/categories');
   };
 
-  // Mock parent categories for dropdown
-  const mockCategories = [
-    { id: '1', name: 'Electronics' },
-    { id: '2', name: 'Smartphones' }
-  ];
-
   if (!categoryData) {
-    return <div className="p-8 text-center text-gray-400">Loading category...</div>;
+    return (
+      <div className="p-8 flex justify-center mt-20">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#6A43FB]"></div>
+      </div>
+    );
   }
 
   return (
@@ -43,7 +38,7 @@ export default function EditCategoryPage() {
       
       <CategoryForm 
         initialData={categoryData}
-        categories={mockCategories}
+        categories={parentCategories}
         onSubmit={handleSubmit} 
         onCancel={() => router.push('/admin/categories')} 
       />

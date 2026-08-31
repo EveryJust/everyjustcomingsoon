@@ -5,18 +5,19 @@ import CategoryForm from '@/components/Admin/Categories/CategoryForm';
 
 export default function AddCategoryPage() {
   const router = useRouter();
+  const [categories, setCategories] = React.useState<{id: string, name: string}[]>([]);
+
+  React.useEffect(() => {
+    // TODO: Fetch parent categories from Supabase
+    // const { data } = await supabase.from('categories').select('id, name').eq('parentId', null);
+    // setCategories(data || []);
+  }, []);
 
   const handleSubmit = async (data: any) => {
     console.log("Submitting new category:", data);
     // TODO: Supabase insertion logic
     router.push('/admin/categories');
   };
-
-  // Mock parent categories for dropdown
-  const mockCategories = [
-    { id: '1', name: 'Electronics' },
-    { id: '2', name: 'Smartphones' }
-  ];
 
   return (
     <div className="max-w-3xl mx-auto pb-10 mt-8">
@@ -26,7 +27,7 @@ export default function AddCategoryPage() {
       </div>
       
       <CategoryForm 
-        categories={mockCategories}
+        categories={categories}
         onSubmit={handleSubmit} 
         onCancel={() => router.push('/admin/categories')} 
       />
