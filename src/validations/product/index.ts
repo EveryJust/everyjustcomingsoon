@@ -10,8 +10,7 @@ export const productSchema = z.object({
     .max(100, 'Slug must not exceed 100 characters')
     .regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/, 'Slug must contain only lowercase letters, numbers, and hyphens (e.g., my-product-123)'),
   
-  description: z.string()
-    .min(10, 'Description must be at least 10 characters'),
+  description: z.string().optional(),
   
   categoryIds: z.array(z.string())
     .min(1, 'Please select at least one category')
@@ -31,6 +30,7 @@ export const productSchema = z.object({
     .max(10, 'You can upload a maximum of 10 images'),
     
   status: z.enum(['active', 'draft']),
+  isFreeSize: z.boolean(),
   
   sizeVariants: z.array(z.object({
     size: z.string().min(1, 'Size is required'),
@@ -49,11 +49,11 @@ export const productSchema = z.object({
   })),
   
   moreInfo: z.object({
-    manufactureInfo: z.string().min(2, 'Manufacture info is required'),
-    importerInfo: z.string().min(2, 'Importer info is required'),
-    packerInfo: z.string().min(2, 'Packer info is required'),
-    netWeightValue: z.coerce.number().min(0.1, 'Weight must be greater than 0'),
-    netWeightUnit: z.enum(['g', 'kg', 'ml', 'l']),
+    manufactureInfo: z.string().optional(),
+    importerInfo: z.string().optional(),
+    packerInfo: z.string().optional(),
+    netWeightValue: z.coerce.number().optional(),
+    netWeightUnit: z.enum(['g', 'kg', 'ml', 'l']).optional(),
     supplierInfo: z.string().optional(),
     contactInfo: z.string().optional(),
     legalDisclaimer: z.string().optional(),

@@ -40,10 +40,11 @@ export default function ProductForm({ initialData, onSubmit, onCancel }: Product
     defaultValues: initialData || {
       categoryIds: [],
       images: [],
-      sizeVariants: [],
+      sizeVariants: [{ size: 'Free Size', sku: '', quantity: 0 }],
       highlights: [],
       additionalDetails: [],
       status: 'draft',
+      isFreeSize: true,
       moreInfo: {
         netWeightUnit: 'g'
       }
@@ -109,6 +110,16 @@ export default function ProductForm({ initialData, onSubmit, onCancel }: Product
 
   const watchSlug = watch('slug');
   const watchName = watch('name');
+  const isFreeSize = watch('isFreeSize');
+
+  const handleFreeSizeToggle = (checked: boolean) => {
+    setValue('isFreeSize', checked, { shouldValidate: true, shouldDirty: true });
+    if (checked) {
+      setValue('sizeVariants', [{ size: 'Free Size', sku: '', quantity: 0 }], { shouldValidate: true, shouldDirty: true });
+    } else {
+      setValue('sizeVariants', [], { shouldValidate: true, shouldDirty: true });
+    }
+  };
 
   // Auto-generate slug when name changes, unless user manually edited slug
   React.useEffect(() => {
@@ -287,18 +298,44 @@ export default function ProductForm({ initialData, onSubmit, onCancel }: Product
         {activeTab === 'variants' && (
           <div>
             <div className="flex justify-between items-center mb-6">
-              <h3 className="text-xl font-bold text-gray-800">Size Variants</h3>
-              <button type="button" onClick={() => appendSize({ size: '', sku: '', quantity: 0 })} className="text-sm bg-[#3ED08C] hover:bg-[#32B879] transition-colors text-white px-4 py-2 rounded-xl font-bold flex items-center gap-1 shadow-md shadow-[#3ED08C]/30">
-                 <Plus size={16} /> Add Size
-              </button>
+              <h3 className="text-xl font-bold text-gray-800">Inventory & Variants</h3>
+              <div className="flex items-center gap-3 bg-gray-50 px-4 py-2 rounded-xl border border-gray-200">
+                <span className="text-sm font-bold text-gray-700">One Size / Free Size</span>
+                <button
+                  type="button"
+                  onClick={() => handleFreeSizeToggle(!isFreeSize)}
+                  className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-[#6A43FB] focus:ring-offset-2 ${
+                    isFreeSize ? 'bg-[#6A43FB]' : 'bg-gray-300'
+                  }`}
+                >
+                  <span
+                    className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                      isFreeSize ? 'translate-x-6' : 'translate-x-1'
+                    }`}
+                  />
+                </button>
+              </div>
             </div>
+            
+            {!isFreeSize && (
+              <div className="flex justify-end mb-4">
+                <button type="button" onClick={() => appendSize({ size: '', sku: '', quantity: 0 })} className="text-sm bg-[#3ED08C] hover:bg-[#32B879] transition-colors text-white px-4 py-2 rounded-xl font-bold flex items-center gap-1 shadow-md shadow-[#3ED08C]/30">
+                   <Plus size={16} /> Add Size Variant
+                </button>
+              </div>
+            )}
             
             {sizeFields.map((field, index) => (
               <div key={field.id} className="flex items-end gap-4 mb-4 bg-gray-50/50 p-4 rounded-2xl border border-gray-100 transition-all hover:border-gray-200">
-                <div className="flex-1">
-                  <label className="block text-xs font-bold text-gray-500 mb-1">Size</label>
-                  <input {...register(`sizeVariants.${index}.size`)} placeholder="e.g. XL, 10, One Size" className="w-full p-2.5 text-sm rounded-lg border border-gray-200 outline-none focus:border-[#6A43FB]/50" />
-                </div>
+                {!isFreeSize && (
+                  <div className="flex-1">
+                    <label className="block text-xs font-bold text-gray-500 mb-1">Size</label>
+                    <input {...register(`sizeVariants.${index}.size`)} placeholder="e.g. XL, 10, One Size" className="w-full p-2.5 text-sm rounded-lg border border-gray-200 outline-none focus:border-[#6A43FB]/50" />
+                  </div>
+                )}
+                {isFreeSize && (
+                  <input type="hidden" {...register(`sizeVariants.${index}.size`)} value="Free Size" />
+                )}
                 <div className="flex-1">
                   <label className="block text-xs font-bold text-gray-500 mb-1">SKU</label>
                   <input {...register(`sizeVariants.${index}.sku`)} placeholder="SKU-123" className="w-full p-2.5 text-sm rounded-lg border border-gray-200 outline-none focus:border-[#6A43FB]/50" />
@@ -307,12 +344,14 @@ export default function ProductForm({ initialData, onSubmit, onCancel }: Product
                   <label className="block text-xs font-bold text-gray-500 mb-1">Quantity</label>
                   <input type="number" {...register(`sizeVariants.${index}.quantity`)} className="w-full p-2.5 text-sm rounded-lg border border-gray-200 outline-none focus:border-[#6A43FB]/50" />
                 </div>
-                <button type="button" onClick={() => removeSize(index)} className="p-2.5 text-red-500 hover:bg-red-50 hover:text-red-600 rounded-lg transition-colors">
-                  <Trash2 size={20} />
-                </button>
+                {!isFreeSize && (
+                  <button type="button" onClick={() => removeSize(index)} className="p-2.5 text-red-500 hover:bg-red-50 hover:text-red-600 rounded-lg transition-colors">
+                    <Trash2 size={20} />
+                  </button>
+                )}
               </div>
             ))}
-            {sizeFields.length === 0 && <p className="text-sm text-gray-400 italic">No variants added yet.</p>}
+            {!isFreeSize && sizeFields.length === 0 && <p className="text-sm text-gray-400 italic">No variants added yet. Add sizes or toggle "Free Size" above.</p>}
           </div>
         )}
 
