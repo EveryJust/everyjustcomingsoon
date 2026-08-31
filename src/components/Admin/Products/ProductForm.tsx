@@ -7,6 +7,7 @@ import ImageUploader from './ImageUploader';
 import AdminDropdown from '@/components/Admin/AdminDropdown';
 import { Plus, Trash2 } from 'lucide-react';
 import { useRouter, usePathname, useSearchParams } from 'next/navigation';
+import { generateSlugSuggestions } from '@/utils/slug';
 
 import { productSchema, type ProductFormValues } from '@/validations/product';
 
@@ -24,9 +25,6 @@ export default function ProductForm({ initialData, onSubmit, onCancel }: Product
   const tabQuery = searchParams.get('tab');
   const validTabs = ['basic', 'media', 'variants', 'info'];
   const activeTab = validTabs.includes(tabQuery as string) ? tabQuery : 'basic';
-
-  // State for live slug uniqueness check
-  const [slugStatus, setSlugStatus] = useState<'idle' | 'checking' | 'available' | 'taken'>('idle');
 
   const handleTabChange = (tab: string) => {
     const params = new URLSearchParams(searchParams.toString());
@@ -51,22 +49,27 @@ export default function ProductForm({ initialData, onSubmit, onCancel }: Product
 
   const watchSlug = watch('slug');
 
+  // State for live slug uniqueness check
+  const [slugStatus, setSlugStatus] = useState<'idle' | 'checking' | 'available' | 'taken'>('idle');
+  const [slugSuggestions, setSlugSuggestions] = useState<string[]>([]);
+
   // Simulated live slug uniqueness check
   React.useEffect(() => {
     if (!watchSlug || watchSlug.length < 2 || errors.slug) {
       setSlugStatus('idle');
+      setSlugSuggestions([]);
       return;
     }
 
     setSlugStatus('checking');
     const timer = setTimeout(() => {
       // Simulate API call delay
-      // In reality, this would be a Supabase check: 
-      // const { data } = await supabase.from('products').select('id').eq('slug', watchSlug).single();
       if (watchSlug === 'test-product') {
         setSlugStatus('taken');
+        setSlugSuggestions(generateSlugSuggestions(watchSlug));
       } else {
         setSlugStatus('available');
+        setSlugSuggestions([]);
       }
     }, 600);
 
@@ -113,15 +116,31 @@ export default function ProductForm({ initialData, onSubmit, onCancel }: Product
               <div>
                 <label className="block text-sm font-bold text-gray-700 mb-1">Slug</label>
                 <div className="relative">
-                  <input {...register('slug')} className="w-full p-3 rounded-xl border border-gray-200 focus:border-[#6A43FB]/50 focus:ring-2 focus:ring-[#6A43FB]/20 outline-none transition-all shadow-sm pr-20" />
+                  <input {...register('slug')} className="w-full p-3 rounded-xl border border-gray-200 focus:border-[#6A43FB]/50 focus:ring-2 focus:ring-[#6A43FB]/20 outline-none transition-all shadow-sm pr-24" />
                   <div className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center">
                     {slugStatus === 'checking' && <span className="text-xs font-bold text-gray-400">Checking...</span>}
-                    {slugStatus === 'available' && <span className="text-xs font-bold text-green-500 bg-green-50 px-2 py-1 rounded-md">Available</span>}
+                    {slugStatus === 'available' && <span className="text-xs font-bold text-[#3ED08C] bg-[#E6F9F0] px-2 py-1 rounded-md">Available</span>}
                     {slugStatus === 'taken' && <span className="text-xs font-bold text-red-500 bg-red-50 px-2 py-1 rounded-md">Taken</span>}
                   </div>
                 </div>
                 {errors.slug && <p className="text-red-500 text-xs mt-1">{errors.slug.message}</p>}
-                {!errors.slug && slugStatus === 'taken' && <p className="text-red-500 text-xs mt-1">This slug is already in use.</p>}
+                {!errors.slug && slugStatus === 'taken' && (
+                  <div className="mt-2">
+                    <p className="text-red-500 text-xs mb-1.5 font-medium">This slug is already in use. Try one of these:</p>
+                    <div className="flex flex-wrap gap-2">
+                      {slugSuggestions.map((suggestion) => (
+                        <button
+                          key={suggestion}
+                          type="button"
+                          onClick={() => setValue('slug', suggestion, { shouldValidate: true, shouldDirty: true })}
+                          className="text-xs font-bold bg-white text-[#6A43FB] border border-[#6A43FB]/30 px-3 py-1.5 rounded-full hover:bg-[#6A43FB]/5 transition-colors"
+                        >
+                          {suggestion}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
 
@@ -129,10 +148,12 @@ export default function ProductForm({ initialData, onSubmit, onCancel }: Product
               <div>
                 <label className="block text-sm font-bold text-gray-700 mb-1">Price</label>
                 <input type="number" step="0.01" {...register('price')} className="w-full p-3 rounded-xl border border-gray-200 focus:border-[#6A43FB]/50 focus:ring-2 focus:ring-[#6A43FB]/20 outline-none transition-all shadow-sm" />
+                {errors.price && <p className="text-red-500 text-xs mt-1">{errors.price.message}</p>}
               </div>
               <div>
                 <label className="block text-sm font-bold text-gray-700 mb-1">Offer Price</label>
                 <input type="number" step="0.01" {...register('offerPrice')} className="w-full p-3 rounded-xl border border-gray-200 focus:border-[#6A43FB]/50 focus:ring-2 focus:ring-[#6A43FB]/20 outline-none transition-all shadow-sm" />
+                {errors.offerPrice && <p className="text-red-500 text-xs mt-1">{errors.offerPrice.message}</p>}
               </div>
             </div>
 
