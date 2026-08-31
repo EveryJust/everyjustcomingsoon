@@ -2,6 +2,8 @@ import React from 'react';
 import { redirect } from 'next/navigation';
 import { createClient } from '@/utils/supabase/server';
 import Link from 'next/link';
+import { Search, Bell, Menu, User } from 'lucide-react';
+import AdminSidebar from '@/components/Admin/AdminSidebar';
 
 export default async function AdminLayout({
   children,
@@ -10,7 +12,6 @@ export default async function AdminLayout({
 }) {
   const supabase = await createClient();
 
-  // 1. Check if user is logged in
   const {
     data: { user },
   } = await supabase.auth.getUser();
@@ -20,58 +21,49 @@ export default async function AdminLayout({
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 flex">
+    <div className="min-h-screen bg-[#F0F2F5] flex font-sans">
       {/* Sidebar Navigation */}
-      <aside className="w-64 bg-gray-900 text-white flex flex-col fixed h-full shadow-2xl z-10">
-        <div className="p-6 border-b border-gray-800">
-          <h2 className="text-2xl font-black uppercase tracking-tight text-white flex items-center gap-2">
-            <span className="text-primary text-3xl leading-none">•</span>
-            Admin
-          </h2>
-          <p className="text-xs text-gray-400 mt-1 uppercase tracking-widest font-semibold">
-            Control Panel
-          </p>
-        </div>
-        
-        <nav className="flex-1 py-6 px-4 space-y-2 font-medium">
-          <Link href="/admin/dashboard" className="block px-4 py-3 rounded-lg bg-gray-800 text-white hover:bg-gray-700 transition-colors">
-            Dashboard
-          </Link>
-          <Link href="/admin/users" className="block px-4 py-3 rounded-lg text-gray-400 hover:text-white hover:bg-gray-800 transition-colors">
-            Users
-          </Link>
-          <Link href="/admin/brands" className="block px-4 py-3 rounded-lg text-gray-400 hover:text-white hover:bg-gray-800 transition-colors">
-            Brands
-          </Link>
-          <Link href="/admin/products" className="block px-4 py-3 rounded-lg text-gray-400 hover:text-white hover:bg-gray-800 transition-colors">
-            Products
-          </Link>
-          <Link href="#" className="block px-4 py-3 rounded-lg text-gray-400 hover:text-white hover:bg-gray-800 transition-colors">
-            Settings
-          </Link>
-        </nav>
-
-        <div className="p-6 border-t border-gray-800">
-          <div className="flex items-center gap-3 mb-4">
-            <div className="w-10 h-10 rounded-full bg-gray-700 flex items-center justify-center font-bold text-gray-300">
-              {user.email?.charAt(0).toUpperCase() || 'A'}
-            </div>
-            <div className="overflow-hidden">
-              <p className="text-sm font-bold truncate text-gray-200">{user.email}</p>
-              <p className="text-xs text-green-400 font-semibold uppercase tracking-wider">Online</p>
-            </div>
-          </div>
-          <form action="/api/auth/signout" method="post">
-            <button className="w-full py-2.5 px-4 bg-gray-800 hover:bg-red-500/10 hover:text-red-400 text-gray-300 rounded-lg text-sm font-bold transition-colors border border-gray-700 hover:border-red-500/20">
-              Sign Out
-            </button>
-          </form>
-        </div>
-      </aside>
+      <AdminSidebar />
 
       {/* Main Content Area */}
-      <main className="flex-1 ml-64 bg-gray-50 min-h-screen">
-        {children}
+      <main className="flex-1 ml-[280px] bg-[#F0F2F5] min-h-screen flex flex-col relative">
+        {/* Top Navbar */}
+        <header className="h-[90px] px-8 flex items-center justify-between sticky top-0 z-10">
+           <div className="flex items-center gap-4">
+              <button className="bg-white text-gray-500 hover:text-gray-800 px-6 py-2.5 rounded-full text-sm font-semibold shadow-sm border border-gray-100 transition-all">
+                 Lorem ipsum
+              </button>
+              <button className="bg-white text-gray-500 hover:text-gray-800 px-6 py-2.5 rounded-full text-sm font-semibold shadow-sm border border-gray-100 transition-all">
+                 Amet lorem
+              </button>
+              <button className="bg-[#3ED08C] text-white px-6 py-2.5 rounded-full text-sm font-semibold shadow-md shadow-[#3ED08C]/30 hover:bg-[#32B879] transition-all">
+                 Ipsum dolor
+              </button>
+           </div>
+           
+           <div className="flex items-center gap-6">
+               <button className="text-gray-400 hover:text-gray-600 transition-colors">
+                  <Search size={24} />
+               </button>
+               <button className="text-gray-400 hover:text-gray-600 transition-colors relative">
+                  <Bell size={24} />
+                  <span className="absolute -top-1 -right-1 w-4 h-4 bg-[#3ED08C] rounded-full border-2 border-[#F0F2F5] flex items-center justify-center text-[9px] text-white font-bold">5</span>
+               </button>
+               <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-[#6A43FB] to-[#3ED08C] p-[2px] shadow-sm">
+                  <div className="w-full h-full bg-[#1A1C29] rounded-full flex items-center justify-center text-white">
+                      <User size={18} />
+                  </div>
+               </div>
+               <button className="text-gray-600 hover:text-gray-900 ml-2">
+                  <Menu size={32} strokeWidth={1.5} />
+               </button>
+           </div>
+        </header>
+
+        {/* Dashboard Content */}
+        <div className="p-8 pt-0 flex-1 relative z-0">
+          {children}
+        </div>
       </main>
     </div>
   );
