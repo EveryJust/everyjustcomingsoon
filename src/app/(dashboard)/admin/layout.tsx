@@ -37,11 +37,14 @@ export default async function AdminLayout({
           <Link href="/admin/dashboard" className="block px-4 py-3 rounded-lg bg-gray-800 text-white hover:bg-gray-700 transition-colors">
             Dashboard
           </Link>
-          <Link href="#" className="block px-4 py-3 rounded-lg text-gray-400 hover:text-white hover:bg-gray-800 transition-colors">
+          <Link href="/admin/users" className="block px-4 py-3 rounded-lg text-gray-400 hover:text-white hover:bg-gray-800 transition-colors">
             Users
           </Link>
-          <Link href="#" className="block px-4 py-3 rounded-lg text-gray-400 hover:text-white hover:bg-gray-800 transition-colors">
+          <Link href="/admin/brands" className="block px-4 py-3 rounded-lg text-gray-400 hover:text-white hover:bg-gray-800 transition-colors">
             Brands
+          </Link>
+          <Link href="/admin/products" className="block px-4 py-3 rounded-lg text-gray-400 hover:text-white hover:bg-gray-800 transition-colors">
+            Products
           </Link>
           <Link href="#" className="block px-4 py-3 rounded-lg text-gray-400 hover:text-white hover:bg-gray-800 transition-colors">
             Settings
