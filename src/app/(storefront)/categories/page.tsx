@@ -33,12 +33,29 @@ export default function CategoriesPage() {
         }));
         
         const mainCats = normalizedData.filter(c => !c.parentId);
-        const subCats = normalizedData.filter(c => c.parentId);
+        
+        // Subcategories are those whose parent is a main category
+        const subCats = normalizedData.filter(c => 
+          c.parentId && mainCats.some(m => m.id === c.parentId)
+        );
+        
+        // 2nd level categories are those whose parent is a subcategory
+        const secondLevelCats = normalizedData.filter(c => 
+          c.parentId && subCats.some(s => s.id === c.parentId)
+        );
 
-        const formatted = mainCats.map(main => ({
-          ...main,
-          subcategories: subCats.filter(sub => sub.parentId === main.id)
-        })).sort((a, b) => new Date(a.createdAt || a.created_at).getTime() - new Date(b.createdAt || b.created_at).getTime());
+        const formatted = mainCats.map(main => {
+          const directSubs = subCats.filter(sub => sub.parentId === main.id);
+          const subsWithChildren = directSubs.map(sub => ({
+            ...sub,
+            children: secondLevelCats.filter(child => child.parentId === sub.id)
+          }));
+          
+          return {
+            ...main,
+            subcategories: subsWithChildren
+          };
+        }).sort((a, b) => new Date(a.createdAt || a.created_at).getTime() - new Date(b.createdAt || b.created_at).getTime());
 
         setCategories(formatted);
         if (formatted.length > 0) {
@@ -117,19 +134,34 @@ export default function CategoriesPage() {
           <div className="space-y-16">
             {categories.map((cat) => (
               <div key={cat.id} id={`category-${cat.id}`} className="scroll-mt-6 lg:scroll-mt-10">
-                <h2 className="text-lg lg:text-2xl font-bold text-gray-900 mb-5 lg:mb-8">All {cat.name}</h2>
+                <h2 className="text-lg lg:text-2xl font-bold text-gray-900 mb-6 lg:mb-8">All {cat.name}</h2>
                 
                 <div className="grid grid-cols-3 md:grid-cols-4 xl:grid-cols-5 gap-y-8 gap-x-2 lg:gap-8">
-                  {cat.subcategories?.map((sub: any, idx: number) => (
-                    <Link href={`/category/${cat.slug}?sub=${sub.slug}`} key={sub.id || idx} className="flex flex-col items-center group cursor-pointer">
-                      <div className="w-[72px] h-[72px] lg:w-36 lg:h-36 rounded-full bg-white overflow-hidden mb-2 group-hover:shadow-md transition-all flex items-center justify-center border border-gray-100 p-1 lg:p-2">
-                         <img src={sub.imageUrl || '/turbo_charger.png'} alt={sub.name} className="w-full h-full object-cover rounded-full hover:scale-105 transition-transform" />
-                      </div>
-                      <span className="text-[11px] lg:text-[15px] text-center font-medium text-gray-800 leading-tight group-hover:text-primary transition-colors mt-1 max-w-[80%] lg:max-w-full">
-                        {sub.name}
-                      </span>
-                    </Link>
-                  ))}
+                  {cat.subcategories?.flatMap((sub: any, idx: number) => {
+                    const subItem = (
+                      <Link href={`/category/${cat.slug}?sub=${sub.slug}`} key={sub.id || `sub-${idx}`} className="flex flex-col items-center group cursor-pointer">
+                        <div className="w-[72px] h-[72px] lg:w-36 lg:h-36 rounded-full bg-white overflow-hidden mb-2 group-hover:shadow-md transition-all flex items-center justify-center border border-gray-100 p-1 lg:p-2">
+                           <img src={sub.imageUrl || '/turbo_charger.png'} alt={sub.name} className="w-full h-full object-cover rounded-full hover:scale-105 transition-transform" />
+                        </div>
+                        <span className="text-[11px] lg:text-[15px] text-center font-medium text-gray-800 leading-tight group-hover:text-primary transition-colors mt-1 max-w-[80%] lg:max-w-full">
+                          {sub.name}
+                        </span>
+                      </Link>
+                    );
+                    
+                    const childrenItems = sub.children ? sub.children.map((child: any) => (
+                      <Link href={`/category/${cat.slug}?sub=${sub.slug}&child=${child.slug}`} key={child.id} className="flex flex-col items-center group cursor-pointer">
+                        <div className="w-[72px] h-[72px] lg:w-36 lg:h-36 rounded-full bg-white overflow-hidden mb-2 group-hover:shadow-md transition-all flex items-center justify-center border border-gray-100 p-1 lg:p-2">
+                           <img src={child.imageUrl || '/turbo_charger.png'} alt={child.name} className="w-full h-full object-cover rounded-full hover:scale-105 transition-transform" />
+                        </div>
+                        <span className="text-[11px] lg:text-[15px] text-center font-medium text-gray-800 leading-tight group-hover:text-primary transition-colors mt-1 max-w-[80%] lg:max-w-full">
+                          {child.name}
+                        </span>
+                      </Link>
+                    )) : [];
+                    
+                    return [subItem, ...childrenItems];
+                  })}
                   
                   {(!cat.subcategories || cat.subcategories.length === 0) && (
                     <div className="col-span-full text-center py-8 text-gray-500 text-sm">
