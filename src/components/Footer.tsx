@@ -10,8 +10,10 @@ export default function Footer() {
     return null;
   }
 
+  const isWishlist = pathname === '/wishlist';
+
   return (
-    <footer className="w-full bg-white pt-16 border-t border-gray-200">
+    <footer className={`w-full bg-white pt-16 border-t border-gray-200 ${isWishlist ? 'hidden md:block' : ''}`}>
       <div className="max-w-7xl mx-auto px-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-8 mb-12">
         
         {/* About Our Store */}

@@ -2,7 +2,6 @@
 import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { formatCurrency } from '@/utils/currency';
-import { useCartStore } from '@/store/useCartStore';
 import { useWishlistStore } from '@/store/useWishlistStore';
 import toast from 'react-hot-toast';
 
@@ -11,7 +10,6 @@ interface ProductCardProps {
 }
 
 export default function ProductCard({ product }: ProductCardProps) {
-  const { addItem } = useCartStore();
   const { toggleWishlist, isInWishlist } = useWishlistStore();
   const [mounted, setMounted] = useState(false);
 
@@ -34,19 +32,6 @@ export default function ProductCard({ product }: ProductCardProps) {
   const reviewsCount = 3800;
   
   const isWishlisted = mounted ? isInWishlist(product.id) : false;
-
-  const handleAddToCart = (e: React.MouseEvent) => {
-    e.preventDefault();
-    addItem({
-      id: product.id,
-      slug: product.slug,
-      name: product.name,
-      price: currentPrice,
-      image,
-      qty: 1
-    });
-    toast.success('Added to cart');
-  };
 
   const handleWishlist = (e: React.MouseEvent) => {
     e.preventDefault();
@@ -120,7 +105,7 @@ export default function ProductCard({ product }: ProductCardProps) {
         <div className="mt-auto"></div>
 
         {/* Rating & Reviews */}
-        <div className="flex flex-wrap items-center justify-between mt-1">
+        <div className="flex flex-wrap items-center mt-1">
           <div className="flex flex-wrap items-center gap-1 sm:gap-2">
             <div className="bg-teal-600 text-white text-[10px] sm:text-xs font-bold px-1.5 py-0.5 rounded-full flex items-center gap-0.5 sm:gap-1">
               {rating}
@@ -130,12 +115,6 @@ export default function ProductCard({ product }: ProductCardProps) {
             </div>
             <span className="text-[10px] sm:text-xs text-gray-500 font-medium">{reviewsCount}</span>
           </div>
-          <button 
-            onClick={handleAddToCart}
-            className="text-[10px] sm:text-xs font-bold text-white bg-primary px-2 sm:px-3 py-1 rounded-sm hover:bg-primary/90 transition-colors uppercase"
-          >
-            Add
-          </button>
         </div>
 
       </div>

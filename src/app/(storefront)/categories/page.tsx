@@ -3,11 +3,21 @@
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { createClient } from '@/utils/supabase/client';
+import { useCartStore } from '@/store/useCartStore';
+import CartDrawer from '@/components/CartDrawer';
 
 export default function CategoriesPage() {
   const [activeCategoryId, setActiveCategoryId] = useState<string | null>(null);
   const [categories, setCategories] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [isCartOpen, setIsCartOpen] = useState(false);
+  const [mounted, setMounted] = useState(false);
+  const { items } = useCartStore();
+  const cartCount = items.reduce((acc, item) => acc + item.qty, 0);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   useEffect(() => {
     async function fetchCategories() {
@@ -112,18 +122,28 @@ export default function CategoriesPage() {
   return (
     <div className="bg-white lg:min-h-screen flex flex-col">
       {/* Mobile Top Header */}
-      <div className="lg:hidden flex items-center justify-between p-4 border-b border-gray-100 bg-white sticky top-0 z-40">
-        <h1 className="text-[15px] font-bold text-gray-800 tracking-wide uppercase">Categories</h1>
-        <div className="flex gap-4 items-center">
-          <button className="text-gray-700">
+      <div className="lg:hidden sticky top-0 left-0 w-full z-40 p-3 flex justify-between items-center bg-white border-b border-gray-100 shadow-sm">
+        <Link href="/" className="bg-gray-50 border border-gray-200 rounded-full p-2 text-gray-800">
+          <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+          </svg>
+        </Link>
+        <div className="flex gap-2">
+          {/* Search Icon */}
+          <button className="bg-gray-50 border border-gray-200 rounded-full p-2 text-gray-800">
              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
           </button>
-          <button className="text-gray-700">
+          {/* Wishlist Icon */}
+          <Link href="/wishlist" className="bg-gray-50 border border-gray-200 rounded-full p-2 text-gray-800">
              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" /></svg>
-          </button>
-          <button className="text-gray-700 relative">
+          </Link>
+          {/* Cart Icon */}
+          <button 
+            onClick={() => setIsCartOpen(true)}
+            className="bg-gray-50 border border-gray-200 rounded-full p-2 text-gray-800 relative cursor-pointer"
+          >
              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" /></svg>
-             <span className="absolute -top-1.5 -right-1.5 bg-primary text-white text-[9px] w-4 h-4 rounded-full flex items-center justify-center font-bold">2</span>
+             {mounted && cartCount > 0 && <span className="absolute -top-1 -right-1 bg-primary text-white text-[10px] w-4 h-4 rounded-full flex items-center justify-center font-bold">{cartCount}</span>}
           </button>
         </div>
       </div>
@@ -217,6 +237,7 @@ export default function CategoriesPage() {
       )}
       </div>
       
+      <CartDrawer isOpen={isCartOpen} onClose={() => setIsCartOpen(false)} />
     </div>
   );
 }

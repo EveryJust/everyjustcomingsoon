@@ -10,6 +10,7 @@ import WidePromoBanner from '@/components/Home/WidePromoBanner';
 import DealAndFeatured from '@/components/Home/DealAndFeatured';
 import Testimonials from '@/components/Home/Testimonials';
 import LatestBlog from '@/components/Home/LatestBlog';
+import AllProducts from '@/components/Home/AllProducts';
 
 export default function Home() {
   return (
@@ -105,6 +106,9 @@ export default function Home() {
 
         {/* Shop By Categories Section */}
         <ShopByCategories />
+
+        {/* All Products Section */}
+        <AllProducts />
 
         {/* Features Row */}
         <FeaturesRow />

@@ -2,15 +2,12 @@
 import React from 'react';
 import Link from 'next/link';
 import { formatCurrency } from '@/utils/currency';
-import { useCartStore } from '@/store/useCartStore';
-import toast from 'react-hot-toast';
 
 interface HorizontalProductCardProps {
   product: any;
 }
 
 export default function HorizontalProductCard({ product }: HorizontalProductCardProps) {
-  const { addItem } = useCartStore();
   const currentPrice = product.offer_price || product.price;
   const originalPrice = product.offer_price ? product.price : undefined;
   
@@ -24,19 +21,6 @@ export default function HorizontalProductCard({ product }: HorizontalProductCard
   const image = product.images && product.images.length > 0 ? product.images[0] : '/dash_camera.png';
   const rating = 0;
   const status = 'ADD TO CART';
-
-  const handleAddToCart = (e: React.MouseEvent) => {
-    e.preventDefault();
-    addItem({
-      id: product.id,
-      slug: product.slug,
-      name: product.name,
-      price: currentPrice,
-      image,
-      qty: 1
-    });
-    toast.success('Added to cart');
-  };
 
   return (
     <Link href={`/product/${product.slug || product.id}`} className="bg-white border border-gray-100 rounded-sm p-4 flex gap-4 h-full shadow-sm hover:shadow-md transition-shadow group relative">
@@ -78,20 +62,6 @@ export default function HorizontalProductCard({ product }: HorizontalProductCard
           <span className="text-primary font-bold text-sm">{formatCurrency(currentPrice)}</span>
         </div>
 
-        {/* Action Button */}
-        <div>
-           <button 
-             onClick={handleAddToCart}
-             className={`text-[10px] font-bold uppercase tracking-wider pb-0.5 transition-colors border-b-2 ${
-               status === 'SOLD OUT' 
-               ? 'text-gray-400 border-gray-200 cursor-not-allowed' 
-               : 'text-gray-900 border-gray-900 hover:text-primary hover:border-primary cursor-pointer'
-             }`}
-             disabled={status === 'SOLD OUT'}
-           >
-             {status}
-           </button>
-        </div>
       </div>
     </Link>
   );
