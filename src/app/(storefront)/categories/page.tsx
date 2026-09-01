@@ -136,7 +136,7 @@ export default function CategoriesPage() {
       ) : (
         <>
         {/* Sidebar */}
-        <div className="w-[85px] lg:w-72 flex-shrink-0 bg-[#f9f9f9] flex flex-col border-r border-gray-100 sticky top-[72px] lg:top-[125px] h-[calc(100vh-72px)] lg:h-[calc(100vh-125px)] overflow-y-auto scrollbar-hide">
+        <div className="w-[85px] lg:w-72 flex-shrink-0 bg-[#f9f9f9] flex flex-col border-r border-gray-100 sticky top-[72px] lg:top-[125px] h-[calc(100dvh-136px)] lg:h-[calc(100vh-125px)] overflow-y-auto category-scrollbar">
           {categories.map((category) => {
             const isActive = category.id === activeCategoryId;
             return (
@@ -170,7 +170,7 @@ export default function CategoriesPage() {
         </div>
 
         {/* Main Content Area */}
-        <div id="categories-scroll-container" className="flex-1 bg-white overflow-y-auto p-4 lg:p-10 pb-32 lg:pb-24 h-[calc(100vh-72px)] lg:h-[calc(100vh-125px)] scroll-smooth">
+        <div id="categories-scroll-container" className="flex-1 bg-white overflow-y-auto p-4 lg:p-10 pb-32 lg:pb-24 h-[calc(100dvh-136px)] lg:h-[calc(100vh-125px)] scroll-smooth category-scrollbar">
           <div className="space-y-16">
             {categories.map((cat) => (
               <div key={cat.id} id={`category-${cat.id}`} className="scroll-mt-6 lg:scroll-mt-10">

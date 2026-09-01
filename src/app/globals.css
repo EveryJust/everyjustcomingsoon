@@ -77,3 +77,20 @@ body {
 .dropdown-scrollbar::-webkit-scrollbar-thumb:hover {
   background-color: rgba(106, 67, 251, 0.4);
 }
+
+.category-scrollbar::-webkit-scrollbar {
+  width: 4px;
+}
+
+.category-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.category-scrollbar::-webkit-scrollbar-thumb {
+  background-color: rgba(0, 0, 0, 0.15);
+  border-radius: 10px;
+}
+
+.category-scrollbar::-webkit-scrollbar-thumb:hover {
+  background-color: rgba(0, 0, 0, 0.3);
+}
