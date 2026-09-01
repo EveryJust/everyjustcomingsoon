@@ -1,5 +1,6 @@
 'use client';
 import React, { useEffect, useState } from 'react';
+import Link from 'next/link';
 import { useCartStore } from '@/store/useCartStore';
 
 interface CartDrawerProps {
@@ -62,11 +63,13 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
           ) : (
             items.map((item) => (
               <div key={item.id} className="flex gap-4 items-center group">
-                <div className="w-20 h-20 flex-shrink-0 bg-gray-50 rounded-sm relative overflow-hidden border border-gray-100">
+                <Link href={`/product/${item.slug || item.id}`} onClick={onClose} className="w-20 h-20 flex-shrink-0 bg-gray-50 rounded-sm relative overflow-hidden border border-gray-100 block">
                   <div className="absolute inset-0 bg-cover bg-center transition-transform group-hover:scale-110" style={{ backgroundImage: `url('${item.image}')` }} />
-                </div>
+                </Link>
                 <div className="flex-1">
-                  <h4 className="text-sm font-bold text-gray-900 line-clamp-2 hover:text-primary transition-colors cursor-pointer">{item.name}</h4>
+                  <Link href={`/product/${item.slug || item.id}`} onClick={onClose}>
+                    <h4 className="text-sm font-bold text-gray-900 line-clamp-2 hover:text-primary transition-colors cursor-pointer">{item.name}</h4>
+                  </Link>
                   <div className="text-primary font-bold mt-1">₹{item.price.toFixed(2)}</div>
                   <div className="flex items-center gap-3 mt-2">
                     <div className="flex items-center border border-gray-200 rounded-sm">
