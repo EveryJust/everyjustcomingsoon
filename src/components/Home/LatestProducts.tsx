@@ -1,45 +1,19 @@
 import React from 'react';
 import ProductCard from '../ProductCard';
+import { createClient } from '@/utils/supabase/server';
+import { formatCurrency } from '@/utils/currency';
 
-export default function LatestProducts() {
-  const latestProducts = [
-    {
-      id: 1,
-      image: '/promo_top_banner.png', // Placeholder
-      title: 'Pilot Automotive Universal Fit Black with Red Trim',
-      price: '₹17.00',
-      originalPrice: '₹19.00',
-      discount: '-11%',
-      rating: 0,
-      status: 'ADD TO CART' as const
-    },
-    {
-      id: 2,
-      image: '/dash_camera.png', // Placeholder
-      title: 'SUPAREE 7 Round LED Headlights RGB Halo Angel',
-      price: '₹12.00',
-      rating: 0,
-      status: 'OPTIONS' as const
-    },
-    {
-      id: 3,
-      image: '/turbo_charger.png', // Placeholder
-      title: 'Thrustmaster TH8S Shifter Add-On Manual Ge',
-      price: '₹90.00',
-      originalPrice: '₹97.00',
-      discount: '-7%',
-      rating: 0,
-      status: 'ADD TO CART' as const
-    },
-    {
-      id: 4,
-      image: '/promo_bottom_banner.png', // Placeholder
-      title: 'New Upgraded 1-Piece Rear Driveshaft & Parts',
-      price: '₹15.00',
-      rating: 0,
-      status: 'ADD TO CART' as const
-    }
-  ];
+export default async function LatestProducts() {
+  const supabase = await createClient();
+  const { data: latestProductsData, error } = await supabase
+    .from('products')
+    .select('*')
+    .eq('status', 'active')
+    .order('created_at', { ascending: false })
+    .limit(4);
+
+  const latestProducts = latestProductsData || [];
+
 
   return (
     <div className="py-8 sm:py-12 border-t border-gray-200 mt-8 sm:mt-12">
@@ -76,18 +50,31 @@ export default function LatestProducts() {
 
         {/* Product Cards Grid */}
         <div className="lg:col-span-4 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2 sm:gap-4">
-           {latestProducts.map((product) => (
-            <ProductCard 
-              key={product.id}
-              image={product.image}
-              title={product.title}
-              price={product.price}
-              originalPrice={product.originalPrice}
-              discount={product.discount}
-              rating={product.rating}
-              status={product.status}
-            />
-          ))}
+           {latestProducts.map((product) => {
+             // Calculate discount if both prices exist
+             let discountStr;
+             let currentPrice = product.offer_price || product.price;
+             let originalPrice = product.offer_price ? product.price : undefined;
+             if (originalPrice && currentPrice < originalPrice) {
+               const diff = originalPrice - currentPrice;
+               const percent = Math.round((diff / originalPrice) * 100);
+               discountStr = `${percent}% off`;
+             }
+
+             return (
+              <ProductCard 
+                key={product.id}
+                id={product.id}
+                slug={product.slug}
+                image={product.images && product.images.length > 0 ? product.images[0] : '/dash_camera.png'}
+                title={product.name}
+                price={formatCurrency(currentPrice)}
+                originalPrice={originalPrice ? formatCurrency(originalPrice) : undefined}
+                discount={discountStr}
+                status={'ADD TO CART'}
+              />
+            );
+          })}
         </div>
 
       </div>

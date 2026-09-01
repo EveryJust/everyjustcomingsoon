@@ -1,16 +1,21 @@
 import React from 'react';
+import Link from 'next/link';
 
 interface HorizontalProductCardProps {
+  id?: string | number;
+  slug?: string;
   image: string;
   title: string;
   price: string;
   originalPrice?: string;
   discount?: string;
   rating?: number;
-  status: 'ADD TO CART' | 'OPTIONS' | 'SOLD OUT';
+  status: 'ADD TO CART' | 'OPTIONS' | 'SOLD OUT' | string;
 }
 
 export default function HorizontalProductCard({
+  id = 1,
+  slug,
   image,
   title,
   price,
@@ -20,7 +25,7 @@ export default function HorizontalProductCard({
   status
 }: HorizontalProductCardProps) {
   return (
-    <div className="bg-white border border-gray-100 rounded-sm p-4 flex gap-4 h-full shadow-sm hover:shadow-md transition-shadow group relative">
+    <Link href={`/product/${slug || id}`} className="bg-white border border-gray-100 rounded-sm p-4 flex gap-4 h-full shadow-sm hover:shadow-md transition-shadow group relative">
       
       {/* Discount Badge */}
       {discount && (
@@ -73,6 +78,6 @@ export default function HorizontalProductCard({
            </button>
         </div>
       </div>
-    </div>
+    </Link>
   );
 }

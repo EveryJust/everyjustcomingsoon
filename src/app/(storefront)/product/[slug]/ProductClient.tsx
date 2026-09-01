@@ -1,11 +1,10 @@
 'use client';
-import React, { useState, use } from 'react';
+import React, { useState } from 'react';
 import Link from 'next/link';
 import CartDrawer from '@/components/CartDrawer';
-import TrendingProducts from '@/components/Home/TrendingProducts';
+import { formatCurrency } from '@/utils/currency';
 
-export default function ProductDetailsPage({ params }: { params: Promise<{ id: string }> }) {
-  const unwrappedParams = use(params);
+export default function ProductClient({ product, similarProducts }: { product: any, similarProducts?: React.ReactNode }) {
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [isDetailsOpen, setIsDetailsOpen] = useState(false);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
@@ -30,20 +29,8 @@ export default function ProductDetailsPage({ params }: { params: Promise<{ id: s
     }
   };
 
-  // Mock product data for the demo
-  const product = {
-    id: unwrappedParams.id,
-    title: 'Women Wayfarer Sunglasses',
-    price: '₹60',
-    originalPrice: '₹69',
-    discount: '13% off',
-    rating: 4.1,
-    reviewsCount: 3800,
-    delivery: 'Free Delivery',
-    description: 'Elevate your style with these premium Women Wayfarer Sunglasses. Designed with a sleek black frame and polarized lenses, they offer 100% UV protection while ensuring you look effortlessly chic in any setting.',
-    images: ['/dash_camera.png', '/turbo_charger.png', '/promo_top_banner.png'],
-    features: ['100% UV Protection', 'Polarized Lenses', 'Lightweight Frame', 'Scratch Resistant'],
-  };
+  const displayImages = product.images && product.images.length > 0 ? product.images : ['/dash_camera.png'];
+
 
   return (
     <div className="bg-gray-50 min-h-screen pb-24 lg:pb-12">
@@ -84,15 +71,14 @@ export default function ProductDetailsPage({ params }: { params: Promise<{ id: s
               className="w-full flex overflow-x-auto snap-x snap-mandatory scrollbar-hide lg:rounded-xl shadow-sm bg-white"
               onScroll={handleScroll}
             >
-              {product.images.map((img, idx) => (
+              {displayImages.map((img: string, idx: number) => (
                 <div key={idx} className="w-full flex-shrink-0 snap-center snap-always">
                   <img src={img} alt={`Product Image ${idx + 1}`} className="w-full h-auto object-cover lg:rounded-xl" />
                 </div>
               ))}
             </div>
-            {/* Image pagination dots (Mobile) */}
             <div className="absolute bottom-4 left-0 w-full flex justify-center gap-1.5 lg:hidden">
-              {product.images.map((_, idx) => (
+              {displayImages.map((_: string, idx: number) => (
                 <span 
                   key={idx} 
                   className={`w-2 h-2 rounded-full transition-colors ${idx === currentImageIndex ? 'bg-primary' : 'bg-gray-300'}`}
@@ -103,7 +89,7 @@ export default function ProductDetailsPage({ params }: { params: Promise<{ id: s
 
           {/* Desktop Thumbnails */}
           <div className="hidden lg:flex gap-4 mt-4">
-            {product.images.map((img, idx) => (
+            {displayImages.map((img: string, idx: number) => (
               <div 
                 key={idx} 
                 onClick={() => handleThumbnailClick(idx)}
@@ -121,7 +107,7 @@ export default function ProductDetailsPage({ params }: { params: Promise<{ id: s
           {/* Main Info Card */}
           <div className="bg-white p-4 lg:p-6 lg:rounded-xl shadow-sm">
             <div className="flex justify-between items-start mb-3">
-              <h1 className="text-[16px] sm:text-2xl font-normal text-gray-800 pr-4 leading-snug">{product.title}</h1>
+              <h1 className="text-[16px] sm:text-2xl font-normal text-gray-800 pr-4 leading-snug">{product.name}</h1>
               <div className="flex gap-4 flex-shrink-0 text-gray-600">
                 <button className="flex flex-col items-center gap-1">
                   <svg className="w-5 h-5 text-red-500 fill-current" viewBox="0 0 24 24"><path d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" /></svg>
@@ -135,22 +121,19 @@ export default function ProductDetailsPage({ params }: { params: Promise<{ id: s
             </div>
 
             <div className="flex items-baseline gap-2 mb-3">
-              <span className="text-[32px] font-extrabold text-gray-900 leading-none">₹108</span>
-              <span className="text-gray-400 text-sm line-through font-medium">137</span>
-              <span className="text-gray-600 font-bold text-sm">21% off</span>
+              <span className="text-[32px] font-extrabold text-gray-900 leading-none">{formatCurrency(product.offer_price || product.price)}</span>
+              {product.offer_price && product.offer_price < product.price && (
+                <>
+                  <span className="text-gray-400 text-sm line-through font-medium">{formatCurrency(product.price)}</span>
+                  <span className="text-gray-600 font-bold text-sm">
+                    {Math.round(((product.price - product.offer_price) / product.price) * 100)}% off
+                  </span>
+                </>
+              )}
               <svg className="w-4 h-4 text-gray-400 ml-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
             </div>
-            
-            <div className="bg-gradient-to-r from-gray-50 to-white border border-gray-100 rounded-full px-3 py-2 flex items-center gap-2 mb-3 w-fit">
-              <div className="w-5 h-5 flex items-center justify-center">
-                {/* Mock UPI logo icon */}
-                <svg viewBox="0 0 24 24" fill="none" className="w-full h-full"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" stroke="#f97316" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>
-              </div>
-              <span className="text-sm font-semibold text-gray-700">UPI Offer applied for you!!</span>
-            </div>
-            
-            <div className="text-[16px] font-semibold text-gray-800 mb-3">
-              ₹137 <span className="font-normal text-gray-600 text-sm">with COD</span>
+            <div className="text-[16px] font-semibold text-gray-800 mb-3 mt-4">
+              <span className="font-normal text-gray-600 text-sm">Cash on delivery available</span>
             </div>
 
             <div className="flex items-center gap-2 mb-2">
@@ -182,22 +165,15 @@ export default function ProductDetailsPage({ params }: { params: Promise<{ id: s
              </div>
              
              <div className="grid grid-cols-2 gap-y-5 gap-x-4 mb-6">
-               <div>
-                 <div className="text-gray-500 text-[13px] mb-0.5">Lens Color</div>
-                 <div className="text-gray-900 text-[14px] font-medium">Black</div>
-               </div>
-               <div>
-                 <div className="text-gray-500 text-[13px] mb-0.5">Frame Material</div>
-                 <div className="text-gray-900 text-[14px] font-medium">Polycarbonate (PC)</div>
-               </div>
-               <div>
-                 <div className="text-gray-500 text-[13px] mb-0.5">Lens Type</div>
-                 <div className="text-gray-900 text-[14px] font-medium leading-tight">Polycarbonate and UV Protected</div>
-               </div>
-               <div>
-                 <div className="text-gray-500 text-[13px] mb-0.5">Frame Type</div>
-                 <div className="text-gray-900 text-[14px] font-medium">Full-rim</div>
-               </div>
+               {(product.highlights || []).map((highlight: any, idx: number) => (
+                 <div key={idx}>
+                   <div className="text-gray-500 text-[13px] mb-0.5">{highlight.label}</div>
+                   <div className="text-gray-900 text-[14px] font-medium leading-tight">{highlight.value}</div>
+                 </div>
+               ))}
+               {(!product.highlights || product.highlights.length === 0) && (
+                 <div className="col-span-2 text-gray-500 text-sm">No highlights available.</div>
+               )}
              </div>
 
              {/* Additional Details */}
@@ -220,14 +196,15 @@ export default function ProductDetailsPage({ params }: { params: Promise<{ id: s
                {isDetailsOpen && (
                  <div className="mt-4 animate-in slide-in-from-top-2 fade-in duration-200">
                    <div className="grid grid-cols-[130px_1fr] gap-y-3 gap-x-2 text-sm">
-                     <div className="text-gray-500">Shape</div><div className="text-gray-900">Wayfarer</div>
-                     <div className="text-gray-500">Net Quantity (N)</div><div className="text-gray-900">2</div>
-                     <div className="text-gray-500">Occasion</div><div className="text-gray-900">Eye Protection</div>
-                     <div className="text-gray-500">Frame Color</div><div className="text-gray-900">Black</div>
-                     <div className="text-gray-500 leading-tight pr-2">Lens Type Supported</div><div className="text-gray-900 pt-1">UV Protect</div>
-                     <div className="text-gray-500">Generic Name</div><div className="text-gray-900">Sunglasses</div>
-                     <div className="text-gray-500 leading-tight pr-2">Product Dimension Unit</div><div className="text-gray-900 pt-1">cm</div>
-                     <div className="text-gray-500">Country of Origin</div><div className="text-gray-900">India</div>
+                     {(product.additional_details || []).map((detail: any, idx: number) => (
+                       <React.Fragment key={idx}>
+                         <div className="text-gray-500 leading-tight pr-2">{detail.label}</div>
+                         <div className="text-gray-900 pt-1">{detail.value}</div>
+                       </React.Fragment>
+                     ))}
+                     {(!product.additional_details || product.additional_details.length === 0) && (
+                       <div className="text-gray-500 col-span-2">No additional details available.</div>
+                     )}
                    </div>
                    <button className="text-primary text-sm font-semibold mt-4">More Information</button>
                  </div>
@@ -406,7 +383,7 @@ export default function ProductDetailsPage({ params }: { params: Promise<{ id: s
             <h3 className="font-semibold text-gray-900 mb-4 text-lg">Similar Products</h3>
             <div className="opacity-70 pointer-events-none">
               {/* Re-using TrendingProducts just as a visual mock of similar products */}
-              <TrendingProducts />
+              {similarProducts}
             </div>
          </div>
       </div>

@@ -1,63 +1,19 @@
 import React from 'react';
 import HorizontalProductCard from '../HorizontalProductCard';
+import { createClient } from '@/utils/supabase/server';
+import { formatCurrency } from '@/utils/currency';
 
-export default function DealAndFeatured() {
-  const featuredProducts = [
-    {
-      id: 1,
-      image: '/dash_camera.png', // Placeholder
-      title: 'AUTO-VOX 9.8ft Extension Cord Dash Cam Rear',
-      price: '₹53.00',
-      originalPrice: '₹57.00',
-      discount: '-7%',
-      rating: 0,
-      status: 'ADD TO CART' as const
-    },
-    {
-      id: 2,
-      image: '/promo_bottom_banner.png', // Placeholder
-      title: 'New Upgraded 1-Piece Rear Driveshaft & Parts',
-      price: '₹15.00',
-      rating: 0,
-      status: 'ADD TO CART' as const
-    },
-    {
-      id: 3,
-      image: '/dash_camera.png', // Placeholder (Halo headlights)
-      title: 'SUPAREE 7 Round LED Headlights RGB Halo Angel',
-      price: '₹12.00',
-      rating: 0,
-      status: 'OPTIONS' as const
-    },
-    {
-      id: 4,
-      image: '/promo_top_banner.png', // Placeholder (Oil)
-      title: 'Pennzoil Platinum High Mileage Synthetic Motor Oil',
-      price: '₹72.00',
-      originalPrice: '₹79.00',
-      discount: '-9%',
-      rating: 0,
-      status: 'ADD TO CART' as const
-    },
-    {
-      id: 5,
-      image: '/turbo_charger.png', // Placeholder (Battery)
-      title: 'New Hi-Power Maintenance Free Battery (Super Power)',
-      price: '₹165.00',
-      rating: 0,
-      status: 'OPTIONS' as const
-    },
-    {
-      id: 6,
-      image: '/turbo_charger.png', // Placeholder
-      title: 'Savini Forged SV64-XC Wheels Rims On Sale',
-      price: '₹35.00',
-      originalPrice: '₹39.00',
-      discount: '-10%',
-      rating: 0,
-      status: 'ADD TO CART' as const
-    }
-  ];
+export default async function DealAndFeatured() {
+  const supabase = await createClient();
+  const { data: productsData, error } = await supabase
+    .from('products')
+    .select('*')
+    .eq('status', 'active')
+    .order('created_at', { ascending: true }) // just for variety
+    .limit(6);
+
+  const featuredProducts = productsData || [];
+
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 py-8 sm:py-12 mb-8 sm:mb-12">
@@ -150,18 +106,30 @@ export default function DealAndFeatured() {
         </div>
         
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 flex-1">
-          {featuredProducts.map((product) => (
-            <HorizontalProductCard 
-              key={product.id}
-              image={product.image}
-              title={product.title}
-              price={product.price}
-              originalPrice={product.originalPrice}
-              discount={product.discount}
-              rating={product.rating}
-              status={product.status}
-            />
-          ))}
+          {featuredProducts.map((product) => {
+            let discountStr;
+            let currentPrice = product.offer_price || product.price;
+            let originalPrice = product.offer_price ? product.price : undefined;
+            if (originalPrice && currentPrice < originalPrice) {
+              const diff = originalPrice - currentPrice;
+              const percent = Math.round((diff / originalPrice) * 100);
+              discountStr = `${percent}% off`;
+            }
+
+            return (
+              <HorizontalProductCard 
+                key={product.id}
+                id={product.id}
+                slug={product.slug}
+                image={product.images && product.images.length > 0 ? product.images[0] : '/dash_camera.png'}
+                title={product.name}
+                price={formatCurrency(currentPrice)}
+                originalPrice={originalPrice ? formatCurrency(originalPrice) : undefined}
+                discount={discountStr}
+                status={'ADD TO CART'}
+              />
+            );
+          })}
         </div>
       </div>
     </div>

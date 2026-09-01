@@ -1,52 +1,18 @@
 import React from 'react';
 import ProductCard from '../ProductCard';
+import { createClient } from '@/utils/supabase/server';
+import { formatCurrency } from '@/utils/currency';
 
-export default function TrendingProducts() {
-  const products = [
-    {
-      id: 1,
-      image: '/dash_camera.png',
-      title: 'Thinkware F770 2CH FHD Wi-Fi Dash Camera',
-      price: '₹150.00',
-      rating: 0,
-      status: 'ADD TO CART' as const
-    },
-    {
-      id: 2,
-      image: '/turbo_charger.png',
-      title: 'Savini Forged SV64-XC Wheels Rims On Sale',
-      price: '₹35.00',
-      originalPrice: '₹39.00',
-      discount: '-10%',
-      rating: 0,
-      status: 'ADD TO CART' as const
-    },
-    {
-      id: 3,
-      image: '/promo_top_banner.png', // using existing placeholder
-      title: 'OMP Car Steering Aluminum Spacer Quick Steering',
-      price: '₹70.00',
-      originalPrice: '₹77.00',
-      rating: 0,
-      status: 'OPTIONS' as const
-    },
-    {
-      id: 4,
-      image: '/promo_top_banner.png', // using existing placeholder
-      title: 'New Upgraded 1-Piece Rear Driveshaft & Parts',
-      price: '₹15.00',
-      rating: 0,
-      status: 'ADD TO CART' as const
-    },
-    {
-      id: 5,
-      image: '/promo_bottom_banner.png', // using existing placeholder
-      title: 'ESP Brakes 4301521R-BKCZ Brake System 1 Pack',
-      price: '₹45.00',
-      rating: 0,
-      status: 'SOLD OUT' as const
-    }
-  ];
+export default async function TrendingProducts() {
+  const supabase = await createClient();
+  const { data: productsData, error } = await supabase
+    .from('products')
+    .select('*')
+    .eq('status', 'active')
+    .order('created_at', { ascending: false })
+    .limit(10);
+
+  const products = productsData || [];
 
   return (
     <div className="pt-0 pb-4 lg:py-12 lg:border-t border-gray-200 lg:mt-12">
@@ -73,18 +39,31 @@ export default function TrendingProducts() {
 
         {/* Product Grid */}
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-2 sm:gap-4">
-          {products.map((product) => (
-            <ProductCard 
-              key={product.id}
-              image={product.image}
-              title={product.title}
-              price={product.price}
-              originalPrice={product.originalPrice}
-              discount={product.discount}
-              rating={product.rating}
-              status={product.status}
-            />
-          ))}
+          {products.map((product) => {
+            // Calculate discount if both prices exist
+            let discountStr;
+            let currentPrice = product.offer_price || product.price;
+            let originalPrice = product.offer_price ? product.price : undefined;
+            if (originalPrice && currentPrice < originalPrice) {
+              const diff = originalPrice - currentPrice;
+              const percent = Math.round((diff / originalPrice) * 100);
+              discountStr = `${percent}% off`;
+            }
+
+            return (
+              <ProductCard 
+                key={product.id}
+                id={product.id}
+                slug={product.slug}
+                image={product.images && product.images.length > 0 ? product.images[0] : '/dash_camera.png'}
+                title={product.name}
+                price={formatCurrency(currentPrice)}
+                originalPrice={originalPrice ? formatCurrency(originalPrice) : undefined}
+                discount={discountStr}
+                status={'ADD TO CART'}
+              />
+            );
+          })}
         </div>
 
         {/* Right Arrow */}

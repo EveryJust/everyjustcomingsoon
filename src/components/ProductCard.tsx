@@ -4,6 +4,7 @@ import Link from 'next/link';
 
 interface ProductCardProps {
   id?: string | number;
+  slug?: string;
   image: string;
   title: string;
   price: string;
@@ -12,11 +13,12 @@ interface ProductCardProps {
   rating?: number;
   reviewsCount?: number;
   deliveryPrice?: string;
-  status?: 'ADD TO CART' | 'OPTIONS' | 'SOLD OUT';
+  status?: 'ADD TO CART' | 'OPTIONS' | 'SOLD OUT' | string;
 }
 
 export default function ProductCard({
   id = 1,
+  slug,
   image,
   title,
   price,
@@ -28,7 +30,7 @@ export default function ProductCard({
   status
 }: ProductCardProps) {
   return (
-    <Link href={`/product/${id}`} className="bg-white border border-gray-200 rounded-lg overflow-hidden flex flex-col h-full hover:shadow-md transition-shadow cursor-pointer">
+    <Link href={`/product/${slug || id}`} className="bg-white border border-gray-200 rounded-lg overflow-hidden flex flex-col h-full hover:shadow-md transition-shadow cursor-pointer">
       
       {/* Image Section */}
       <div className="w-full aspect-[4/5] relative bg-gray-50 flex-shrink-0 group">
