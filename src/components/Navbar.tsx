@@ -36,19 +36,19 @@ export default function Navbar() {
 
         {/* Main Links */}
         <div className="flex items-center gap-3 xl:gap-8 px-4 xl:px-8 font-semibold text-sm xl:text-base flex-grow">
-          <Link href="/" className="hover:text-white/80 transition-colors">Home</Link>
-          <Link href="/shop" className="hover:text-white/80 transition-colors">Shop</Link>
-          <Link href="/brands" className="hover:text-white/80 transition-colors whitespace-nowrap">Brands</Link>
-          <Link href="/play" className="flex items-center gap-1 xl:gap-1.5 bg-white text-primary px-2 xl:px-3.5 py-1 xl:py-1.5 rounded-full font-extrabold hover:bg-gray-100 transition-all shadow-sm transform hover:scale-105 whitespace-nowrap">
+          <Link href="/" className={`transition-colors border-b-2 ${pathname === '/' ? 'border-white text-white' : 'border-transparent text-white/90 hover:text-white'}`}>Home</Link>
+          <Link href="/shop" className={`transition-colors border-b-2 ${pathname === '/shop' ? 'border-white text-white' : 'border-transparent text-white/90 hover:text-white'}`}>Shop</Link>
+          <Link href="/brands" className={`transition-colors border-b-2 whitespace-nowrap ${pathname === '/brands' ? 'border-white text-white' : 'border-transparent text-white/90 hover:text-white'}`}>Brands</Link>
+          <Link href="/play" className={`flex items-center gap-1 xl:gap-1.5 px-2 xl:px-3.5 py-1 xl:py-1.5 rounded-full font-extrabold transition-all shadow-sm transform hover:scale-105 whitespace-nowrap ${pathname === '/play' ? 'bg-white text-primary' : 'bg-white/10 text-white hover:bg-white/20'}`}>
             <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
               <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z" clipRule="evenodd" />
             </svg>
             Play
           </Link>
-          <Link href="/reels" className="hover:text-white/80 transition-colors whitespace-nowrap">Reels</Link>
-          <Link href="/about-us" className="hover:text-white/80 transition-colors whitespace-nowrap">About Us</Link>
-          <Link href="/contact" className="hover:text-white/80 transition-colors whitespace-nowrap">Contact</Link>
-          <Link href="/help" className="hover:text-white/80 transition-colors whitespace-nowrap">Help</Link>
+          <Link href="/reels" className={`transition-colors border-b-2 whitespace-nowrap ${pathname === '/reels' ? 'border-white text-white' : 'border-transparent text-white/90 hover:text-white'}`}>Reels</Link>
+          <Link href="/about-us" className={`transition-colors border-b-2 whitespace-nowrap ${pathname === '/about-us' ? 'border-white text-white' : 'border-transparent text-white/90 hover:text-white'}`}>About Us</Link>
+          <Link href="/contact" className={`transition-colors border-b-2 whitespace-nowrap ${pathname === '/contact' ? 'border-white text-white' : 'border-transparent text-white/90 hover:text-white'}`}>Contact</Link>
+          <Link href="/help" className={`transition-colors border-b-2 whitespace-nowrap ${pathname === '/help' ? 'border-white text-white' : 'border-transparent text-white/90 hover:text-white'}`}>Help</Link>
         </div>
 
         {/* Right Deal */}

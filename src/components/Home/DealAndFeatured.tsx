@@ -119,14 +119,7 @@ export default async function DealAndFeatured() {
             return (
               <HorizontalProductCard 
                 key={product.id}
-                id={product.id}
-                slug={product.slug}
-                image={product.images && product.images.length > 0 ? product.images[0] : '/dash_camera.png'}
-                title={product.name}
-                price={formatCurrency(currentPrice)}
-                originalPrice={originalPrice ? formatCurrency(originalPrice) : undefined}
-                discount={discountStr}
-                status={'ADD TO CART'}
+                product={product}
               />
             );
           })}

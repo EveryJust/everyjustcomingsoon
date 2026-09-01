@@ -1,37 +1,51 @@
+'use client';
 import React from 'react';
 import Link from 'next/link';
+import { formatCurrency } from '@/utils/currency';
+import { useCartStore } from '@/store/useCartStore';
+import toast from 'react-hot-toast';
 
 interface HorizontalProductCardProps {
-  id?: string | number;
-  slug?: string;
-  image: string;
-  title: string;
-  price: string;
-  originalPrice?: string;
-  discount?: string;
-  rating?: number;
-  status: 'ADD TO CART' | 'OPTIONS' | 'SOLD OUT' | string;
+  product: any;
 }
 
-export default function HorizontalProductCard({
-  id = 1,
-  slug,
-  image,
-  title,
-  price,
-  originalPrice,
-  discount,
-  rating = 0,
-  status
-}: HorizontalProductCardProps) {
+export default function HorizontalProductCard({ product }: HorizontalProductCardProps) {
+  const { addItem } = useCartStore();
+  const currentPrice = product.offer_price || product.price;
+  const originalPrice = product.offer_price ? product.price : undefined;
+  
+  let discountStr;
+  if (originalPrice && currentPrice < originalPrice) {
+    const diff = originalPrice - currentPrice;
+    const percent = Math.round((diff / originalPrice) * 100);
+    discountStr = `${percent}% off`;
+  }
+
+  const image = product.images && product.images.length > 0 ? product.images[0] : '/dash_camera.png';
+  const rating = 0;
+  const status = 'ADD TO CART';
+
+  const handleAddToCart = (e: React.MouseEvent) => {
+    e.preventDefault();
+    addItem({
+      id: product.id,
+      slug: product.slug,
+      name: product.name,
+      price: currentPrice,
+      image,
+      qty: 1
+    });
+    toast.success('Added to cart');
+  };
+
   return (
-    <Link href={`/product/${slug || id}`} className="bg-white border border-gray-100 rounded-sm p-4 flex gap-4 h-full shadow-sm hover:shadow-md transition-shadow group relative">
+    <Link href={`/product/${product.slug || product.id}`} className="bg-white border border-gray-100 rounded-sm p-4 flex gap-4 h-full shadow-sm hover:shadow-md transition-shadow group relative">
       
       {/* Discount Badge */}
-      {discount && (
+      {discountStr && (
         <div className="absolute top-4 left-4 z-10">
           <span className="bg-primary text-white text-[10px] font-bold px-1.5 py-0.5 rounded-sm">
-            {discount}
+            {discountStr}
           </span>
         </div>
       )}
@@ -44,7 +58,7 @@ export default function HorizontalProductCard({
       {/* Content */}
       <div className="flex-1 flex flex-col justify-center text-left py-1">
         <h3 className="text-gray-900 font-semibold text-xs mb-1.5 hover:text-primary cursor-pointer line-clamp-2 leading-snug">
-          {title}
+          {product.name}
         </h3>
         
         {/* Rating Stars */}
@@ -59,14 +73,15 @@ export default function HorizontalProductCard({
         {/* Price */}
         <div className="flex items-center gap-2 mb-2">
           {originalPrice && (
-            <span className="text-gray-400 text-xs line-through">{originalPrice}</span>
+            <span className="text-gray-400 text-xs line-through">{formatCurrency(originalPrice)}</span>
           )}
-          <span className="text-primary font-bold text-sm">{price}</span>
+          <span className="text-primary font-bold text-sm">{formatCurrency(currentPrice)}</span>
         </div>
 
         {/* Action Button */}
         <div>
            <button 
+             onClick={handleAddToCart}
              className={`text-[10px] font-bold uppercase tracking-wider pb-0.5 transition-colors border-b-2 ${
                status === 'SOLD OUT' 
                ? 'text-gray-400 border-gray-200 cursor-not-allowed' 

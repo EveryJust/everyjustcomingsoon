@@ -1,21 +1,37 @@
 'use client';
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { usePathname } from 'next/navigation';
+import Link from 'next/link';
 import CartDrawer from './CartDrawer';
+import { useCartStore } from '@/store/useCartStore';
+import { useWishlistStore } from '@/store/useWishlistStore';
+import { formatCurrency } from '@/utils/currency';
 
 export default function MainHeader() {
   const [isCartOpen, setIsCartOpen] = useState(false);
   const pathname = usePathname();
   const isHiddenOnMobile = pathname?.startsWith('/product/') || pathname === '/categories';
+  
+  const { items, getSubtotal } = useCartStore();
+  const { items: wishlistItems } = useWishlistStore();
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  const cartCount = items.reduce((acc, item) => acc + item.qty, 0);
+  const wishlistCount = wishlistItems.length;
+  const subtotal = getSubtotal();
 
   return (
     <header className={`bg-white py-3 px-4 lg:py-6 lg:px-6 shadow-sm sticky top-0 z-40 ${isHiddenOnMobile ? 'hidden lg:block' : ''}`}>
       <div className="max-w-7xl mx-auto flex items-center justify-between gap-4 lg:gap-8">
         {/* Logo */}
         <div className="flex-shrink-0">
-          <a href="/" className="text-3xl font-extrabold tracking-tighter uppercase text-gray-900">
+          <Link href="/" className="text-3xl font-extrabold tracking-tighter uppercase text-gray-900">
             every<span className="text-primary">just</span>
-          </a>
+          </Link>
         </div>
 
         {/* Search Bar */}
@@ -41,20 +57,20 @@ export default function MainHeader() {
             <button className="p-1.5 lg:p-2 text-gray-700 hover:text-primary transition-colors cursor-pointer">
               <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg>
             </button>
-            <button className="p-1.5 lg:p-2 text-gray-700 hover:text-primary transition-colors relative cursor-pointer">
+            <Link href="/wishlist" className="p-1.5 lg:p-2 text-gray-700 hover:text-primary transition-colors relative cursor-pointer">
               <svg className="w-6 h-6 lg:w-6 lg:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" /></svg>
-              <span className="absolute top-0 right-0 bg-primary text-white text-[10px] w-4 h-4 rounded-full flex items-center justify-center font-bold">0</span>
-            </button>
+              {mounted && wishlistCount > 0 && <span className="absolute top-0 right-0 bg-primary text-white text-[10px] w-4 h-4 rounded-full flex items-center justify-center font-bold">{wishlistCount}</span>}
+            </Link>
             <button 
               onClick={() => setIsCartOpen(true)}
               className="p-1.5 lg:p-2 text-gray-700 hover:text-primary transition-colors flex items-center gap-2 cursor-pointer"
             >
               <div className="relative">
                 <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" /></svg>
-                <span className="absolute -top-1 -right-1 bg-primary text-white text-[10px] w-4 h-4 rounded-full flex items-center justify-center font-bold">0</span>
+                {mounted && cartCount > 0 && <span className="absolute -top-1 -right-1 bg-primary text-white text-[10px] w-4 h-4 rounded-full flex items-center justify-center font-bold">{cartCount}</span>}
               </div>
               <div className="hidden sm:flex flex-col text-left leading-tight">
-                <span className="text-[10px] text-gray-500">₹0.00</span>
+                <span className="text-[10px] text-gray-500">{mounted ? formatCurrency(subtotal) : '₹0.00'}</span>
                 <span className="text-xs font-bold text-gray-800">My Cart</span>
               </div>
             </button>

@@ -15,16 +15,13 @@ export default function ShopPage() {
     { label: 'Price: High to Low', value: 'price_desc' }
   ];
 
-  // Mock Data for the grid
   const mockProducts = Array.from({ length: 12 }).map((_, i) => ({
-    id: i,
-    title: `Premium Item ${i + 1} - High Quality Material`,
-    price: `$${(Math.random() * 100 + 20).toFixed(2)}`,
-    originalPrice: Math.random() > 0.5 ? `$${(Math.random() * 50 + 150).toFixed(2)}` : undefined,
-    rating: Math.floor(Math.random() * 3) + 3,
-    status: Math.random() > 0.8 ? 'SOLD OUT' : 'ADD TO CART',
-    discount: Math.random() > 0.7 ? '-20%' : undefined,
-    image: ['/dash_camera.png', '/turbo_charger.png', '/promo_top_banner.png', '/promo_bottom_banner.png'][i % 4]
+    id: String(i),
+    slug: `mock-product-${i}`,
+    name: `Premium Item ${i + 1} - High Quality Material`,
+    price: Math.floor(Math.random() * 50) + 150,
+    offer_price: Math.floor(Math.random() * 100) + 20,
+    images: [['/dash_camera.png', '/turbo_charger.png', '/promo_top_banner.png', '/promo_bottom_banner.png'][i % 4]],
   })) as any;
 
   return (
@@ -113,13 +110,7 @@ export default function ShopPage() {
             {mockProducts.map((product: any) => (
               <ProductCard
                 key={product.id}
-                image={product.image}
-                title={product.title}
-                price={product.price}
-                originalPrice={product.originalPrice}
-                discount={product.discount}
-                rating={product.rating}
-                status={product.status}
+                product={product}
               />
             ))}
           </div>
