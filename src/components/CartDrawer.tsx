@@ -93,12 +93,16 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
           </div>
           <p className="text-xs text-gray-500 mb-6 text-center">Taxes and shipping calculated at checkout.</p>
           <div className="flex flex-col gap-3">
-            <button className="w-full bg-primary text-white font-bold py-3.5 rounded-sm uppercase tracking-widest hover:bg-primary/90 transition-all hover:shadow-lg hover:-translate-y-0.5">
-              Checkout
-            </button>
+            <Link 
+              href="/checkout"
+              onClick={onClose}
+              className="w-full bg-primary text-white font-bold py-3.5 rounded-sm uppercase tracking-widest hover:bg-primary/90 transition-all hover:shadow-lg hover:-translate-y-0.5 text-center block"
+            >
+              Proceed to Checkout
+            </Link>
             <button 
               onClick={onClose}
-              className="w-full bg-white border-2 border-gray-200 text-gray-800 font-bold py-3 rounded-sm uppercase tracking-widest hover:border-gray-900 transition-colors"
+              className="w-full bg-white border-2 border-gray-200 text-gray-800 font-bold py-3 rounded-sm uppercase tracking-widest hover:border-gray-900 transition-colors cursor-pointer"
             >
               Continue Shopping
             </button>

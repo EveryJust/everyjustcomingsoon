@@ -1,7 +1,7 @@
 "use client";
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { LayoutDashboard, Users, Tag, Package, Settings, Plus, HelpCircle } from 'lucide-react';
+import { LayoutDashboard, Users, Tag, Package, Settings, Plus, HelpCircle, DollarSign, BarChart3 } from 'lucide-react';
 
 interface AdminSidebarProps {
   isOpen: boolean;
@@ -66,6 +66,10 @@ export default function AdminSidebar({ isOpen }: AdminSidebarProps) {
         {renderSectionHeader('Overview', true)}
         {renderLink('/admin/dashboard', LayoutDashboard, 'Dashboard')}
         
+        {renderSectionHeader('Analytics & Finance')}
+        {renderLink('/admin/finances', DollarSign, 'Finances')}
+        {renderLink('/admin/reports', BarChart3, 'Reports')}
+
         {renderSectionHeader('Product Management')}
         {renderLink('/admin/categories', Tag, 'Categories')}
         {renderLink('/admin/products', Package, 'Products')}

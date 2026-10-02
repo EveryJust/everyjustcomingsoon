@@ -2,9 +2,11 @@
 import Link from 'next/link';
 import React from 'react';
 import { usePathname } from 'next/navigation';
+import { useAuthStore } from '@/store/useAuthStore';
 
 const MobileBottomNav = () => {
   const pathname = usePathname();
+  const { user } = useAuthStore();
   const isProductPage = pathname?.startsWith('/product/');
 
   if (isProductPage) return null;
@@ -59,17 +61,17 @@ const MobileBottomNav = () => {
         <span className="text-[9px] font-bold tracking-wide uppercase">Reels</span>
       </Link>
       
-      <Link href="/orders" className={`flex flex-col items-center justify-center w-full transition-colors ${pathname === '/orders' ? 'text-primary' : 'text-gray-500 hover:text-primary'}`}>
-        {pathname === '/orders' ? (
+      <Link href={user ? "/account" : "/login"} className={`flex flex-col items-center justify-center w-full transition-colors ${pathname === '/account' || pathname === '/login' ? 'text-primary' : 'text-gray-500 hover:text-primary'}`}>
+        {pathname === '/account' || pathname === '/login' ? (
           <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 mb-1" viewBox="0 0 20 20" fill="currentColor">
-            <path fillRule="evenodd" d="M10 2a4 4 0 00-4 4v1H5a1 1 0 00-.994.89l-1 9A1 1 0 004 18h12a1 1 0 00.994-1.11l-1-9A1 1 0 0015 7h-1V6a4 4 0 00-4-4zm2 5V6a2 2 0 10-4 0v1h4zm-6 3a1 1 0 112 0 1 1 0 01-2 0zm7-1a1 1 0 100 2 1 1 0 000-2z" clipRule="evenodd" />
+            <path fillRule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clipRule="evenodd" />
           </svg>
         ) : (
           <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 mb-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
           </svg>
         )}
-        <span className="text-[9px] font-bold tracking-wide uppercase">Orders</span>
+        <span className="text-[9px] font-bold tracking-wide uppercase">{user ? 'Account' : 'Login'}</span>
       </Link>
     </nav>
   );

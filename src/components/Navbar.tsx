@@ -3,10 +3,12 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useState, useEffect } from 'react';
 import { createClient } from '@/utils/supabase/client';
+import { useAuthStore } from '@/store/useAuthStore';
 
 export default function Navbar() {
   const pathname = usePathname();
   const [categories, setCategories] = useState<any[]>([]);
+  const { user, signOut } = useAuthStore();
 
   useEffect(() => {
     async function fetchCategories() {
@@ -70,10 +72,37 @@ export default function Navbar() {
           <Link href="/help" className={`transition-colors border-b-2 whitespace-nowrap ${pathname === '/help' ? 'border-white text-white' : 'border-transparent text-white/90 hover:text-white'}`}>Help</Link>
         </div>
 
-        {/* Right Deal */}
-        <div className="px-6 flex items-center gap-2 font-bold cursor-pointer hover:text-white/80 hidden xl:flex whitespace-nowrap">
-          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-          Weekly Deal
+        {/* Right Actions */}
+        <div className="px-6 flex items-center gap-4 hidden xl:flex">
+          {user ? (
+            <div className="group relative cursor-pointer flex items-center gap-2 text-sm font-bold text-white hover:text-white/80 transition-colors">
+              <div className="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center overflow-hidden border border-white/40">
+                {user.user_metadata?.avatar_url ? (
+                  <img src={user.user_metadata.avatar_url} alt="User avatar" className="w-full h-full object-cover" />
+                ) : (
+                  <span className="text-white uppercase">{user.user_metadata?.full_name?.charAt(0) || user.email?.charAt(0)}</span>
+                )}
+              </div>
+              <span className="max-w-[100px] truncate">{user.user_metadata?.full_name || 'Account'}</span>
+              
+              <div className="absolute top-full right-0 mt-2 w-48 bg-white shadow-xl rounded-sm opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-50 text-gray-800 py-2 border border-gray-100">
+                <Link href="/account" className="block px-4 py-2 text-sm font-semibold hover:bg-gray-50 hover:text-primary">My Account</Link>
+                <Link href="/orders" className="block px-4 py-2 text-sm font-semibold hover:bg-gray-50 hover:text-primary">Orders</Link>
+                <div className="border-t border-gray-100 my-1"></div>
+                <button 
+                  onClick={signOut} 
+                  className="w-full text-left px-4 py-2 text-sm font-semibold text-red-600 hover:bg-gray-50"
+                >
+                  Logout
+                </button>
+              </div>
+            </div>
+          ) : (
+            <Link href="/login" className="flex items-center gap-2 font-bold hover:text-white/80 transition-colors bg-white/10 px-4 py-2 rounded-full border border-white/20 hover:bg-white/20">
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg>
+              Login / Sign Up
+            </Link>
+          )}
         </div>
       </div>
     </nav>

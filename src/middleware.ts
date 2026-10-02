@@ -37,9 +37,13 @@ export async function middleware(request: NextRequest) {
     }
   }
 
-  // If user is already logged in, prevent access to login page
+  // If user is already logged in, prevent access to login pages
   if (path === '/admin/login' && user) {
     return NextResponse.redirect(new URL('/admin/dashboard', request.url))
+  }
+  
+  if ((path === '/login' || path === '/signup' || path === '/verify') && user) {
+    return NextResponse.redirect(new URL('/', request.url))
   }
 
   return response

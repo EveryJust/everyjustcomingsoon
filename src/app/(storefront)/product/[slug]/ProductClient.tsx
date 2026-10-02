@@ -1,18 +1,20 @@
 'use client';
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import CartDrawer from '@/components/CartDrawer';
 import { formatCurrency } from '@/utils/currency';
 import { useCartStore } from '@/store/useCartStore';
 import { useWishlistStore } from '@/store/useWishlistStore';
+import ProductImageGallery from '@/components/Product/ProductImageGallery';
 import toast from 'react-hot-toast';
 
 export default function ProductClient({ product, similarProducts }: { product: any, similarProducts?: React.ReactNode }) {
+  const router = useRouter();
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [isDetailsOpen, setIsDetailsOpen] = useState(false);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [mounted, setMounted] = useState(false);
-  const galleryRef = React.useRef<HTMLDivElement>(null);
 
   const { addItem, items } = useCartStore();
   const { toggleWishlist, isInWishlist } = useWishlistStore();
@@ -24,9 +26,11 @@ export default function ProductClient({ product, similarProducts }: { product: a
   const cartCount = items.reduce((acc, item) => acc + item.qty, 0);
   const isWishlisted = mounted ? isInWishlist(product.id) : false;
 
+  const displayImages = product.images && product.images.length > 0 ? product.images : ['/dash_camera.png'];
+
   const handleAddToCart = () => {
     const currentPrice = product.offer_price || product.price;
-    const image = product.images && product.images.length > 0 ? product.images[0] : '/dash_camera.png';
+    const image = displayImages[currentImageIndex] || displayImages[0];
     addItem({
       id: product.id,
       slug: product.slug,
@@ -39,9 +43,23 @@ export default function ProductClient({ product, similarProducts }: { product: a
     setIsCartOpen(true);
   };
 
+  const handleBuyNow = () => {
+    const currentPrice = product.offer_price || product.price;
+    const image = displayImages[currentImageIndex] || displayImages[0];
+    addItem({
+      id: product.id,
+      slug: product.slug,
+      name: product.name,
+      price: currentPrice,
+      image,
+      qty: 1
+    });
+    router.push('/checkout');
+  };
+
   const handleWishlist = () => {
     const currentPrice = product.offer_price || product.price;
-    const image = product.images && product.images.length > 0 ? product.images[0] : '/dash_camera.png';
+    const image = displayImages[currentImageIndex] || displayImages[0];
     const wasInWishlist = isInWishlist(product.id);
     toggleWishlist({
       id: product.id,
@@ -56,28 +74,6 @@ export default function ProductClient({ product, similarProducts }: { product: a
       toast.success('Removed from wishlist');
     }
   };
-
-  const handleScroll = (e: React.UIEvent<HTMLDivElement>) => {
-    const scrollLeft = e.currentTarget.scrollLeft;
-    const width = e.currentTarget.offsetWidth;
-    const index = Math.round(scrollLeft / width);
-    if (index !== currentImageIndex) {
-      setCurrentImageIndex(index);
-    }
-  };
-
-  const handleThumbnailClick = (index: number) => {
-    setCurrentImageIndex(index);
-    if (galleryRef.current) {
-      galleryRef.current.scrollTo({
-        left: index * galleryRef.current.offsetWidth,
-        behavior: 'smooth'
-      });
-    }
-  };
-
-  const displayImages = product.images && product.images.length > 0 ? product.images : ['/dash_camera.png'];
-
 
   return (
     <div className="bg-gray-50 min-h-screen pb-24 lg:pb-12">
@@ -111,44 +107,16 @@ export default function ProductClient({ product, similarProducts }: { product: a
         </div>
       </div>
 
-      <div className="max-w-7xl mx-auto lg:px-4 lg:pt-8 flex flex-col lg:flex-row gap-2 lg:gap-8">
+      <div className="max-w-7xl mx-auto lg:px-4 lg:pt-8 flex flex-col lg:flex-row gap-4 lg:gap-8">
         
-        {/* Left Column: Image Gallery */}
+        {/* Left Column: Interactive Product Image Gallery with Selection & Zoom */}
         <div className="w-full lg:w-1/2 lg:sticky lg:top-24 h-max">
-          <div className="relative">
-            <div 
-              ref={galleryRef}
-              className="w-full flex overflow-x-auto snap-x snap-mandatory scrollbar-hide lg:rounded-xl shadow-sm bg-white"
-              onScroll={handleScroll}
-            >
-              {displayImages.map((img: string, idx: number) => (
-                <div key={idx} className="w-full flex-shrink-0 snap-center snap-always">
-                  <img src={img} alt={`Product Image ${idx + 1}`} className="w-full h-auto object-cover lg:rounded-xl" />
-                </div>
-              ))}
-            </div>
-            <div className="absolute bottom-4 left-0 w-full flex justify-center gap-1.5 lg:hidden">
-              {displayImages.map((_: string, idx: number) => (
-                <span 
-                  key={idx} 
-                  className={`w-2 h-2 rounded-full transition-colors ${idx === currentImageIndex ? 'bg-primary' : 'bg-gray-300'}`}
-                ></span>
-              ))}
-            </div>
-          </div>
-
-          {/* Desktop Thumbnails */}
-          <div className="hidden lg:flex gap-4 mt-4">
-            {displayImages.map((img: string, idx: number) => (
-              <div 
-                key={idx} 
-                onClick={() => handleThumbnailClick(idx)}
-                className={`w-20 h-20 rounded-lg border-2 cursor-pointer transition-colors ${idx === currentImageIndex ? 'border-primary' : 'border-transparent'} bg-white overflow-hidden p-1 shadow-sm`}
-              >
-                <div className="w-full h-full bg-contain bg-center bg-no-repeat" style={{ backgroundImage: `url('${img}')` }} />
-              </div>
-            ))}
-          </div>
+          <ProductImageGallery 
+            images={displayImages} 
+            productName={product.name}
+            selectedIndex={currentImageIndex}
+            onSelectImage={setCurrentImageIndex}
+          />
         </div>
 
         {/* Right Column: Product Info */}
@@ -417,7 +385,10 @@ export default function ProductClient({ product, similarProducts }: { product: a
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" /></svg>
               Add to Cart
             </button>
-            <button className="flex-1 bg-primary border border-primary text-white hover:bg-primary/90 font-bold py-3.5 rounded-lg transition-colors tracking-wide shadow-lg shadow-primary/30 flex items-center justify-center gap-2 text-[16px]">
+            <button 
+              onClick={handleBuyNow}
+              className="flex-1 bg-primary border border-primary text-white hover:bg-primary/90 font-bold py-3.5 rounded-lg transition-colors tracking-wide shadow-lg shadow-primary/30 flex items-center justify-center gap-2 text-[16px] cursor-pointer"
+            >
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 5l7 7-7 7M5 5l7 7-7 7" /></svg>
               Buy Now
             </button>
@@ -445,7 +416,10 @@ export default function ProductClient({ product, similarProducts }: { product: a
           <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" /></svg>
           Add to Cart
         </button>
-        <button className="flex-1 bg-primary border border-primary text-white active:bg-primary/90 font-bold py-3 rounded md:rounded-lg transition-colors tracking-wide text-[15px] flex items-center justify-center gap-2 shadow-md shadow-primary/20">
+        <button 
+          onClick={handleBuyNow}
+          className="flex-1 bg-primary border border-primary text-white active:bg-primary/90 font-bold py-3 rounded md:rounded-lg transition-colors tracking-wide text-[15px] flex items-center justify-center gap-2 shadow-md shadow-primary/20 cursor-pointer"
+        >
           <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 5l7 7-7 7M5 5l7 7-7 7" /></svg>
           Buy Now
         </button>

@@ -3,6 +3,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import Script from "next/script";
 import "./globals.css";
 import { Toaster } from "react-hot-toast";
+import AuthProvider from "@/components/AuthProvider";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -109,8 +110,44 @@ export default function RootLayout({
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col">
-        {children}
-        <Toaster position="bottom-right" />
+        <AuthProvider>
+          {children}
+        </AuthProvider>
+        <Toaster 
+          position="top-center"
+          toastOptions={{
+            duration: 3500,
+            style: {
+              borderRadius: '14px',
+              padding: '12px 18px',
+              fontSize: '13px',
+              fontWeight: 600,
+              boxShadow: '0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1)'
+            },
+            error: {
+              style: {
+                background: '#FEF2F2',
+                color: '#991B1B',
+                border: '1px solid #FCA5A5',
+              },
+              iconTheme: {
+                primary: '#DC2626',
+                secondary: '#FEF2F2',
+              },
+            },
+            success: {
+              style: {
+                background: '#F0FDF4',
+                color: '#166534',
+                border: '1px solid #86EFAC',
+              },
+              iconTheme: {
+                primary: '#16A34A',
+                secondary: '#F0FDF4',
+              },
+            },
+          }}
+        />
         <Script src="https://www.googletagmanager.com/gtag/js?id=G-HBS2RGHPGF" strategy="afterInteractive" />
         <Script id="google-analytics" strategy="afterInteractive">
           {`
