@@ -13,12 +13,8 @@ import {
   AlertCircle, 
   ArrowRight, 
   RefreshCw,
-  Phone,
-  Mail,
   ChevronRight,
-  MapPin,
-  Calendar,
-  ExternalLink
+  X
 } from 'lucide-react';
 import { useAuthStore } from '@/store/useAuthStore';
 import { formatCurrency } from '@/utils/currency';
@@ -69,10 +65,8 @@ export default function OrdersPage() {
     const userId = user?.id || '';
 
     if (userEmail || userPhone) {
-      // Logged in user: auto fetch all orders by email, phone, and userId
       fetchOrders({ email: userEmail, phone: userPhone, userId });
     } else {
-      // Guest: check recent order in storage
       try {
         const lastOrderNum = localStorage.getItem('last_placed_order_number');
         const lastOrderEmail = localStorage.getItem('last_customer_email');
@@ -129,104 +123,109 @@ export default function OrdersPage() {
     }
   };
 
+  const handleClearSearch = () => {
+    setSearchQuery('');
+    const userPhone = user?.user_metadata?.phone || user?.phone || '';
+    const userEmail = user?.email || '';
+    const userId = user?.id || '';
+    if (userEmail || userPhone) {
+      fetchOrders({ email: userEmail, phone: userPhone, userId });
+    } else {
+      setOrders([]);
+      setHasSearched(false);
+    }
+  };
+
   const getStatusBadge = (status: string) => {
     switch (status?.toLowerCase()) {
       case 'delivered':
         return (
-          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">
-            <CheckCircle2 className="w-3.5 h-3.5" /> Delivered
+          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200/60">
+            <CheckCircle2 className="w-3 h-3 stroke-[2.5]" /> Delivered
           </span>
         );
       case 'shipped':
         return (
-          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-blue-50 text-blue-700 border border-blue-200">
-            <Truck className="w-3.5 h-3.5" /> In Transit
+          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-bold bg-blue-50 text-blue-700 border border-blue-200/60">
+            <Truck className="w-3 h-3 stroke-[2.5]" /> In Transit
           </span>
         );
       case 'cancelled':
         return (
-          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-rose-50 text-rose-700 border border-rose-200">
-            <AlertCircle className="w-3.5 h-3.5" /> Cancelled
+          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-bold bg-rose-50 text-rose-700 border border-rose-200/60">
+            <AlertCircle className="w-3 h-3 stroke-[2.5]" /> Cancelled
           </span>
         );
       default:
         return (
-          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-amber-50 text-amber-700 border border-amber-200">
-            <Clock className="w-3.5 h-3.5" /> Processing
+          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-bold bg-amber-50 text-amber-700 border border-amber-200/60">
+            <Clock className="w-3 h-3 stroke-[2.5]" /> Processing
           </span>
         );
     }
   };
 
   return (
-    <div className="bg-gray-50/60 min-h-screen pb-20 text-gray-900">
-      {/* Top Banner */}
-      <div className="bg-white border-b border-gray-100 py-6 sm:py-8 shadow-xs">
-        <div className="max-w-5xl mx-auto px-4">
-          <h1 className="text-2xl sm:text-3xl font-black text-gray-900 tracking-tight">
-            Order Tracking & History
-          </h1>
-          <p className="text-xs sm:text-sm text-gray-500 mt-1">
-            Track real-time shipment updates, view invoices, and manage your delivery addresses.
-          </p>
-        </div>
-      </div>
-
-      <div className="max-w-5xl mx-auto px-4 py-6 space-y-6">
-        {/* Search / Lookup Box */}
-        <div className="bg-white rounded-3xl shadow-xs border border-gray-100 p-5 sm:p-6">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-3">
-            <div>
-              <h2 className="text-sm font-bold text-gray-900">Lookup Any Order</h2>
-              <p className="text-xs text-gray-400">
-                Search with your Order ID, Email address, or 10-digit mobile number.
-              </p>
-            </div>
-            {user && (
-              <span className="text-[11px] font-semibold text-primary bg-primary/10 px-2.5 py-1 rounded-full w-fit">
-                Showing orders for {user.email}
+    <div className="bg-gray-50/50 min-h-screen text-gray-900 pb-20">
+      <div className="max-w-2xl mx-auto px-4 py-4 sm:py-6">
+        
+        {/* Minimal Header */}
+        <div className="flex items-center justify-between gap-3 mb-3">
+          <div className="flex items-center gap-2">
+            <h1 className="text-base sm:text-lg font-bold text-gray-950 tracking-tight">
+              My Orders
+            </h1>
+            {orders.length > 0 && (
+              <span className="text-[11px] font-bold text-gray-500 bg-gray-100 px-2 py-0.5 rounded-full">
+                {orders.length}
               </span>
             )}
           </div>
+          {user && (
+            <span className="text-[11px] text-gray-400 font-medium truncate max-w-[160px] sm:max-w-none">
+              {user.email || user.phone}
+            </span>
+          )}
+        </div>
 
-          <form onSubmit={handleSearchSubmit} className="flex flex-col sm:flex-row gap-3">
-            <div className="relative flex-grow">
-              <Search className="w-4 h-4 text-gray-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
-              <input
-                type="text"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Enter Order ID (e.g. EJ-260930-1234), Email, or Mobile Number..."
-                className="w-full pl-10 pr-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent font-medium"
-              />
-            </div>
+        {/* Minimal Search / Track Order Bar */}
+        <form onSubmit={handleSearchSubmit} className="mb-4">
+          <div className="relative flex items-center bg-white rounded-xl border border-gray-200 focus-within:border-primary focus-within:ring-2 focus-within:ring-primary/10 shadow-2xs transition-all">
+            <Search className="w-4 h-4 text-gray-400 ml-3 flex-shrink-0" />
+            <input
+              type="text"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder="Track by Order ID, Phone, or Email..."
+              className="w-full pl-2.5 pr-2 py-2 text-xs sm:text-sm text-gray-900 placeholder:text-gray-400 bg-transparent focus:outline-none font-medium"
+            />
+            {searchQuery && (
+              <button
+                type="button"
+                onClick={handleClearSearch}
+                className="p-1 text-gray-400 hover:text-gray-600 mr-1"
+                title="Clear"
+              >
+                <X className="w-3.5 h-3.5" />
+              </button>
+            )}
             <button
               type="submit"
               disabled={loading}
-              className="px-6 py-2.5 bg-primary text-white rounded-xl text-xs sm:text-sm font-bold hover:bg-primary/95 transition-all flex items-center justify-center gap-2 shadow-xs disabled:opacity-60 cursor-pointer"
+              className="m-1 px-3.5 py-1.5 bg-primary hover:bg-primary/95 text-white text-xs font-bold rounded-lg transition-colors flex items-center gap-1.5 flex-shrink-0 disabled:opacity-60 cursor-pointer"
             >
               {loading ? (
-                <>
-                  <RefreshCw className="w-4 h-4 animate-spin" />
-                  <span>Searching...</span>
-                </>
+                <RefreshCw className="w-3.5 h-3.5 animate-spin" />
               ) : (
-                <span>Find Order</span>
+                <span>Track</span>
               )}
             </button>
-          </form>
-        </div>
+          </div>
+        </form>
 
-        {/* Orders list */}
+        {/* Orders List */}
         {orders.length > 0 ? (
-          <div className="space-y-4">
-            <div className="flex items-center justify-between px-1">
-              <h3 className="text-xs font-extrabold uppercase tracking-wider text-gray-500">
-                Your Orders ({orders.length})
-              </h3>
-              <span className="text-xs text-gray-400 font-medium">Click order to view full timeline</span>
-            </div>
-
+          <div className="space-y-3">
             {orders.map((order) => {
               const formattedDate = new Date(order.created_at).toLocaleDateString('en-IN', {
                 day: 'numeric',
@@ -238,119 +237,107 @@ export default function OrdersPage() {
                 <div
                   key={order.id}
                   onClick={() => router.push(`/orders/${encodeURIComponent(order.order_number)}`)}
-                  className="bg-white rounded-3xl shadow-xs border border-gray-100 hover:border-primary/40 hover:shadow-md transition-all cursor-pointer overflow-hidden group"
+                  className="bg-white rounded-xl border border-gray-200 hover:border-primary/40 transition-all cursor-pointer overflow-hidden p-3.5 shadow-2xs space-y-2.5"
                 >
-                  {/* Order header */}
-                  <div className="bg-gray-50/80 px-5 sm:px-6 py-3.5 border-b border-gray-100 flex flex-wrap items-center justify-between gap-3">
-                    <div className="flex flex-wrap items-center gap-4 sm:gap-6 text-xs">
-                      <div>
-                        <p className="text-[10px] uppercase tracking-wider font-semibold text-gray-400">Placed On</p>
-                        <p className="font-bold text-gray-800">{formattedDate}</p>
-                      </div>
-                      <div>
-                        <p className="text-[10px] uppercase tracking-wider font-semibold text-gray-400">Order ID</p>
-                        <p className="font-bold text-primary font-mono">{order.order_number}</p>
-                      </div>
-                      <div className="hidden sm:block">
-                        <p className="text-[10px] uppercase tracking-wider font-semibold text-gray-400">Payment</p>
-                        <p className="font-bold text-gray-700">{order.payment_method}</p>
-                      </div>
+                  {/* Top: Order ID, Date & Status */}
+                  <div className="flex items-center justify-between gap-2 flex-wrap pb-2 border-b border-gray-100">
+                    <div className="flex items-center gap-1.5 text-xs">
+                      <span className="font-mono font-bold text-gray-900">
+                        {order.order_number}
+                      </span>
+                      <span className="text-gray-300">•</span>
+                      <span className="text-[11px] text-gray-400">
+                        {formattedDate}
+                      </span>
                     </div>
-
-                    <div className="flex items-center gap-3">
-                      {getStatusBadge(order.status)}
-                      <div className="text-right">
-                        <p className="text-[10px] uppercase tracking-wider font-semibold text-gray-400">Total</p>
-                        <p className="text-sm sm:text-base font-black text-gray-900">{formatCurrency(order.total_amount)}</p>
-                      </div>
-                    </div>
+                    {getStatusBadge(order.status)}
                   </div>
 
-                  {/* Order Items Preview */}
-                  <div className="p-5 sm:p-6 space-y-3">
-                    <div className="space-y-2.5">
-                      {(order.order_items || []).slice(0, 3).map((item, idx) => (
-                        <div key={idx} className="flex items-center justify-between gap-3 text-xs">
-                          <div className="flex items-center gap-3 min-w-0">
-                            <div className="w-12 h-12 rounded-xl bg-gray-50 border border-gray-100 p-1 flex-shrink-0 flex items-center justify-center">
-                              <img
-                                src={item.product_image || '/dash_camera.png'}
-                                alt={item.product_name}
-                                className="w-full h-full object-contain"
-                              />
-                            </div>
-                            <div className="min-w-0">
-                              <h4 className="font-bold text-gray-900 truncate">{item.product_name}</h4>
-                              <p className="text-[11px] text-gray-400">Qty: {item.quantity}</p>
-                            </div>
-                          </div>
-                          <div className="text-right flex-shrink-0 font-bold text-gray-800">
-                            {formatCurrency(item.total_price || item.unit_price * item.quantity)}
-                          </div>
+                  {/* Items preview */}
+                  <div className="space-y-2">
+                    {(order.order_items || []).slice(0, 2).map((item, idx) => (
+                      <div key={idx} className="flex items-center gap-2.5">
+                        <div className="w-10 h-10 rounded-lg bg-gray-50 border border-gray-100 p-1 flex-shrink-0 flex items-center justify-center">
+                          <img
+                            src={item.product_image || '/dash_camera.png'}
+                            alt={item.product_name}
+                            className="w-full h-full object-contain"
+                          />
                         </div>
-                      ))}
+                        <div className="min-w-0 flex-1">
+                          <p className="text-xs font-medium text-gray-800 truncate">
+                            {item.product_name}
+                          </p>
+                          <p className="text-[10px] text-gray-400">
+                            Qty: {item.quantity} • {formatCurrency(item.unit_price)}
+                          </p>
+                        </div>
+                        <span className="text-xs font-bold text-gray-900 flex-shrink-0">
+                          {formatCurrency(item.total_price || item.unit_price * item.quantity)}
+                        </span>
+                      </div>
+                    ))}
 
-                      {(order.order_items?.length || 0) > 3 && (
-                        <p className="text-xs text-gray-400 font-semibold pt-1">
-                          + {(order.order_items?.length || 0) - 3} more item(s)
-                        </p>
-                      )}
+                    {(order.order_items?.length || 0) > 2 && (
+                      <p className="text-[10px] text-gray-400 font-medium">
+                        + {(order.order_items?.length || 0) - 2} more item(s)
+                      </p>
+                    )}
+                  </div>
+
+                  {/* Bottom: Total & View Details */}
+                  <div className="pt-2 border-t border-gray-100 flex items-center justify-between text-xs">
+                    <div className="flex items-center gap-1">
+                      <span className="text-[11px] text-gray-500">Total:</span>
+                      <span className="font-bold text-xs sm:text-sm text-gray-950">
+                        {formatCurrency(order.total_amount)}
+                      </span>
+                      <span className="text-[10px] text-gray-400">
+                        ({order.payment_method})
+                      </span>
                     </div>
 
-                    {/* Bottom Action Footer */}
-                    <div className="pt-3 border-t border-gray-100 flex items-center justify-between text-xs">
-                      <div className="text-gray-500 truncate max-w-xs sm:max-w-md">
-                        {order.shipping_address ? (
-                          <span className="flex items-center gap-1.5 truncate">
-                            <MapPin size={13} className="text-gray-400 flex-shrink-0" />
-                            <span className="truncate">
-                              {order.shipping_address.city}, {order.shipping_address.state} ({order.shipping_address.pincode})
-                            </span>
-                          </span>
-                        ) : null}
-                      </div>
-
-                      <div className="inline-flex items-center gap-1 font-bold text-primary group-hover:translate-x-1 transition-transform flex-shrink-0">
-                        <span>View Details</span>
-                        <ChevronRight size={14} />
-                      </div>
-                    </div>
+                    <span className="text-xs font-bold text-primary flex items-center gap-0.5 hover:underline">
+                      <span>View Details</span>
+                      <ChevronRight size={13} />
+                    </span>
                   </div>
                 </div>
               );
             })}
           </div>
         ) : hasSearched && !loading ? (
-          <div className="bg-white rounded-3xl shadow-xs border border-gray-100 p-12 text-center">
-            <Package className="w-14 h-14 text-gray-300 mx-auto mb-3" />
-            <h3 className="text-lg font-bold text-gray-800 mb-1">No Orders Found</h3>
-            <p className="text-xs text-gray-500 mb-6 max-w-sm mx-auto">
-              We couldn&apos;t find any orders matching &ldquo;{searchQuery}&rdquo;. Please verify your Order ID, email address, or mobile number.
+          <div className="bg-white rounded-xl border border-gray-200 p-8 text-center space-y-2">
+            <Package className="w-8 h-8 text-gray-300 mx-auto" />
+            <p className="text-xs font-bold text-gray-800">No orders found</p>
+            <p className="text-[11px] text-gray-400 max-w-xs mx-auto">
+              No orders matched &ldquo;{searchQuery}&rdquo;. Check your Order ID or phone number.
             </p>
-            <Link
-              href="/"
-              className="inline-flex items-center gap-2 px-6 py-2.5 bg-primary text-white font-bold rounded-xl hover:bg-primary/95 transition-all text-xs shadow-xs"
+            <button
+              type="button"
+              onClick={handleClearSearch}
+              className="text-xs font-bold text-primary hover:underline pt-1 inline-block"
             >
-              <span>Browse Catalog</span>
-              <ArrowRight className="w-4 h-4" />
-            </Link>
+              Clear Search
+            </button>
           </div>
         ) : (
-          <div className="bg-white rounded-3xl shadow-xs border border-gray-100 p-12 text-center">
-            <Package className="w-14 h-14 text-gray-300 mx-auto mb-3" />
-            <h3 className="text-lg font-bold text-gray-800 mb-1">Track & Manage Your Orders</h3>
-            <p className="text-xs text-gray-500 mb-6 max-w-md mx-auto">
-              Search above with your order confirmation number, email address, or mobile number to track real-time delivery status and view receipts.
+          <div className="bg-white rounded-xl border border-gray-200 p-8 text-center space-y-2">
+            <Package className="w-8 h-8 text-gray-300 mx-auto" />
+            <p className="text-xs font-bold text-gray-800">No orders placed yet</p>
+            <p className="text-[11px] text-gray-400 max-w-xs mx-auto">
+              Track your package above or start exploring products.
             </p>
             <Link
               href="/"
-              className="inline-flex items-center gap-2 px-6 py-2.5 bg-primary text-white font-bold rounded-xl hover:bg-primary/95 transition-all text-xs shadow-xs"
+              className="inline-flex items-center gap-1 px-4 py-2 bg-primary text-white text-xs font-bold rounded-lg hover:bg-primary/95 transition-colors mt-2"
             >
-              <span>Continue Shopping</span>
-              <ArrowRight className="w-4 h-4" />
+              <span>Start Shopping</span>
+              <ArrowRight className="w-3.5 h-3.5" />
             </Link>
           </div>
         )}
+
       </div>
     </div>
   );

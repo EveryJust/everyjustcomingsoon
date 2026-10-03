@@ -5,6 +5,8 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useCartStore } from '@/store/useCartStore';
 import toast from 'react-hot-toast';
+import { useAuthStore } from '@/store/useAuthStore';
+import { supabase } from '@/lib/supabase';
 import { 
   ChevronLeft, 
   ChevronDown, 
@@ -25,7 +27,11 @@ import {
   ShieldCheck,
   ArrowRight,
   ArrowLeft,
-  Tag
+  Tag,
+  ChevronRight,
+  Home,
+  Briefcase,
+  Edit2
 } from 'lucide-react';
 import { 
   COUNTRY_CODES, 
@@ -35,9 +41,31 @@ import {
   lookupPostalPincode 
 } from '@/utils/geoData';
 
+export interface SavedAddress {
+  id: string;
+  fullName: string;
+  email?: string;
+  phone: string;
+  alternatePhone?: string;
+  pincode: string;
+  street: string;
+  city: string;
+  state: string;
+  landmark?: string;
+  addressType?: 'Home' | 'Work' | 'Other';
+  isDefault?: boolean;
+}
+
 export default function CheckoutPage() {
   const router = useRouter();
+  const { user } = useAuthStore();
   const { items, getSubtotal, clearCart } = useCartStore();
+
+  // Connected addresses for user/account
+  const [allAddresses, setAllAddresses] = useState<SavedAddress[]>([]);
+  const [selectedAddressId, setSelectedAddressId] = useState<string | null>(null);
+  const [isAddressListModalOpen, setIsAddressListModalOpen] = useState(false);
+  const [editingAddressId, setEditingAddressId] = useState<string | null>(null);
 
   // Step 1 = Review Your Order (Address & Items)
   // Step 2 = Payment Method & Place Order
@@ -67,6 +95,7 @@ export default function CheckoutPage() {
   const [city, setCity] = useState('');
   const [street, setStreet] = useState('');
   const [landmark, setLandmark] = useState('');
+  const [addressType, setAddressType] = useState<'Home' | 'Work' | 'Other'>('Home');
 
   // Dropdown States for Modal
   const [openCountryDropdown, setOpenCountryDropdown] = useState(false);
@@ -125,45 +154,140 @@ export default function CheckoutPage() {
     });
   })();
 
-  // Load existing saved address & available coupons on mount
+  const applyAddress = (addr: SavedAddress) => {
+    setFullName(addr.fullName || '');
+    setEmail(addr.email || user?.email || '');
+    const cleanP = (addr.phone || '').replace(/\D/g, '').slice(-10);
+    setPhone(cleanP);
+    setAlternatePhone(addr.alternatePhone || '');
+    setShowAlternatePhone(!!addr.alternatePhone);
+    setPincode(addr.pincode || '');
+    setState(addr.state || 'Kerala');
+    setCity(addr.city || '');
+    setStreet(addr.street || '');
+    setLandmark(addr.landmark || '');
+    setAddressType(addr.addressType || 'Home');
+    setSelectedAddressId(addr.id || null);
+    setHasSavedAddress(true);
+
+    try {
+      localStorage.setItem('saved_shipping_address', JSON.stringify({ ...addr, phone: cleanP }));
+    } catch {}
+  };
+
+  const handleOpenAddNewAddress = () => {
+    setEditingAddressId(null);
+    setFullName(user?.user_metadata?.full_name || user?.user_metadata?.name || '');
+    setEmail(user?.email || '');
+    setPhone(user?.user_metadata?.phone || user?.phone || '');
+    setAlternatePhone('');
+    setShowAlternatePhone(false);
+    setPincode('');
+    setStreet('');
+    setCity('');
+    setState('Kerala');
+    setLandmark('');
+    setAddressType('Home');
+    setIsAddressListModalOpen(false);
+    setIsAddressModalOpen(true);
+  };
+
+  const handleOpenEditAddress = (addr: SavedAddress) => {
+    setEditingAddressId(addr.id);
+    setFullName(addr.fullName || '');
+    setEmail(addr.email || user?.email || '');
+    setPhone(addr.phone || '');
+    setAlternatePhone(addr.alternatePhone || '');
+    setShowAlternatePhone(!!addr.alternatePhone);
+    setPincode(addr.pincode || '');
+    setStreet(addr.street || '');
+    setCity(addr.city || '');
+    setState(addr.state || 'Kerala');
+    setLandmark(addr.landmark || '');
+    setAddressType(addr.addressType || 'Home');
+    setIsAddressListModalOpen(false);
+    setIsAddressModalOpen(true);
+  };
+
+  const handleSelectAddress = (addr: SavedAddress) => {
+    applyAddress(addr);
+    setIsAddressListModalOpen(false);
+    toast.success(`Delivering to ${addr.fullName}`);
+  };
+
+  // Load existing saved addresses & sync with account/backend
   useEffect(() => {
+    let list: SavedAddress[] = [];
+
+    try {
+      const stored = localStorage.getItem('everyjust_user_addresses');
+      if (stored) {
+        list = JSON.parse(stored);
+      }
+    } catch {}
+
+    if (user?.user_metadata?.addresses && Array.isArray(user.user_metadata.addresses)) {
+      if (user.user_metadata.addresses.length > 0) {
+        const ids = new Set(list.map((a) => a.id));
+        user.user_metadata.addresses.forEach((ua: SavedAddress) => {
+          if (!ids.has(ua.id)) {
+            list.push(ua);
+          }
+        });
+      }
+    }
+
+    let activeAddr: SavedAddress | null = null;
     try {
       const saved = localStorage.getItem('saved_shipping_address');
       if (saved) {
         const parsed = JSON.parse(saved);
-        if (parsed.fullName && parsed.phone && parsed.pincode && parsed.street) {
-          setFullName(parsed.fullName || '');
-          setEmail(parsed.email || '');
-          setPhone(parsed.phone || '');
-          setAlternatePhone(parsed.alternatePhone || '');
-          setShowAlternatePhone(!!parsed.alternatePhone);
-          setPincode(parsed.pincode || '');
-          setState(parsed.state || 'Kerala');
-          setCity(parsed.city || '');
-          setStreet(parsed.street || '');
-          setLandmark(parsed.landmark || '');
-          setHasSavedAddress(true);
-        }
-      } else {
-        const storedAddrs = localStorage.getItem('everyjust_user_addresses');
-        if (storedAddrs) {
-          const addrs = JSON.parse(storedAddrs);
-          const def = addrs.find((a: any) => a.isDefault) || addrs[0];
-          if (def && def.fullName && def.phone && def.street) {
-            setFullName(def.fullName || '');
-            setEmail(def.email || '');
-            setPhone(def.phone || '');
-            setPincode(def.pincode || '');
-            setState(def.state || 'Kerala');
-            setCity(def.city || '');
-            setStreet(def.street || '');
-            setLandmark(def.landmark || '');
-            setHasSavedAddress(true);
-          }
+        if (parsed.fullName && parsed.phone && parsed.street) {
+          activeAddr = parsed;
         }
       }
-    } catch {
-      // ignore
+    } catch {}
+
+    if (!activeAddr && list.length > 0) {
+      activeAddr = list.find((a) => a.isDefault) || list[0];
+    }
+
+    if (activeAddr) {
+      applyAddress(activeAddr);
+    }
+
+    setAllAddresses(list);
+
+    // Call sync API to link all addresses from account, email, mobile
+    const checkEmail = user?.email || (typeof window !== 'undefined' ? localStorage.getItem('last_customer_email') || '' : '');
+    const checkPhone = user?.user_metadata?.phone || user?.phone || (typeof window !== 'undefined' ? localStorage.getItem('last_customer_phone') || '' : '');
+
+    if (checkEmail || checkPhone || user?.id) {
+      fetch('/api/user/sync-data', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          email: checkEmail,
+          phone: checkPhone,
+          userId: user?.id,
+          clientAddresses: list
+        })
+      })
+        .then((res) => res.json())
+        .then((data) => {
+          if (data.success && Array.isArray(data.addresses) && data.addresses.length > 0) {
+            setAllAddresses(data.addresses);
+            try {
+              localStorage.setItem('everyjust_user_addresses', JSON.stringify(data.addresses));
+            } catch {}
+
+            if (!activeAddr) {
+              const def = data.addresses.find((a: SavedAddress) => a.isDefault) || data.addresses[0];
+              applyAddress(def);
+            }
+          }
+        })
+        .catch(() => {});
     }
 
     // Fetch live available coupons
@@ -175,7 +299,7 @@ export default function CheckoutPage() {
         }
       })
       .catch(() => {});
-  }, []);
+  }, [user]);
 
   // Close dropdowns on outside click
   useEffect(() => {
@@ -285,51 +409,43 @@ export default function CheckoutPage() {
       return;
     }
 
-    const addressObj = {
+    const addressObj: SavedAddress = {
+      id: editingAddressId || `addr_${Date.now()}`,
       fullName: fullName.trim(),
       email: email.trim(),
-      phone: phone.trim().slice(-10),
-      alternatePhone: showAlternatePhone && alternatePhone.trim() ? alternatePhone.trim() : '',
-      country,
+      phone: cleanPhone,
+      alternatePhone: showAlternatePhone && alternatePhone.trim() ? alternatePhone.trim().slice(-10) : '',
       pincode: pincode.trim(),
       state: state.trim(),
       city: city.trim(),
       street: street.trim(),
       landmark: landmark.trim(),
+      addressType: addressType || 'Home',
+      isDefault: allAddresses.length === 0
     };
+
+    let updatedList: SavedAddress[] = [];
+    if (editingAddressId) {
+      updatedList = allAddresses.map((a) => (a.id === editingAddressId ? addressObj : a));
+    } else {
+      updatedList = [addressObj, ...allAddresses.map((a) => ({ ...a, isDefault: false }))];
+    }
+
+    setAllAddresses(updatedList);
+    applyAddress(addressObj);
 
     try {
       localStorage.setItem('saved_shipping_address', JSON.stringify(addressObj));
-      localStorage.setItem('last_customer_email', email.trim());
-      localStorage.setItem('last_customer_phone', phone.trim().slice(-10));
-
-      // Also persist to everyjust_user_addresses so it appears on Account/Addresses
-      let currentAddresses: any[] = [];
-      const stored = localStorage.getItem('everyjust_user_addresses');
-      if (stored) {
-        currentAddresses = JSON.parse(stored);
-      }
-      const newAddrItem = {
-        id: `addr_${Date.now()}`,
-        fullName: addressObj.fullName,
-        email: addressObj.email,
-        phone: addressObj.phone,
-        pincode: addressObj.pincode,
-        street: addressObj.street,
-        city: addressObj.city,
-        state: addressObj.state,
-        landmark: addressObj.landmark,
-        addressType: 'Home',
-        isDefault: true
-      };
-
-      const filtered = currentAddresses.filter(
-        (a) =>
-          `${a.street?.toLowerCase().replace(/[^a-z0-9]/g, '')}_${a.pincode?.replace(/\D/g, '')}` !==
-          `${newAddrItem.street.toLowerCase().replace(/[^a-z0-9]/g, '')}_${newAddrItem.pincode.replace(/\D/g, '')}`
-      );
-      const updatedList = [newAddrItem, ...filtered.map((a) => ({ ...a, isDefault: false }))];
       localStorage.setItem('everyjust_user_addresses', JSON.stringify(updatedList));
+      localStorage.setItem('last_customer_email', email.trim());
+      localStorage.setItem('last_customer_phone', cleanPhone);
+
+      // If user is logged in, sync to Supabase user metadata
+      if (user) {
+        supabase.auth.updateUser({
+          data: { addresses: updatedList }
+        }).catch(() => {});
+      }
 
       // Trigger background sync
       fetch('/api/user/sync-data', {
@@ -338,6 +454,7 @@ export default function CheckoutPage() {
         body: JSON.stringify({
           email: addressObj.email,
           phone: addressObj.phone,
+          userId: user?.id,
           clientAddresses: updatedList
         })
       }).catch(() => {});
@@ -347,7 +464,8 @@ export default function CheckoutPage() {
 
     setHasSavedAddress(true);
     setIsAddressModalOpen(false);
-    toast.success('Delivery address saved successfully!');
+    setEditingAddressId(null);
+    toast.success(editingAddressId ? 'Address updated successfully!' : 'Delivery address saved!');
   };
 
   // Step 1: Proceed to Step 2
@@ -703,22 +821,40 @@ export default function CheckoutPage() {
                 {/* 2. Estimated Delivery & Delivery Address Card (Below Ordered Items) */}
                 <div className="bg-white rounded-xl border border-gray-200 p-4 shadow-2xs">
                   {/* Delivery ETA Header */}
-                  <div className="flex items-center gap-2 text-xs font-bold text-gray-900 pb-3 border-b border-gray-100">
-                    <div className="w-6 h-6 rounded-md bg-primary/10 text-primary flex items-center justify-center flex-shrink-0">
-                      <Truck className="w-3.5 h-3.5" />
+                  <div className="flex items-center justify-between pb-3 border-b border-gray-100">
+                    <div className="flex items-center gap-2 text-xs font-bold text-gray-900">
+                      <div className="w-6 h-6 rounded-md bg-primary/10 text-primary flex items-center justify-center flex-shrink-0">
+                        <Truck className="w-3.5 h-3.5" />
+                      </div>
+                      <span>Estimated Delivery by {deliveryDateStr}</span>
                     </div>
-                    <span>Estimated Delivery by {deliveryDateStr}</span>
+
+                    {allAddresses.length > 0 && (
+                      <button
+                        type="button"
+                        onClick={() => setIsAddressListModalOpen(true)}
+                        className="text-[11px] font-bold text-primary hover:underline cursor-pointer flex items-center gap-1"
+                      >
+                        <span>{allAddresses.length} Saved {allAddresses.length === 1 ? 'Address' : 'Addresses'}</span>
+                        <ChevronRight className="w-3.5 h-3.5" />
+                      </button>
+                    )}
                   </div>
 
                   {/* Address details */}
                   <div className="pt-3">
                     {hasSavedAddress && fullName && phone && street ? (
                       <div className="flex items-start justify-between gap-3">
-                        <div className="text-xs text-gray-700 space-y-1 pr-2">
-                          <div className="font-bold text-gray-950 flex items-center gap-1.5 text-sm">
+                        <div className="text-xs text-gray-700 space-y-1 pr-2 flex-1 min-w-0">
+                          <div className="font-bold text-gray-950 flex items-center gap-1.5 text-sm flex-wrap">
                             <span>{fullName}</span>
                             <span className="text-gray-400">•</span>
-                            <span>{phone}</span>
+                            <span>+91 {phone}</span>
+                            {selectedAddressId && (
+                              <span className="inline-flex items-center gap-0.5 px-2 py-0.5 rounded-full text-[10px] font-bold bg-primary/10 text-primary">
+                                Selected
+                              </span>
+                            )}
                           </div>
                           <p className="text-gray-600 leading-relaxed text-xs">
                             {street}{landmark ? `, ${landmark}` : ''}, {city}, {state} - {pincode}
@@ -728,12 +864,24 @@ export default function CheckoutPage() {
                               Alt Mobile: {alternatePhone}
                             </p>
                           )}
+                          {email && (
+                            <p className="text-gray-400 text-[11px] flex items-center gap-1">
+                              <Mail className="w-3 h-3 text-gray-400 flex-shrink-0" />
+                              <span className="truncate">{email}</span>
+                            </p>
+                          )}
                         </div>
 
                         {/* Change Button */}
                         <button
                           type="button"
-                          onClick={() => setIsAddressModalOpen(true)}
+                          onClick={() => {
+                            if (allAddresses.length > 0) {
+                              setIsAddressListModalOpen(true);
+                            } else {
+                              handleOpenAddNewAddress();
+                            }
+                          }}
                           className="px-4 py-2 rounded-lg border border-primary/40 text-primary text-xs font-bold hover:bg-primary/5 transition-colors flex-shrink-0 shadow-2xs cursor-pointer"
                         >
                           Change
@@ -746,11 +894,17 @@ export default function CheckoutPage() {
                         <p className="text-[11px] text-gray-500 mb-3">Please provide your address so we can deliver your package</p>
                         <button
                           type="button"
-                          onClick={() => setIsAddressModalOpen(true)}
+                          onClick={() => {
+                            if (allAddresses.length > 0) {
+                              setIsAddressListModalOpen(true);
+                            } else {
+                              handleOpenAddNewAddress();
+                            }
+                          }}
                           className="inline-flex items-center justify-center gap-2 px-6 py-2.5 bg-primary hover:bg-primary/90 text-white text-xs font-bold rounded-xl shadow-sm transition-colors cursor-pointer"
                         >
                           <Plus className="w-4 h-4" />
-                          Add Delivery Address
+                          <span>{allAddresses.length > 0 ? 'Select Saved Address' : 'Add Delivery Address'}</span>
                         </button>
                       </div>
                     )}
@@ -938,7 +1092,13 @@ export default function CheckoutPage() {
                     <span className="font-bold text-gray-900 text-sm">Delivering to</span>
                     <button
                       type="button"
-                      onClick={() => setStep(1)}
+                      onClick={() => {
+                        if (allAddresses.length > 0) {
+                          setIsAddressListModalOpen(true);
+                        } else {
+                          setStep(1);
+                        }
+                      }}
                       className="text-xs font-bold text-primary hover:underline cursor-pointer"
                     >
                       Change Address
@@ -1146,6 +1306,157 @@ export default function CheckoutPage() {
         </div>
 
         {/* ========================================================================= */}
+        {/* MODAL: SELECT SAVED DELIVERY ADDRESS (CONNECTED TO ACCOUNT)               */}
+        {/* ========================================================================= */}
+        {isAddressListModalOpen && (
+          <div
+            onClick={() => setIsAddressListModalOpen(false)}
+            className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/60 backdrop-blur-xs p-0 sm:p-4 animate-in fade-in"
+          >
+            <div
+              onClick={(e) => e.stopPropagation()}
+              className="bg-white w-full max-w-md sm:max-w-lg rounded-t-2xl sm:rounded-2xl max-h-[92vh] sm:max-h-[85vh] flex flex-col shadow-2xl overflow-hidden animate-in slide-in-from-bottom-5"
+            >
+              {/* Header */}
+              <div className="px-5 py-4 border-b border-gray-200 flex items-center justify-between sticky top-0 bg-white z-10">
+                <div>
+                  <div className="flex items-center gap-2">
+                    <MapPin className="w-5 h-5 text-primary" />
+                    <h3 className="text-sm font-bold text-gray-900">
+                      Select Delivery Address
+                    </h3>
+                  </div>
+                  <p className="text-[11px] text-gray-500 mt-0.5">
+                    {user 
+                      ? `Connected addresses linked with ${user.email || user.user_metadata?.phone || user.phone || 'your account'}` 
+                      : 'Addresses linked with your phone & email'}
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setIsAddressListModalOpen(false)}
+                  className="p-1 rounded-full text-gray-400 hover:text-gray-700 hover:bg-gray-100 transition-colors cursor-pointer"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+
+              {/* Address List Body */}
+              <div className="p-4 sm:p-5 overflow-y-auto flex-1 space-y-3">
+                {allAddresses.length === 0 ? (
+                  <div className="py-8 text-center">
+                    <MapPin className="w-10 h-10 text-gray-300 mx-auto mb-2" />
+                    <p className="text-sm font-semibold text-gray-700">No saved addresses found</p>
+                    <p className="text-xs text-gray-500 mt-1">Add a new delivery address below to get started</p>
+                  </div>
+                ) : (
+                  allAddresses.map((addr) => {
+                  const isSelected = selectedAddressId === addr.id || 
+                    (addr.street.trim() === street.trim() && addr.pincode.trim() === pincode.trim());
+
+                  return (
+                    <div
+                      key={addr.id}
+                      onClick={() => handleSelectAddress(addr)}
+                      className={`rounded-2xl p-4 border-2 transition-all cursor-pointer relative ${
+                        isSelected
+                          ? 'border-primary bg-primary/5 shadow-xs ring-1 ring-primary/30'
+                          : 'border-gray-200 hover:border-gray-300 bg-white hover:bg-gray-50/50'
+                      }`}
+                    >
+                      <div className="flex items-start justify-between gap-3">
+                        <div className="flex items-start gap-3 flex-1 min-w-0">
+                          {/* Radio Selection Circle */}
+                          <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center mt-0.5 flex-shrink-0 transition-colors ${
+                            isSelected ? 'border-primary bg-primary text-white' : 'border-gray-300 bg-white'
+                          }`}>
+                            {isSelected && <Check className="w-3.5 h-3.5 stroke-[3]" />}
+                          </div>
+
+                          <div className="min-w-0 flex-1 space-y-1">
+                            <div className="flex items-center gap-2 flex-wrap">
+                              <span className="font-extrabold text-sm text-gray-950">
+                                {addr.fullName}
+                              </span>
+                              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-gray-100 text-gray-700">
+                                {addr.addressType === 'Work' ? <Briefcase className="w-3 h-3" /> : <Home className="w-3 h-3" />}
+                                {addr.addressType || 'Home'}
+                              </span>
+                              {addr.isDefault && (
+                                <span className="text-[10px] font-extrabold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200/60">
+                                  Default
+                                </span>
+                              )}
+                            </div>
+
+                            <p className="text-xs text-gray-600 leading-relaxed">
+                              {addr.street}{addr.landmark ? `, Near ${addr.landmark}` : ''}, {addr.city}, {addr.state} - <strong className="text-gray-800 font-bold">{addr.pincode}</strong>
+                            </p>
+
+                            <div className="flex items-center gap-3 text-xs text-gray-500 pt-1 font-medium">
+                              <span className="flex items-center gap-1">
+                                <Phone className="w-3 h-3 text-gray-400" />
+                                +91 {addr.phone}
+                              </span>
+                              {addr.email && (
+                                <span className="flex items-center gap-1 truncate">
+                                  <Mail className="w-3 h-3 text-gray-400" />
+                                  <span className="truncate">{addr.email}</span>
+                                </span>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Edit Button */}
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleOpenEditAddress(addr);
+                          }}
+                          className="p-1.5 text-gray-400 hover:text-primary hover:bg-gray-100 rounded-lg transition-colors cursor-pointer"
+                          title="Edit Address"
+                        >
+                          <Edit2 className="w-4 h-4" />
+                        </button>
+                      </div>
+
+                      {isSelected ? (
+                        <div className="mt-3 pt-2.5 border-t border-primary/20 flex items-center justify-between text-xs">
+                          <span className="text-primary font-bold flex items-center gap-1">
+                            <CheckCircle2 className="w-3.5 h-3.5" /> Delivering to this address
+                          </span>
+                          <span className="text-[11px] text-gray-400">Selected</span>
+                        </div>
+                      ) : (
+                        <div className="mt-3 pt-2.5 border-t border-gray-100 flex justify-end">
+                          <span className="text-xs font-bold text-primary hover:underline">
+                            Deliver Here &rarr;
+                          </span>
+                        </div>
+                      )}
+                    </div>
+                  );
+                }))}
+              </div>
+
+              {/* Bottom Add New Address Button */}
+              <div className="p-4 border-t border-gray-100 bg-white">
+                <button
+                  type="button"
+                  onClick={handleOpenAddNewAddress}
+                  className="w-full py-3 px-4 rounded-xl border-2 border-dashed border-primary/40 hover:border-primary text-primary hover:bg-primary/5 transition-all flex items-center justify-center gap-2 font-bold text-xs sm:text-sm cursor-pointer shadow-2xs"
+                >
+                  <Plus className="w-4 h-4 stroke-[3]" />
+                  <span>Add New Delivery Address</span>
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* ========================================================================= */}
         {/* ADD / EDIT ADDRESS MODAL (POPUP BOTTOM SHEET ON MOBILE, CENTER ON DESKTOP) */}
         {/* ========================================================================= */}
         {isAddressModalOpen && (
@@ -1157,12 +1468,15 @@ export default function CheckoutPage() {
                 <div className="flex items-center gap-2">
                   <MapPin className="w-5 h-5 text-primary" />
                   <h3 className="text-sm font-bold text-gray-900">
-                    {hasSavedAddress ? 'Edit Delivery Address' : 'Add Delivery Address'}
+                    {editingAddressId ? 'Edit Delivery Address' : (hasSavedAddress ? 'Add / Edit Address' : 'Add Delivery Address')}
                   </h3>
                 </div>
                 <button
                   type="button"
-                  onClick={() => setIsAddressModalOpen(false)}
+                  onClick={() => {
+                    setIsAddressModalOpen(false);
+                    setEditingAddressId(null);
+                  }}
                   className="p-1 rounded-full text-gray-400 hover:text-gray-700 hover:bg-gray-100 transition-colors cursor-pointer"
                 >
                   <X className="w-5 h-5" />
@@ -1537,13 +1851,39 @@ export default function CheckoutPage() {
                   />
                 </div>
 
+                {/* Address Type Selector */}
+                <div>
+                  <label className="block text-[11px] font-bold text-gray-700 uppercase tracking-wider mb-1.5">
+                    Address Type
+                  </label>
+                  <div className="grid grid-cols-3 gap-2">
+                    {(['Home', 'Work', 'Other'] as const).map((type) => (
+                      <button
+                        key={type}
+                        type="button"
+                        onClick={() => setAddressType(type)}
+                        className={`py-2 px-3 rounded-xl border text-xs font-bold flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
+                          addressType === type
+                            ? 'border-primary bg-primary/10 text-primary'
+                            : 'border-gray-200 bg-gray-50 text-gray-600 hover:bg-gray-100'
+                        }`}
+                      >
+                        {type === 'Home' && <Home className="w-3.5 h-3.5" />}
+                        {type === 'Work' && <Briefcase className="w-3.5 h-3.5" />}
+                        {type === 'Other' && <MapPin className="w-3.5 h-3.5" />}
+                        <span>{type}</span>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
                 {/* Modal Action Button */}
                 <div className="pt-2 sticky bottom-0 bg-white">
                   <button
                     type="submit"
                     className="w-full py-3 bg-primary hover:bg-primary/90 text-white font-extrabold text-sm rounded-xl transition-colors shadow-sm shadow-primary/20 cursor-pointer"
                   >
-                    Save Address &amp; Deliver Here
+                    {editingAddressId ? 'Update Address & Deliver Here' : 'Save Address & Deliver Here'}
                   </button>
                 </div>
 

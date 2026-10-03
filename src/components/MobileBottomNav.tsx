@@ -9,6 +9,7 @@ const MobileBottomNav = () => {
   const { user } = useAuthStore();
   const [mounted, setMounted] = React.useState(false);
   const isProductPage = pathname?.startsWith('/product/');
+  const isOrdersPage = pathname === '/orders' || pathname?.startsWith('/orders/');
 
   React.useEffect(() => {
     setMounted(true);
@@ -53,17 +54,17 @@ const MobileBottomNav = () => {
         <span className={`text-[9px] font-black tracking-wide uppercase ${pathname === '/play' ? 'text-primary' : 'text-gray-500'}`}>Play</span>
       </Link>
       
-      <Link href="/reels" className={`flex flex-col items-center justify-center w-full transition-colors ${pathname === '/reels' ? 'text-primary' : 'text-gray-500 hover:text-primary'}`}>
-        {pathname === '/reels' ? (
-          <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 mb-1" viewBox="0 0 20 20" fill="currentColor">
-            <path d="M2 6a2 2 0 012-2h12a2 2 0 012 2v8a2 2 0 01-2 2H4a2 2 0 01-2-2V6zM14.553 7.106A1 1 0 0014 8v4a1 1 0 001.553.894l2-1A1 1 0 0018 11V9a1 1 0 00-.447-.894l-2-1z" />
+      <Link href="/orders" className={`flex flex-col items-center justify-center w-full transition-colors ${isOrdersPage ? 'text-primary' : 'text-gray-500 hover:text-primary'}`}>
+        {isOrdersPage ? (
+          <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 mb-1" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M12.378 1.602a.75.75 0 00-.756 0L3.366 6.183a.75.75 0 00-.366.648v10.338a.75.75 0 00.366.648l8.256 4.581a.75.75 0 00.756 0l8.256-4.581a.75.75 0 00.366-.648V6.831a.75.75 0 00-.366-.648L12.378 1.602zM12 3.102l6.83 3.791-2.937 1.632-6.83-3.791L12 3.102zm-7.5 4.887l6.75 3.75v8.156l-6.75-3.746V7.989zm8.25 11.906v-8.156l6.75-3.75v8.16l-6.75 3.746z" />
           </svg>
         ) : (
           <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 mb-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
           </svg>
         )}
-        <span className="text-[9px] font-bold tracking-wide uppercase">Reels</span>
+        <span className="text-[9px] font-bold tracking-wide uppercase whitespace-nowrap">My Orders</span>
       </Link>
       
       <Link href="/account" className={`flex flex-col items-center justify-center w-full transition-colors ${pathname === '/account' ? 'text-primary' : 'text-gray-500 hover:text-primary'}`}>

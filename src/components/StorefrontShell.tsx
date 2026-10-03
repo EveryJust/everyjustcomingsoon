@@ -14,11 +14,12 @@ export default function StorefrontShell({ children }: { children: React.ReactNod
   const isCheckout = pathname === '/checkout' || pathname.startsWith('/checkout/');
   const isOrderConfirmation = pathname === '/order-confirmation' || pathname.startsWith('/order-confirmation/');
   const isAccount = pathname === '/account' || pathname.startsWith('/account/');
+  const isOrders = pathname === '/orders' || pathname.startsWith('/orders/');
 
   // For checkout and order-confirmation pages, hide footer, newsletter, and mobile bottom bar
   const hideFooterAndDecor = isCheckout || isOrderConfirmation;
-  // Also hide footer and newsletter on account pages
-  const hideFooterAndNewsletter = hideFooterAndDecor || isAccount;
+  // Also hide footer and newsletter on account and orders pages
+  const hideFooterAndNewsletter = hideFooterAndDecor || isAccount || isOrders;
 
   return (
     <div className={`flex-1 flex flex-col ${hideFooterAndDecor ? 'pb-0' : 'pb-[72px] lg:pb-0'}`}>
