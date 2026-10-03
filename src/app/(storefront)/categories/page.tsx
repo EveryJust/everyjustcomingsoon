@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { createClient } from '@/utils/supabase/client';
 import { useCartStore } from '@/store/useCartStore';
+import { ShoppingCart } from 'lucide-react';
 import CartDrawer from '@/components/CartDrawer';
 
 export default function CategoriesPage() {
@@ -140,10 +141,15 @@ export default function CategoriesPage() {
           {/* Cart Icon */}
           <button 
             onClick={() => setIsCartOpen(true)}
-            className="bg-gray-50 border border-gray-200 rounded-full p-2 text-gray-800 relative cursor-pointer"
+            aria-label="View Cart"
+            className="bg-gray-50 border border-gray-200 rounded-full p-2 text-gray-800 relative cursor-pointer hover:bg-gray-100 transition-colors"
           >
-             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" /></svg>
-             {mounted && cartCount > 0 && <span className="absolute -top-1 -right-1 bg-primary text-white text-[10px] w-4 h-4 rounded-full flex items-center justify-center font-bold">{cartCount}</span>}
+             <ShoppingCart className="w-5 h-5 stroke-[2.2]" />
+             {mounted && cartCount > 0 && (
+               <span className="absolute -top-1 -right-1 bg-[#d81b60] text-white text-[10px] min-w-4 h-4 px-1 rounded-full flex items-center justify-center font-bold shadow-xs">
+                 {cartCount}
+               </span>
+             )}
           </button>
         </div>
       </div>

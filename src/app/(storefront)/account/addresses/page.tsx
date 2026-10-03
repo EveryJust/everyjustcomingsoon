@@ -15,8 +15,10 @@ import {
   Edit2,
   X,
   Phone,
+  Mail,
   Check,
-  ShieldCheck
+  ShieldCheck,
+  RefreshCw
 } from 'lucide-react';
 import { useAuthStore } from '@/store/useAuthStore';
 import { createClient } from '@/utils/supabase/client';
@@ -25,6 +27,7 @@ import toast from 'react-hot-toast';
 export interface Address {
   id: string;
   fullName: string;
+  email?: string;
   phone: string;
   pincode: string;
   street: string;
@@ -43,9 +46,11 @@ export default function AddressesPage() {
   const [mounted, setMounted] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
+  const [isSyncing, setIsSyncing] = useState(false);
 
   // Form State
   const [fullName, setFullName] = useState('');
+  const [email, setEmail] = useState('');
   const [phone, setPhone] = useState('');
   const [pincode, setPincode] = useState('');
   const [street, setStreet] = useState('');
@@ -56,7 +61,7 @@ export default function AddressesPage() {
   const [isDefault, setIsDefault] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
 
-  // Load addresses from localStorage and Supabase user metadata
+  // Load addresses & sync with email and phone
   useEffect(() => {
     setMounted(true);
     let loaded: Address[] = [];
@@ -79,6 +84,7 @@ export default function AddressesPage() {
               {
                 id: 'addr_1',
                 fullName: parsed.fullName,
+                email: parsed.email || '',
                 phone: parsed.phone || '',
                 pincode: parsed.pincode || '',
                 street: parsed.street || '',
@@ -102,6 +108,39 @@ export default function AddressesPage() {
     }
 
     setAddresses(loaded);
+
+    // Auto-sync addresses by email and phone across orders & profile
+    const userEmail = user?.email || (typeof window !== 'undefined' ? localStorage.getItem('last_customer_email') || '' : '');
+    const userPhone = user?.user_metadata?.phone || user?.phone || '';
+
+    if (userEmail || userPhone) {
+      setIsSyncing(true);
+      fetch('/api/user/sync-data', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          email: userEmail,
+          phone: userPhone,
+          userId: user?.id,
+          clientAddresses: loaded
+        })
+      })
+        .then((res) => res.json())
+        .then((data) => {
+          if (data.success && Array.isArray(data.addresses) && data.addresses.length > 0) {
+            setAddresses(data.addresses);
+            try {
+              localStorage.setItem('everyjust_user_addresses', JSON.stringify(data.addresses));
+              const def = data.addresses.find((a: Address) => a.isDefault) || data.addresses[0];
+              if (def) {
+                localStorage.setItem('saved_shipping_address', JSON.stringify(def));
+              }
+            } catch {}
+          }
+        })
+        .catch(() => {})
+        .finally(() => setIsSyncing(false));
+    }
   }, [user]);
 
   // Lock body scroll when modal is open
@@ -116,7 +155,7 @@ export default function AddressesPage() {
     };
   }, [isModalOpen]);
 
-  // Persist addresses to localStorage and Supabase
+  // Persist addresses to localStorage, user metadata, and sync API
   const persistAddresses = async (updated: Address[]) => {
     setAddresses(updated);
     try {
@@ -129,6 +168,7 @@ export default function AddressesPage() {
           'saved_shipping_address',
           JSON.stringify({
             fullName: defaultAddr.fullName,
+            email: defaultAddr.email || user?.email || '',
             phone: defaultAddr.phone,
             pincode: defaultAddr.pincode,
             street: defaultAddr.street,
@@ -143,12 +183,22 @@ export default function AddressesPage() {
       }
     } catch {}
 
-    // If logged in, update Supabase user metadata
+    // If logged in, update Supabase user metadata and trigger sync API
     if (user) {
       try {
         const supabase = createClient();
         await supabase.auth.updateUser({
           data: { addresses: updated }
+        });
+        await fetch('/api/user/sync-data', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            email: user.email,
+            phone: user.user_metadata?.phone || user.phone,
+            userId: user.id,
+            clientAddresses: updated
+          })
         });
         await initialize();
       } catch (err) {
@@ -160,6 +210,7 @@ export default function AddressesPage() {
   const handleOpenAdd = () => {
     setEditingId(null);
     setFullName(user?.user_metadata?.full_name || '');
+    setEmail(user?.email || '');
     setPhone(user?.user_metadata?.phone || '');
     setPincode('');
     setStreet('');
@@ -174,6 +225,7 @@ export default function AddressesPage() {
   const handleOpenEdit = (addr: Address) => {
     setEditingId(addr.id);
     setFullName(addr.fullName);
+    setEmail(addr.email || user?.email || '');
     setPhone(addr.phone);
     setPincode(addr.pincode);
     setStreet(addr.street);
@@ -198,56 +250,69 @@ export default function AddressesPage() {
       const isFirst = addresses.length === 0;
       const makeDefault = isDefault || isFirst;
 
-      let updatedList: Address[] = [];
+      let updated: Address[] = [];
 
       if (editingId) {
-        updatedList = addresses.map((a) => {
-          if (a.id === editingId) {
+        updated = addresses.map((addr) => {
+          if (addr.id === editingId) {
             return {
-              ...a,
+              ...addr,
               fullName: fullName.trim(),
-              phone: phone.trim(),
+              email: email.trim() || user?.email || '',
+              phone: phone.trim().slice(-10),
               pincode: pincode.trim(),
               street: street.trim(),
               city: city.trim(),
               state: state.trim(),
-              landmark: landmark.trim(),
+              landmark: landmark.trim() || undefined,
               addressType,
               isDefault: makeDefault
             };
           }
-          return makeDefault ? { ...a, isDefault: false } : a;
+          return makeDefault ? { ...addr, isDefault: false } : addr;
         });
         toast.success('Address updated successfully');
       } else {
         const newAddress: Address = {
           id: `addr_${Date.now()}`,
           fullName: fullName.trim(),
-          phone: phone.trim(),
+          email: email.trim() || user?.email || '',
+          phone: phone.trim().slice(-10),
           pincode: pincode.trim(),
           street: street.trim(),
           city: city.trim(),
           state: state.trim(),
-          landmark: landmark.trim(),
+          landmark: landmark.trim() || undefined,
           addressType,
           isDefault: makeDefault
         };
 
-        if (makeDefault) {
-          updatedList = [newAddress, ...addresses.map((a) => ({ ...a, isDefault: false }))];
-        } else {
-          updatedList = [newAddress, ...addresses];
-        }
-        toast.success('New address added!');
+        const existingMapped = makeDefault
+          ? addresses.map((a) => ({ ...a, isDefault: false }))
+          : [...addresses];
+
+        updated = [newAddress, ...existingMapped];
+        toast.success('New address added successfully');
       }
 
-      await persistAddresses(updatedList);
+      await persistAddresses(updated);
       setIsModalOpen(false);
     } catch {
       toast.error('Failed to save address');
     } finally {
       setIsSaving(false);
     }
+  };
+
+  const handleDelete = async (id: string) => {
+    if (!confirm('Are you sure you want to delete this address?')) return;
+
+    const remaining = addresses.filter((a) => a.id !== id);
+    if (remaining.length > 0 && !remaining.some((a) => a.isDefault)) {
+      remaining[0].isDefault = true;
+    }
+    await persistAddresses(remaining);
+    toast.success('Address deleted');
   };
 
   const handleSetDefault = async (id: string) => {
@@ -259,32 +324,19 @@ export default function AddressesPage() {
     toast.success('Default delivery address updated');
   };
 
-  const handleDelete = async (id: string) => {
-    const toDelete = addresses.find((a) => a.id === id);
-    const updated = addresses.filter((a) => a.id !== id);
-
-    // If deleting default address and there are other addresses, make the first one default
-    if (toDelete?.isDefault && updated.length > 0) {
-      updated[0].isDefault = true;
-    }
-
-    await persistAddresses(updated);
-    toast.success('Address removed');
-  };
-
-  const getTypeIcon = (type: 'Home' | 'Work' | 'Other') => {
+  const getTypeIcon = (type: string) => {
     switch (type) {
-      case 'Home':
-        return <Home className="w-3.5 h-3.5" />;
       case 'Work':
         return <Briefcase className="w-3.5 h-3.5" />;
-      default:
+      case 'Other':
         return <Building className="w-3.5 h-3.5" />;
+      default:
+        return <Home className="w-3.5 h-3.5" />;
     }
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 pb-24 lg:pb-12 text-gray-900">
+    <div className="min-h-screen bg-gray-50 pb-20 text-gray-900">
       {/* Top Header */}
       <div className="sticky top-0 z-40 bg-white border-b border-gray-100 shadow-xs">
         <div className="max-w-xl mx-auto px-4 h-14 flex items-center justify-between">
@@ -296,43 +348,61 @@ export default function AddressesPage() {
             >
               <ChevronLeft className="w-6 h-6 stroke-[2.5]" />
             </button>
-            <h1 className="text-base font-extrabold tracking-wide uppercase text-gray-800">
-              My Addresses
-            </h1>
+            <div>
+              <h1 className="text-base font-extrabold tracking-wide uppercase text-gray-800">
+                My Addresses
+              </h1>
+            </div>
           </div>
 
           <button
             onClick={handleOpenAdd}
-            className="inline-flex items-center gap-1 px-3 py-1.5 bg-primary text-white text-xs font-bold rounded-lg hover:bg-primary/90 transition-colors shadow-xs cursor-pointer"
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-primary text-white font-bold text-xs rounded-xl hover:bg-primary/90 transition-all shadow-xs cursor-pointer"
           >
-            <Plus className="w-3.5 h-3.5 stroke-[3]" />
-            Add New
+            <Plus className="w-4 h-4 stroke-[3]" />
+            <span>Add New</span>
           </button>
         </div>
       </div>
 
       <div className="max-w-xl mx-auto px-4 py-4 space-y-4">
-        {/* Addresses list */}
-        {mounted && addresses.length > 0 ? (
+        {/* Info Banner */}
+        <div className="bg-white rounded-2xl p-4 border border-gray-100 shadow-xs flex items-start gap-3">
+          <div className="w-8 h-8 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center flex-shrink-0 mt-0.5">
+            <ShieldCheck className="w-4 h-4" />
+          </div>
+          <div className="space-y-0.5 flex-1">
+            <h2 className="text-xs font-bold text-gray-800">Linked to your Account</h2>
+            <p className="text-[11px] text-gray-500 leading-relaxed">
+              Addresses from your past orders placed with your email or mobile number are automatically saved here for quick 1-click checkout.
+            </p>
+          </div>
+          {isSyncing && (
+            <RefreshCw className="w-3.5 h-3.5 text-primary animate-spin mt-1 flex-shrink-0" />
+          )}
+        </div>
+
+        {/* Address Cards List */}
+        {addresses.length > 0 ? (
           <div className="space-y-3">
             {addresses.map((addr) => (
               <div
                 key={addr.id}
                 className={`bg-white rounded-2xl p-4 border transition-all ${
                   addr.isDefault
-                    ? 'border-primary/80 ring-1 ring-primary/20 shadow-xs'
-                    : 'border-gray-100 hover:border-gray-200 shadow-xs'
+                    ? 'border-primary ring-1 ring-primary/30 shadow-xs'
+                    : 'border-gray-100 shadow-xs hover:border-gray-200'
                 }`}
               >
-                {/* Header with Type & Default badge */}
+                {/* Header: Type Tag & Actions */}
                 <div className="flex items-center justify-between gap-2 mb-2">
                   <div className="flex items-center gap-2">
-                    <span className="inline-flex items-center gap-1 text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-gray-100 text-gray-700">
+                    <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-gray-100 text-gray-700">
                       {getTypeIcon(addr.addressType)}
                       {addr.addressType}
                     </span>
                     {addr.isDefault && (
-                      <span className="inline-flex items-center gap-1 text-[10px] font-extrabold px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200">
+                      <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-extrabold bg-emerald-50 text-emerald-700 border border-emerald-200/80">
                         <Check className="w-3 h-3 stroke-[3]" />
                         Default
                       </span>
@@ -342,7 +412,7 @@ export default function AddressesPage() {
                   <div className="flex items-center gap-1">
                     <button
                       onClick={() => handleOpenEdit(addr)}
-                      className="p-1.5 text-gray-400 hover:text-primary transition-colors cursor-pointer rounded-lg hover:bg-gray-100"
+                      className="p-1.5 text-gray-400 hover:text-gray-700 transition-colors cursor-pointer rounded-lg hover:bg-gray-100"
                       title="Edit Address"
                     >
                       <Edit2 className="w-4 h-4" />
@@ -357,11 +427,19 @@ export default function AddressesPage() {
                   </div>
                 </div>
 
-                {/* Name & Phone */}
+                {/* Name & Contact */}
                 <h3 className="text-sm font-bold text-gray-900">{addr.fullName}</h3>
-                <div className="flex items-center gap-1.5 text-xs text-gray-500 font-medium mt-0.5 mb-2">
-                  <Phone className="w-3.5 h-3.5 text-gray-400" />
-                  <span>+91 {addr.phone}</span>
+                <div className="flex flex-wrap items-center gap-3 text-xs text-gray-500 font-medium mt-1 mb-2">
+                  <div className="flex items-center gap-1">
+                    <Phone className="w-3.5 h-3.5 text-gray-400" />
+                    <span>+91 {addr.phone}</span>
+                  </div>
+                  {addr.email && (
+                    <div className="flex items-center gap-1">
+                      <Mail className="w-3.5 h-3.5 text-gray-400" />
+                      <span className="truncate max-w-[200px]">{addr.email}</span>
+                    </div>
+                  )}
                 </div>
 
                 {/* Full Address details */}
@@ -422,7 +500,7 @@ export default function AddressesPage() {
           >
             <button
               onClick={() => setIsModalOpen(false)}
-              className="absolute top-5 right-5 text-gray-400 hover:text-gray-600 p-1 rounded-full"
+              className="absolute top-5 right-5 text-gray-400 hover:text-gray-600 p-1 rounded-full cursor-pointer"
             >
               <X className="w-5 h-5" />
             </button>
@@ -449,22 +527,37 @@ export default function AddressesPage() {
                 />
               </div>
 
-              <div>
-                <label className="block text-xs font-bold text-gray-700 mb-1">
-                  Mobile Number (10 digits) <span className="text-rose-500">*</span>
-                </label>
-                <div className="flex">
-                  <span className="inline-flex items-center px-3 bg-gray-100 border border-r-0 border-gray-300 rounded-l-xl text-xs font-bold text-gray-600">
-                    +91
-                  </span>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-xs font-bold text-gray-700 mb-1">
+                    Mobile Number (10 digits) <span className="text-rose-500">*</span>
+                  </label>
+                  <div className="flex">
+                    <span className="inline-flex items-center px-3 bg-gray-100 border border-r-0 border-gray-300 rounded-l-xl text-xs font-bold text-gray-600">
+                      +91
+                    </span>
+                    <input
+                      type="tel"
+                      maxLength={10}
+                      placeholder="9876543210"
+                      value={phone}
+                      onChange={(e) => setPhone(e.target.value.replace(/\D/g, ''))}
+                      className="w-full px-3.5 py-2.5 bg-gray-50 border border-gray-300 rounded-r-xl text-xs font-semibold text-gray-900 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent font-mono"
+                      required
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold text-gray-700 mb-1">
+                    Email Address (Optional)
+                  </label>
                   <input
-                    type="tel"
-                    maxLength={10}
-                    placeholder="9876543210"
-                    value={phone}
-                    onChange={(e) => setPhone(e.target.value.replace(/\D/g, ''))}
-                    className="w-full px-3.5 py-2.5 bg-gray-50 border border-gray-300 rounded-r-xl text-xs font-semibold text-gray-900 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent font-mono"
-                    required
+                    type="email"
+                    placeholder="name@example.com"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    className="w-full px-3.5 py-2.5 bg-gray-50 border border-gray-300 rounded-xl text-xs font-semibold text-gray-900 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
                   />
                 </div>
               </div>
@@ -521,7 +614,7 @@ export default function AddressesPage() {
                   </label>
                   <input
                     type="text"
-                    placeholder="e.g. Near Metro Station"
+                    placeholder="e.g. Near Metro Pillar 42"
                     value={landmark}
                     onChange={(e) => setLandmark(e.target.value)}
                     className="w-full px-3.5 py-2.5 bg-gray-50 border border-gray-300 rounded-xl text-xs font-semibold text-gray-900 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
@@ -534,7 +627,6 @@ export default function AddressesPage() {
                   </label>
                   <input
                     type="text"
-                    placeholder="e.g. Kerala"
                     value={state}
                     onChange={(e) => setState(e.target.value)}
                     className="w-full px-3.5 py-2.5 bg-gray-50 border border-gray-300 rounded-xl text-xs font-semibold text-gray-900 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
@@ -543,7 +635,7 @@ export default function AddressesPage() {
                 </div>
               </div>
 
-              {/* Address Type Buttons */}
+              {/* Address Type Selector */}
               <div>
                 <label className="block text-xs font-bold text-gray-700 mb-1.5">
                   Address Type
@@ -556,8 +648,8 @@ export default function AddressesPage() {
                       onClick={() => setAddressType(type)}
                       className={`py-2 px-3 rounded-xl border text-xs font-bold flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
                         addressType === type
-                          ? 'border-primary bg-primary/10 text-primary shadow-xs'
-                          : 'border-gray-200 text-gray-600 hover:border-gray-300'
+                          ? 'border-primary bg-primary/10 text-primary'
+                          : 'border-gray-200 bg-gray-50 text-gray-600 hover:bg-gray-100'
                       }`}
                     >
                       {getTypeIcon(type)}
@@ -567,22 +659,21 @@ export default function AddressesPage() {
                 </div>
               </div>
 
-              {/* Default Address Checkbox */}
-              <div className="flex items-center gap-2 pt-1">
+              {/* Set as Default Checkbox */}
+              <label className="flex items-center gap-2.5 pt-1 cursor-pointer">
                 <input
                   type="checkbox"
-                  id="makeDefault"
                   checked={isDefault}
                   onChange={(e) => setIsDefault(e.target.checked)}
-                  className="w-4 h-4 rounded text-primary focus:ring-primary border-gray-300"
+                  className="w-4 h-4 text-primary rounded border-gray-300 focus:ring-primary"
                 />
-                <label htmlFor="makeDefault" className="text-xs font-semibold text-gray-700 cursor-pointer">
+                <span className="text-xs font-semibold text-gray-700">
                   Make this my default delivery address
-                </label>
-              </div>
+                </span>
+              </label>
 
-              {/* Action Buttons */}
-              <div className="flex gap-2 pt-3">
+              {/* Modal Buttons */}
+              <div className="flex gap-2 pt-2">
                 <button
                   type="button"
                   onClick={() => setIsModalOpen(false)}
@@ -593,7 +684,7 @@ export default function AddressesPage() {
                 <button
                   type="submit"
                   disabled={isSaving}
-                  className="flex-1 py-2.5 bg-primary text-white font-bold text-xs rounded-xl hover:bg-primary/90 transition-colors shadow-xs cursor-pointer disabled:opacity-50"
+                  className="flex-1 py-2.5 bg-primary text-white font-bold text-xs rounded-xl hover:bg-primary/90 transition-colors shadow-xs disabled:opacity-50 cursor-pointer"
                 >
                   {isSaving ? 'Saving...' : 'Save Address'}
                 </button>

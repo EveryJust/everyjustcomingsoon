@@ -210,23 +210,33 @@ export default function OrderConfirmationPage() {
         )}
 
         {/* Action Buttons */}
-        <div className="flex flex-col sm:flex-row items-center justify-between gap-4 pt-2">
+        <div className="flex flex-col sm:flex-row items-center justify-between gap-3 pt-2">
           <button
             type="button"
             onClick={handlePrint}
-            className="w-full sm:w-auto inline-flex items-center justify-center gap-2 py-3 px-6 rounded-2xl border border-gray-300 hover:border-gray-400 text-gray-700 font-bold text-sm bg-white hover:bg-gray-50 transition-colors shadow-xs cursor-pointer"
+            className="w-full sm:w-auto inline-flex items-center justify-center gap-2 py-3 px-5 rounded-2xl border border-gray-300 hover:border-gray-400 text-gray-700 font-bold text-xs sm:text-sm bg-white hover:bg-gray-50 transition-colors shadow-xs cursor-pointer"
           >
-            <Printer size={16} />
-            <span>Print Order Receipt</span>
+            <Printer size={15} />
+            <span>Print Receipt</span>
           </button>
 
-          <Link
-            href="/"
-            className="w-full sm:w-auto inline-flex items-center justify-center gap-2 py-3.5 px-8 rounded-2xl bg-primary hover:bg-primary/90 text-white font-extrabold text-sm tracking-wide shadow-md shadow-primary/20 transition-all cursor-pointer"
-          >
-            <span>Continue Shopping</span>
-            <ArrowRight size={16} />
-          </Link>
+          <div className="w-full sm:w-auto flex flex-col sm:flex-row items-center gap-3">
+            <Link
+              href={`/orders/${encodeURIComponent(orderNumber)}`}
+              className="w-full sm:w-auto inline-flex items-center justify-center gap-2 py-3 px-5 rounded-2xl border border-primary/30 hover:border-primary text-primary font-bold text-xs sm:text-sm bg-primary/5 hover:bg-primary/10 transition-colors cursor-pointer"
+            >
+              <Package size={15} />
+              <span>Track & View Details</span>
+            </Link>
+
+            <Link
+              href="/"
+              className="w-full sm:w-auto inline-flex items-center justify-center gap-2 py-3 px-6 rounded-2xl bg-primary hover:bg-primary/90 text-white font-extrabold text-xs sm:text-sm tracking-wide shadow-md shadow-primary/20 transition-all cursor-pointer"
+            >
+              <span>Continue Shopping</span>
+              <ArrowRight size={15} />
+            </Link>
+          </div>
         </div>
 
       </div>

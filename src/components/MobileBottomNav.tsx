@@ -7,7 +7,12 @@ import { useAuthStore } from '@/store/useAuthStore';
 const MobileBottomNav = () => {
   const pathname = usePathname();
   const { user } = useAuthStore();
+  const [mounted, setMounted] = React.useState(false);
   const isProductPage = pathname?.startsWith('/product/');
+
+  React.useEffect(() => {
+    setMounted(true);
+  }, []);
 
   if (isProductPage) return null;
 
@@ -62,7 +67,11 @@ const MobileBottomNav = () => {
       </Link>
       
       <Link href="/account" className={`flex flex-col items-center justify-center w-full transition-colors ${pathname === '/account' ? 'text-primary' : 'text-gray-500 hover:text-primary'}`}>
-        {pathname === '/account' ? (
+        {mounted && user?.user_metadata?.avatar_url ? (
+          <div className={`w-6 h-6 mb-1 rounded-full overflow-hidden border ${pathname === '/account' ? 'border-primary ring-1 ring-primary' : 'border-gray-200'}`}>
+            <img src={user.user_metadata.avatar_url} alt="Account" className="w-full h-full object-cover" />
+          </div>
+        ) : pathname === '/account' ? (
           <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 mb-1" viewBox="0 0 20 20" fill="currentColor">
             <path fillRule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clipRule="evenodd" />
           </svg>

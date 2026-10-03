@@ -7,6 +7,7 @@ import { formatCurrency } from '@/utils/currency';
 import { useCartStore } from '@/store/useCartStore';
 import { useWishlistStore } from '@/store/useWishlistStore';
 import ProductImageGallery from '@/components/Product/ProductImageGallery';
+import { ShoppingCart } from 'lucide-react';
 import toast from 'react-hot-toast';
 
 export default function ProductClient({ product, similarProducts }: { product: any, similarProducts?: React.ReactNode }) {
@@ -99,10 +100,15 @@ export default function ProductClient({ product, similarProducts }: { product: a
           {/* Cart Icon */}
           <button 
             onClick={() => setIsCartOpen(true)}
-            className="bg-white/90 backdrop-blur rounded-full p-2 shadow-sm text-gray-800 relative cursor-pointer"
+            aria-label="View Cart"
+            className="bg-white/90 backdrop-blur rounded-full p-2 shadow-sm text-gray-800 relative cursor-pointer hover:bg-white transition-colors"
           >
-             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" /></svg>
-             {mounted && cartCount > 0 && <span className="absolute -top-1 -right-1 bg-primary text-white text-[10px] w-4 h-4 rounded-full flex items-center justify-center font-bold">{cartCount}</span>}
+             <ShoppingCart className="w-5 h-5 stroke-[2.2]" />
+             {mounted && cartCount > 0 && (
+               <span className="absolute -top-1 -right-1 bg-[#d81b60] text-white text-[10px] min-w-4 h-4 px-1 rounded-full flex items-center justify-center font-bold shadow-xs">
+                 {cartCount}
+               </span>
+             )}
           </button>
         </div>
       </div>

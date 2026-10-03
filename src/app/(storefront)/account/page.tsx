@@ -168,6 +168,20 @@ export default function AccountPage() {
         }
       });
       if (error) throw error;
+
+      // Automatically sync all past guest orders and addresses for this phone & email
+      try {
+        await fetch('/api/user/sync-data', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            email: user?.email,
+            phone: editingPhone.trim(),
+            userId: user?.id
+          })
+        });
+      } catch {}
+
       await initialize();
       toast.success('Profile updated successfully!');
       setActiveModal(null);

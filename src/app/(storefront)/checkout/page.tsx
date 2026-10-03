@@ -144,6 +144,23 @@ export default function CheckoutPage() {
           setLandmark(parsed.landmark || '');
           setHasSavedAddress(true);
         }
+      } else {
+        const storedAddrs = localStorage.getItem('everyjust_user_addresses');
+        if (storedAddrs) {
+          const addrs = JSON.parse(storedAddrs);
+          const def = addrs.find((a: any) => a.isDefault) || addrs[0];
+          if (def && def.fullName && def.phone && def.street) {
+            setFullName(def.fullName || '');
+            setEmail(def.email || '');
+            setPhone(def.phone || '');
+            setPincode(def.pincode || '');
+            setState(def.state || 'Kerala');
+            setCity(def.city || '');
+            setStreet(def.street || '');
+            setLandmark(def.landmark || '');
+            setHasSavedAddress(true);
+          }
+        }
       }
     } catch {
       // ignore
@@ -271,7 +288,7 @@ export default function CheckoutPage() {
     const addressObj = {
       fullName: fullName.trim(),
       email: email.trim(),
-      phone: phone.trim(),
+      phone: phone.trim().slice(-10),
       alternatePhone: showAlternatePhone && alternatePhone.trim() ? alternatePhone.trim() : '',
       country,
       pincode: pincode.trim(),
@@ -283,6 +300,47 @@ export default function CheckoutPage() {
 
     try {
       localStorage.setItem('saved_shipping_address', JSON.stringify(addressObj));
+      localStorage.setItem('last_customer_email', email.trim());
+      localStorage.setItem('last_customer_phone', phone.trim().slice(-10));
+
+      // Also persist to everyjust_user_addresses so it appears on Account/Addresses
+      let currentAddresses: any[] = [];
+      const stored = localStorage.getItem('everyjust_user_addresses');
+      if (stored) {
+        currentAddresses = JSON.parse(stored);
+      }
+      const newAddrItem = {
+        id: `addr_${Date.now()}`,
+        fullName: addressObj.fullName,
+        email: addressObj.email,
+        phone: addressObj.phone,
+        pincode: addressObj.pincode,
+        street: addressObj.street,
+        city: addressObj.city,
+        state: addressObj.state,
+        landmark: addressObj.landmark,
+        addressType: 'Home',
+        isDefault: true
+      };
+
+      const filtered = currentAddresses.filter(
+        (a) =>
+          `${a.street?.toLowerCase().replace(/[^a-z0-9]/g, '')}_${a.pincode?.replace(/\D/g, '')}` !==
+          `${newAddrItem.street.toLowerCase().replace(/[^a-z0-9]/g, '')}_${newAddrItem.pincode.replace(/\D/g, '')}`
+      );
+      const updatedList = [newAddrItem, ...filtered.map((a) => ({ ...a, isDefault: false }))];
+      localStorage.setItem('everyjust_user_addresses', JSON.stringify(updatedList));
+
+      // Trigger background sync
+      fetch('/api/user/sync-data', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          email: addressObj.email,
+          phone: addressObj.phone,
+          clientAddresses: updatedList
+        })
+      }).catch(() => {});
     } catch {
       // ignore
     }
@@ -413,10 +471,20 @@ export default function CheckoutPage() {
       try {
         localStorage.setItem('last_placed_order_number', data.orderNumber);
         localStorage.setItem('last_customer_email', email.trim());
+        localStorage.setItem('last_customer_phone', phone.trim().slice(-10));
         sessionStorage.setItem('lastOrder', JSON.stringify({
           ...orderPayload,
           orderNumber: data.orderNumber
         }));
+
+        fetch('/api/user/sync-data', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            email: email.trim(),
+            phone: phone.trim().slice(-10)
+          })
+        }).catch(() => {});
       } catch {
         // ignore storage errors
       }
