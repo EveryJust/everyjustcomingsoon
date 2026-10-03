@@ -1,7 +1,7 @@
 "use client";
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { LayoutDashboard, Users, Tag, Package, Settings, Plus, HelpCircle, DollarSign, BarChart3 } from 'lucide-react';
+import { LayoutDashboard, Users, Tag, Package, Settings, Plus, HelpCircle, DollarSign, BarChart3, ShoppingBag, Ticket } from 'lucide-react';
 
 interface AdminSidebarProps {
   isOpen: boolean;
@@ -26,6 +26,10 @@ export default function AdminSidebar({ isOpen }: AdminSidebarProps) {
     
     // Special case: Keep "Products" highlighted when editing a product (but NOT when adding, since Add has its own link)
     if (href === '/admin/products' && pathname.startsWith('/admin/products/edit/')) {
+      isActive = true;
+    }
+    // Special case: Keep "Orders" highlighted when viewing order details
+    if (href === '/admin/orders' && pathname.startsWith('/admin/orders/')) {
       isActive = true;
     }
     
@@ -65,6 +69,10 @@ export default function AdminSidebar({ isOpen }: AdminSidebarProps) {
       <nav className={`flex-1 space-y-1 font-medium ${isOpen ? 'px-4' : 'px-2'} overflow-y-auto pb-4 custom-scrollbar`}>
         {renderSectionHeader('Overview', true)}
         {renderLink('/admin/dashboard', LayoutDashboard, 'Dashboard')}
+        
+        {renderSectionHeader('Orders & Sales')}
+        {renderLink('/admin/orders', ShoppingBag, 'Orders')}
+        {renderLink('/admin/coupons', Ticket, 'Coupons')}
         
         {renderSectionHeader('Analytics & Finance')}
         {renderLink('/admin/finances', DollarSign, 'Finances')}

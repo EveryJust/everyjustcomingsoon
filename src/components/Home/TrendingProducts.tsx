@@ -9,13 +9,12 @@ export default async function TrendingProducts() {
     .from('products')
     .select('*')
     .eq('status', 'active')
-    .order('created_at', { ascending: false })
-    .limit(10);
+    .order('created_at', { ascending: false });
 
   const products = productsData || [];
 
   return (
-    <div className="pt-0 pb-4 lg:py-12 lg:border-t border-gray-200 lg:mt-12">
+    <div className="pt-0 pb-4 lg:py-12 lg:border-t border-gray-200 lg:mt-12" id="all-products">
       <div className="hidden lg:flex items-center justify-between mb-8">
         <div>
           <h2 className="text-2xl font-bold text-gray-900">Trending Products</h2>

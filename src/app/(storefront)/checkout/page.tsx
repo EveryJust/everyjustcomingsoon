@@ -24,7 +24,8 @@ import {
   Lock,
   ShieldCheck,
   ArrowRight,
-  ArrowLeft
+  ArrowLeft,
+  Tag
 } from 'lucide-react';
 import { 
   COUNTRY_CODES, 
@@ -91,6 +92,12 @@ export default function CheckoutPage() {
   // Payment Selection: strictly Free Cash on Delivery
   const [paymentOption, setPaymentOption] = useState<'cod' | 'online'>('cod');
 
+  // Coupon State
+  const [couponInput, setCouponInput] = useState('');
+  const [appliedCoupon, setAppliedCoupon] = useState<{ code: string; discount: number } | null>(null);
+  const [availableCoupons, setAvailableCoupons] = useState<any[]>([]);
+  const [validatingCoupon, setValidatingCoupon] = useState(false);
+
   // Refs for closing dropdowns on outside click
   const countryCodeRef = useRef<HTMLDivElement>(null);
   const altCountryRef = useRef<HTMLDivElement>(null);
@@ -102,8 +109,10 @@ export default function CheckoutPage() {
   const rawSubtotal = getSubtotal();
   // Simulated original MRP (15% higher to show discount)
   const mrpTotal = Math.round(rawSubtotal * 1.15);
-  const totalDiscount = mrpTotal - rawSubtotal;
-  const finalPayable = rawSubtotal;
+  const baseDiscount = mrpTotal - rawSubtotal;
+  const couponDiscount = appliedCoupon ? appliedCoupon.discount : 0;
+  const totalDiscount = baseDiscount + couponDiscount;
+  const finalPayable = Math.max(0, rawSubtotal - couponDiscount);
 
   // Estimated delivery date (5 days ahead)
   const deliveryDateStr = (() => {
@@ -116,7 +125,7 @@ export default function CheckoutPage() {
     });
   })();
 
-  // Load existing saved address from localStorage on mount
+  // Load existing saved address & available coupons on mount
   useEffect(() => {
     try {
       const saved = localStorage.getItem('saved_shipping_address');
@@ -139,6 +148,16 @@ export default function CheckoutPage() {
     } catch {
       // ignore
     }
+
+    // Fetch live available coupons
+    fetch('/api/coupons/available')
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.success && data.coupons) {
+          setAvailableCoupons(data.coupons);
+        }
+      })
+      .catch(() => {});
   }, []);
 
   // Close dropdowns on outside click
@@ -284,6 +303,52 @@ export default function CheckoutPage() {
     setStep(2);
   };
 
+  // Coupon Handlers with Real-Time Database Validation
+  const handleApplyCoupon = async (codeToApply?: string) => {
+    const code = (codeToApply || couponInput).trim().toUpperCase();
+    if (!code) {
+      toast.error('Please enter a coupon code');
+      return;
+    }
+
+    if (rawSubtotal <= 0) {
+      toast.error('Your cart is empty');
+      return;
+    }
+
+    setValidatingCoupon(true);
+    try {
+      const res = await fetch('/api/coupons/validate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ code, subtotal: rawSubtotal })
+      });
+      const data = await res.json();
+
+      if (!res.ok || !data.success) {
+        throw new Error(data.error || 'Invalid coupon code');
+      }
+
+      setAppliedCoupon({ 
+        code: data.coupon.code, 
+        discount: data.coupon.calculatedDiscount 
+      });
+      setCouponInput('');
+      toast.success(`Coupon '${data.coupon.code}' applied! Saved ₹${data.coupon.calculatedDiscount}`);
+    } catch (err: any) {
+      toast.error(err.message || 'Error validating coupon');
+    } finally {
+      setValidatingCoupon(false);
+    }
+  };
+
+  const handleRemoveCoupon = () => {
+    if (!appliedCoupon) return;
+    const removedCode = appliedCoupon.code;
+    setAppliedCoupon(null);
+    toast.success(`Coupon '${removedCode}' removed`);
+  };
+
   // Step 2: Final Order Placement
   const handlePlaceOrder = async () => {
     if (items.length === 0) {
@@ -328,6 +393,8 @@ export default function CheckoutPage() {
           qty: item.qty
         })),
         subtotal: rawSubtotal,
+        discountAmount: couponDiscount,
+        couponCode: appliedCoupon ? appliedCoupon.code : undefined,
         totalAmount: finalPayable
       };
 
@@ -503,10 +570,12 @@ export default function CheckoutPage() {
           </div>
         </header>
 
-        {/* Brand Green Offer Ribbon Banner */}
-        <div className="bg-[#E8F5E9] text-[#2E7D32] px-4 py-2 text-center text-xs font-bold border-b border-[#C8E6C9] lg:rounded-xl lg:border lg:mb-6 flex items-center justify-center gap-1.5 shadow-2xs">
-          <span>₹{totalDiscount > 0 ? totalDiscount : 28} OFF on this order • 100% Free Cash on Delivery</span>
-        </div>
+        {/* Brand Green Offer Ribbon Banner (Only shown when coupon is applied) */}
+        {appliedCoupon && (
+          <div className="bg-[#E8F5E9] text-[#2E7D32] px-4 py-2 text-center text-xs font-bold border-b border-[#C8E6C9] lg:rounded-xl lg:border lg:mb-6 flex items-center justify-center gap-1.5 shadow-2xs animate-in fade-in">
+            <span>🎉 Coupon &apos;{appliedCoupon.code}&apos; applied! Reduced ₹{appliedCoupon.discount} on this order • Free Cash on Delivery</span>
+          </div>
+        )}
 
         {/* ========================================================================= */}
         {/* MAIN RESPONSIVE CONTENT AREA (Mobile: Stack / Desktop: 2-Column Grid)    */}
@@ -519,7 +588,51 @@ export default function CheckoutPage() {
             {/* SCREEN 1: REVIEW YOUR ORDER (STEP 1/2) */}
             {step === 1 && (
               <>
-                {/* Estimated Delivery & Delivery Address Card */}
+                {/* 1. Products Card (Ordered Items on Top) */}
+                <div className="bg-white rounded-xl border border-gray-200 p-4 shadow-2xs">
+                  <h3 className="text-xs font-bold text-gray-800 uppercase tracking-wider mb-3 pb-2 border-b border-gray-100">
+                    Order Items ({items.length})
+                  </h3>
+
+                  {items.map((item, idx) => (
+                    <div key={item.id} className={`flex gap-3.5 ${idx > 0 ? 'pt-3.5 border-t border-gray-100' : ''}`}>
+                      {/* Thumbnail */}
+                      <div className="w-20 h-20 bg-gray-50 rounded-lg border border-gray-200 p-1 flex-shrink-0 flex items-center justify-center overflow-hidden">
+                        <img
+                          src={item.image || '/dash_camera.png'}
+                          alt={item.name}
+                          className="w-full h-full object-contain"
+                        />
+                      </div>
+
+                      {/* Info */}
+                      <div className="flex-grow min-w-0">
+                        <h4 className="text-xs sm:text-sm font-semibold text-gray-900 line-clamp-2 leading-snug">
+                          {item.name}
+                        </h4>
+                        
+                        <div className="mt-1 flex items-baseline gap-2">
+                          <span className="text-sm font-extrabold text-gray-950">₹{item.price}</span>
+                          <span className="text-xs text-gray-400 line-through">₹{Math.round(item.price * 1.15)}</span>
+                          <span className="text-[11px] font-bold text-primary">11% Off</span>
+                        </div>
+
+                        <p className="text-[11px] text-gray-500 mt-1">All issue easy returns</p>
+                        <div className="flex items-center gap-3 text-[11px] text-gray-500 mt-0.5">
+                          <span>Size: Free Size</span>
+                          <span>•</span>
+                          <span>Qty: {item.qty}</span>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+
+                  <div className="mt-3 pt-2.5 border-t border-gray-100 flex items-center justify-between text-xs text-gray-500">
+                    <span>Sold by: <strong className="text-gray-800">EveryJust Official</strong></span>
+                  </div>
+                </div>
+
+                {/* 2. Estimated Delivery & Delivery Address Card (Below Ordered Items) */}
                 <div className="bg-white rounded-xl border border-gray-200 p-4 shadow-2xs">
                   {/* Delivery ETA Header */}
                   <div className="flex items-center gap-2 text-xs font-bold text-gray-900 pb-3 border-b border-gray-100">
@@ -576,47 +689,120 @@ export default function CheckoutPage() {
                   </div>
                 </div>
 
-                {/* Products Card */}
+                {/* 3. Apply Coupon Option Card (Below Delivery Address) */}
                 <div className="bg-white rounded-xl border border-gray-200 p-4 shadow-2xs">
-                  <h3 className="text-xs font-bold text-gray-800 uppercase tracking-wider mb-3 pb-2 border-b border-gray-100">
-                    Order Items ({items.length})
-                  </h3>
-
-                  {items.map((item, idx) => (
-                    <div key={item.id} className={`flex gap-3.5 ${idx > 0 ? 'pt-3.5 border-t border-gray-100' : ''}`}>
-                      {/* Thumbnail */}
-                      <div className="w-20 h-20 bg-gray-50 rounded-lg border border-gray-200 p-1 flex-shrink-0 flex items-center justify-center overflow-hidden">
-                        <img
-                          src={item.image || '/dash_camera.png'}
-                          alt={item.name}
-                          className="w-full h-full object-contain"
-                        />
+                  <div className="flex items-center justify-between pb-3 border-b border-gray-100">
+                    <div className="flex items-center gap-2">
+                      <div className="w-6 h-6 rounded-md bg-primary/10 text-primary flex items-center justify-center flex-shrink-0">
+                        <Tag className="w-3.5 h-3.5" />
                       </div>
-
-                      {/* Info */}
-                      <div className="flex-grow min-w-0">
-                        <h4 className="text-xs sm:text-sm font-semibold text-gray-900 line-clamp-2 leading-snug">
-                          {item.name}
-                        </h4>
-                        
-                        <div className="mt-1 flex items-baseline gap-2">
-                          <span className="text-sm font-extrabold text-gray-950">₹{item.price}</span>
-                          <span className="text-xs text-gray-400 line-through">₹{Math.round(item.price * 1.15)}</span>
-                          <span className="text-[11px] font-bold text-primary">11% Off</span>
-                        </div>
-
-                        <p className="text-[11px] text-gray-500 mt-1">All issue easy returns</p>
-                        <div className="flex items-center gap-3 text-[11px] text-gray-500 mt-0.5">
-                          <span>Size: Free Size</span>
-                          <span>•</span>
-                          <span>Qty: {item.qty}</span>
-                        </div>
-                      </div>
+                      <h3 className="text-xs font-bold text-gray-900 uppercase tracking-wider">
+                        Apply Coupon
+                      </h3>
                     </div>
-                  ))}
+                    {appliedCoupon && (
+                      <span className="text-[11px] font-bold text-[#2E7D32] bg-[#E8F5E9] px-2 py-0.5 rounded-full">
+                        ₹{appliedCoupon.discount} Saved
+                      </span>
+                    )}
+                  </div>
 
-                  <div className="mt-3 pt-2.5 border-t border-gray-100 flex items-center justify-between text-xs text-gray-500">
-                    <span>Sold by: <strong className="text-gray-800">EveryJust Official</strong></span>
+                  <div className="pt-3">
+                    {appliedCoupon ? (
+                      <div className="flex items-center justify-between bg-green-50/70 border border-green-200 rounded-xl p-3">
+                        <div className="flex items-center gap-2.5">
+                          <div className="w-7 h-7 rounded-full bg-green-600 text-white flex items-center justify-center flex-shrink-0">
+                            <Check className="w-4 h-4 stroke-[3]" />
+                          </div>
+                          <div>
+                            <div className="flex items-center gap-2">
+                              <span className="text-xs font-black text-green-900 tracking-wider font-mono">
+                                {appliedCoupon.code}
+                              </span>
+                              <span className="text-[10px] font-bold bg-green-200/80 text-green-900 px-1.5 py-0.5 rounded">
+                                APPLIED
+                              </span>
+                            </div>
+                            <p className="text-[11px] text-green-700 font-medium mt-0.5">
+                              Extra ₹{appliedCoupon.discount} discount applied to your order
+                            </p>
+                          </div>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={handleRemoveCoupon}
+                          className="text-xs font-bold text-red-600 hover:text-red-700 px-2 py-1 rounded hover:bg-red-50 transition-colors cursor-pointer"
+                        >
+                          Remove
+                        </button>
+                      </div>
+                    ) : (
+                      <div>
+                        <form
+                          onSubmit={(e) => {
+                            e.preventDefault();
+                            handleApplyCoupon();
+                          }}
+                          className="flex items-center gap-2"
+                        >
+                          <div className="relative flex-1">
+                            <input
+                              type="text"
+                              value={couponInput}
+                              onChange={(e) => setCouponInput(e.target.value.toUpperCase())}
+                              placeholder="ENTER COUPON CODE"
+                              className="w-full px-3.5 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-xs font-bold text-gray-900 placeholder:text-gray-400 placeholder:font-normal uppercase tracking-wider focus:outline-none focus:border-primary focus:bg-white transition-all"
+                            />
+                            {couponInput && (
+                              <button
+                                type="button"
+                                onClick={() => setCouponInput('')}
+                                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                              >
+                                <X className="w-3.5 h-3.5" />
+                              </button>
+                            )}
+                          </div>
+                          <button
+                            type="button"
+                            disabled={validatingCoupon}
+                            onClick={() => handleApplyCoupon()}
+                            className="px-5 py-2.5 bg-primary hover:bg-primary/90 text-white text-xs font-bold rounded-xl transition-all shadow-2xs flex-shrink-0 cursor-pointer disabled:opacity-50 flex items-center gap-1.5"
+                          >
+                            {validatingCoupon ? (
+                              <>
+                                <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                                <span>Verifying...</span>
+                              </>
+                            ) : (
+                              'Apply'
+                            )}
+                          </button>
+                        </form>
+
+                        {/* Quick Clickable Dynamic Suggestions */}
+                        {availableCoupons.length > 0 && (
+                          <div className="mt-3 flex items-center gap-2 flex-wrap text-[11px]">
+                            <span className="text-gray-500 font-medium">Available:</span>
+                            {availableCoupons.map((c) => (
+                              <button
+                                key={c.code}
+                                type="button"
+                                disabled={validatingCoupon}
+                                onClick={() => handleApplyCoupon(c.code)}
+                                className="inline-flex items-center gap-1 px-2.5 py-1 bg-gray-100 hover:bg-primary/10 hover:text-primary text-gray-700 rounded-lg border border-dashed border-gray-300 hover:border-primary font-mono font-bold transition-all cursor-pointer"
+                              >
+                                <span>{c.code}</span>
+                                <span className="text-[10px] font-normal text-gray-500">
+                                  • {c.discount_type === 'percentage' ? `${c.discount_value}% OFF` : `₹${c.discount_value} OFF`}
+                                  {c.min_order_amount > 0 ? ` (Min ₹${c.min_order_amount})` : ''}
+                                </span>
+                              </button>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    )}
                   </div>
                 </div>
 
@@ -637,28 +823,7 @@ export default function CheckoutPage() {
             {/* SCREEN 2: PAYMENT METHOD (STEP 2/2) */}
             {step === 2 && (
               <>
-                {/* Delivery Destination Summary Card */}
-                <div className="bg-white rounded-xl border border-gray-200 p-4 text-xs space-y-1 shadow-2xs">
-                  <div className="flex items-center justify-between pb-2 border-b border-gray-100">
-                    <span className="font-bold text-gray-900 text-sm">Delivering to</span>
-                    <button
-                      type="button"
-                      onClick={() => setStep(1)}
-                      className="text-xs font-bold text-primary hover:underline cursor-pointer"
-                    >
-                      Change Address
-                    </button>
-                  </div>
-                  <p className="font-bold text-gray-900 text-xs sm:text-sm pt-1">{fullName} • {phone}</p>
-                  <p className="text-gray-600 text-xs">
-                    {street}, {city}, {state} - {pincode}
-                  </p>
-                  {showAlternatePhone && alternatePhone && (
-                    <p className="text-gray-500 text-[11px]">Alt Contact: {alternatePhone}</p>
-                  )}
-                </div>
-
-                {/* Payment Option: Cash on Delivery Card (Active & Selected) */}
+                {/* 1. Payment Option: Cash on Delivery Card (Active & Selected on Top) */}
                 <div 
                   onClick={() => setPaymentOption('cod')}
                   className={`rounded-2xl border-2 p-5 cursor-pointer transition-all bg-white relative ${
@@ -699,6 +864,26 @@ export default function CheckoutPage() {
                   </div>
                 </div>
 
+                {/* 2. Delivery Destination Summary Card (Below Payment Method) */}
+                <div className="bg-white rounded-xl border border-gray-200 p-4 text-xs space-y-1 shadow-2xs">
+                  <div className="flex items-center justify-between pb-2 border-b border-gray-100">
+                    <span className="font-bold text-gray-900 text-sm">Delivering to</span>
+                    <button
+                      type="button"
+                      onClick={() => setStep(1)}
+                      className="text-xs font-bold text-primary hover:underline cursor-pointer"
+                    >
+                      Change Address
+                    </button>
+                  </div>
+                  <p className="font-bold text-gray-900 text-xs sm:text-sm pt-1">{fullName} • {phone}</p>
+                  <p className="text-gray-600 text-xs">
+                    {street}, {city}, {state} - {pincode}
+                  </p>
+                  {showAlternatePhone && alternatePhone && (
+                    <p className="text-gray-500 text-[11px]">Alt Contact: {alternatePhone}</p>
+                  )}
+                </div>
 
                 {/* Desktop-only back & place order button under left column */}
                 <div className="hidden lg:flex items-center justify-between pt-2">
@@ -760,6 +945,16 @@ export default function CheckoutPage() {
                     <span>Total Discounts</span>
                     <span>- ₹{totalDiscount > 0 ? totalDiscount : 28}</span>
                   </div>
+
+                  {appliedCoupon && (
+                    <div className="flex justify-between text-[#2E7D32] font-semibold">
+                      <span className="flex items-center gap-1">
+                        <Tag className="w-3 h-3" />
+                        Coupon ({appliedCoupon.code})
+                      </span>
+                      <span>- ₹{appliedCoupon.discount}</span>
+                    </div>
+                  )}
 
                   <div className="flex justify-between text-gray-600">
                     <span>Delivery Charges</span>

@@ -11,6 +11,8 @@ interface ImageCropperModalProps {
   onClose: () => void;
   onCropComplete: (croppedBlob: Blob) => void;
   aspectRatio?: number;
+  cropShape?: 'rect' | 'round';
+  title?: string;
 }
 
 export default function ImageCropperModal({ 
@@ -18,7 +20,9 @@ export default function ImageCropperModal({
   imageSrc, 
   onClose, 
   onCropComplete,
-  aspectRatio = 1 
+  aspectRatio = 1,
+  cropShape = 'rect',
+  title = 'Crop Image'
 }: ImageCropperModalProps) {
   const [crop, setCrop] = useState({ x: 0, y: 0 });
   const [zoom, setZoom] = useState(1);
@@ -55,7 +59,7 @@ export default function ImageCropperModal({
       <div className="bg-white rounded-3xl w-full max-w-2xl overflow-hidden shadow-2xl flex flex-col">
         {/* Header */}
         <div className="flex justify-between items-center p-6 border-b border-gray-100">
-          <h3 className="text-xl font-black text-gray-800">Crop Image</h3>
+          <h3 className="text-xl font-black text-gray-800">{title}</h3>
           <button 
             onClick={onClose}
             className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-full transition-colors"
@@ -71,6 +75,7 @@ export default function ImageCropperModal({
             crop={crop}
             zoom={zoom}
             aspect={aspectRatio}
+            cropShape={cropShape}
             onCropChange={setCrop}
             onCropComplete={handleCropComplete}
             onZoomChange={setZoom}

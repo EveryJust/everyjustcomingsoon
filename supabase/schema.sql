@@ -23,6 +23,28 @@ CREATE TABLE IF NOT EXISTS public.orders (
     payment_status TEXT NOT NULL DEFAULT 'paid' CHECK (payment_status IN ('paid', 'pending', 'failed', 'refunded')),
     payment_method TEXT NOT NULL DEFAULT 'UPI' CHECK (payment_method IN ('UPI', 'Card', 'Net Banking', 'Cash on Delivery')),
     shipping_address JSONB DEFAULT '{}'::jsonb,
+    coupon_code TEXT,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+-- Ensure coupon_code column exists if orders table already exists
+ALTER TABLE public.orders ADD COLUMN IF NOT EXISTS coupon_code TEXT;
+
+-- 2. COUPONS TABLE
+CREATE TABLE IF NOT EXISTS public.coupons (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    code TEXT UNIQUE NOT NULL,
+    description TEXT,
+    discount_type TEXT NOT NULL CHECK (discount_type IN ('percentage', 'fixed')),
+    discount_value NUMERIC(10, 2) NOT NULL,
+    min_order_amount NUMERIC(10, 2) NOT NULL DEFAULT 0.00,
+    max_discount_amount NUMERIC(10, 2),
+    is_active BOOLEAN NOT NULL DEFAULT true,
+    usage_limit INTEGER,
+    usage_count INTEGER NOT NULL DEFAULT 0,
+    start_date TIMESTAMPTZ,
+    end_date TIMESTAMPTZ,
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
@@ -68,11 +90,19 @@ DROP POLICY IF EXISTS "Allow public read access on orders" ON public.orders;
 DROP POLICY IF EXISTS "Allow public read access on order_items" ON public.order_items;
 DROP POLICY IF EXISTS "Allow public read access on transactions" ON public.transactions;
 
--- RLS Policies (Allow authenticated admin users full access, and allow service/anon read)
+DROP POLICY IF EXISTS "Allow insert for all on orders" ON public.orders;
+DROP POLICY IF EXISTS "Allow insert for all on order_items" ON public.order_items;
+
+-- RLS Policies (Allow authenticated admin users full access, allow public insert for storefront checkout, and allow service/anon read)
 CREATE POLICY "Allow all for authenticated users on orders"
     ON public.orders FOR ALL
     TO authenticated
     USING (true)
+    WITH CHECK (true);
+
+CREATE POLICY "Allow insert for all on orders"
+    ON public.orders FOR INSERT
+    TO anon, authenticated
     WITH CHECK (true);
 
 CREATE POLICY "Allow public read access on orders"
@@ -84,6 +114,11 @@ CREATE POLICY "Allow all for authenticated users on order_items"
     ON public.order_items FOR ALL
     TO authenticated
     USING (true)
+    WITH CHECK (true);
+
+CREATE POLICY "Allow insert for all on order_items"
+    ON public.order_items FOR INSERT
+    TO anon, authenticated
     WITH CHECK (true);
 
 CREATE POLICY "Allow public read access on order_items"
@@ -102,10 +137,38 @@ CREATE POLICY "Allow public read access on transactions"
     TO anon
     USING (true);
 
+-- Coupons RLS
+ALTER TABLE public.coupons ENABLE ROW LEVEL SECURITY;
+
+DROP POLICY IF EXISTS "Allow all for authenticated users on coupons" ON public.coupons;
+DROP POLICY IF EXISTS "Allow public read access on coupons" ON public.coupons;
+
+CREATE POLICY "Allow all for authenticated users on coupons"
+    ON public.coupons FOR ALL
+    TO authenticated
+    USING (true)
+    WITH CHECK (true);
+
+CREATE POLICY "Allow public read access on coupons"
+    ON public.coupons FOR SELECT
+    TO anon
+    USING (true);
+
 -- Indexes for lightning fast queries
 CREATE INDEX IF NOT EXISTS idx_orders_created_at ON public.orders(created_at DESC);
 CREATE INDEX IF NOT EXISTS idx_orders_status ON public.orders(status);
 CREATE INDEX IF NOT EXISTS idx_order_items_order_id ON public.order_items(order_id);
 CREATE INDEX IF NOT EXISTS idx_transactions_created_at ON public.transactions(created_at DESC);
 CREATE INDEX IF NOT EXISTS idx_transactions_type ON public.transactions(type);
+CREATE INDEX IF NOT EXISTS idx_coupons_code ON public.coupons(code);
+CREATE INDEX IF NOT EXISTS idx_coupons_is_active ON public.coupons(is_active);
+
+-- 4. INITIAL SEED COUPONS (Insert if not exists)
+INSERT INTO public.coupons (code, description, discount_type, discount_value, min_order_amount, max_discount_amount, is_active)
+VALUES 
+    ('EVERYJUST', 'Official Welcome Discount - Flat ₹50 off on all orders', 'fixed', 50.00, 0.00, NULL, true),
+    ('SAVE50', 'Save Flat ₹50 on any purchase above ₹199', 'fixed', 50.00, 199.00, NULL, true),
+    ('WELCOME20', 'Get 20% off up to ₹200 on orders above ₹499', 'percentage', 20.00, 499.00, 200.00, true),
+    ('FLAT100', 'Flat ₹100 discount on cart value above ₹899', 'fixed', 100.00, 899.00, NULL, true)
+ON CONFLICT (code) DO NOTHING;
 

@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '@/utils/supabase/server';
+import { createAdminClient } from '@/utils/supabase/admin';
 import { sendOrderConfirmationEmail } from '@/utils/email';
 
 export async function POST(request: Request) {
@@ -12,6 +13,8 @@ export async function POST(request: Request) {
       shippingAddress, 
       items, 
       subtotal, 
+      discountAmount,
+      couponCode,
       totalAmount 
     } = body;
 
@@ -23,12 +26,14 @@ export async function POST(request: Request) {
       );
     }
 
-    const supabase = await createClient();
+    const userClient = await createClient();
+    const adminClient = createAdminClient();
+    const supabase = adminClient || userClient;
 
     // Check optional authenticated user
     let customerId: string | null = null;
     try {
-      const { data: { user } } = await supabase.auth.getUser();
+      const { data: { user } } = await userClient.auth.getUser();
       if (user) {
         customerId = user.id;
       }
@@ -51,8 +56,9 @@ export async function POST(request: Request) {
       subtotal: Number(subtotal) || Number(totalAmount) || 0,
       tax_amount: 0.00,
       shipping_amount: 0.00, // Free Cash on Delivery
-      discount_amount: 0.00,
+      discount_amount: Number(discountAmount) || 0.00,
       total_amount: Number(totalAmount) || 0,
+      coupon_code: couponCode ? String(couponCode).trim().toUpperCase() : null,
       status: 'processing',
       payment_status: 'pending', // Paid on delivery
       payment_method: 'Cash on Delivery',
@@ -119,7 +125,29 @@ export async function POST(request: Request) {
       console.warn('Notice: Failed to insert transaction record:', txnError.message);
     }
 
-    // 4. Send Confirmation Email asynchronously
+    // 4. Increment coupon usage count if coupon was applied
+    if (couponCode) {
+      try {
+        const cleanCoupon = String(couponCode).trim().toUpperCase();
+        // Fetch current count and increment
+        const { data: cData } = await supabase
+          .from('coupons')
+          .select('id, usage_count')
+          .eq('code', cleanCoupon)
+          .maybeSingle();
+
+        if (cData) {
+          await supabase
+            .from('coupons')
+            .update({ usage_count: (cData.usage_count || 0) + 1 })
+            .eq('id', cData.id);
+        }
+      } catch {
+        // Non-critical, ignore coupon increment error
+      }
+    }
+
+    // 5. Send Confirmation Email asynchronously
     let emailSent = false;
     try {
       const emailRes = await sendOrderConfirmationEmail({

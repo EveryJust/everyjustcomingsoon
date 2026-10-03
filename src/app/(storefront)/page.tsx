@@ -1,8 +1,6 @@
 import React from 'react';
 import MobileHero from '@/components/MobileHero';
 import TrendingProducts from '@/components/Home/TrendingProducts';
-import LatestProducts from '@/components/Home/LatestProducts';
-import AllProducts from '@/components/Home/AllProducts';
 
 export default function Home() {
   return (
@@ -71,14 +69,8 @@ export default function Home() {
 
           </div>
 
-          {/* Trending Products Section (Live Supabase Products) */}
+          {/* Products Section (Live Supabase Products) */}
           <TrendingProducts />
-
-          {/* Latest Products Section (Live Supabase Products) */}
-          <LatestProducts />
-
-          {/* All Products Section (Live Supabase Products) */}
-          <AllProducts />
 
         </div>
       </main>

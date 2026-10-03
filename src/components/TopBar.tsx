@@ -29,7 +29,7 @@ export default function TopBar() {
   }));
 
   const pathname = usePathname();
-  const isHiddenOnMobile = pathname?.startsWith('/product/') || pathname === '/categories';
+  const isHiddenOnMobile = pathname?.startsWith('/product/') || pathname === '/categories' || pathname?.startsWith('/account');
 
   return (
     <div className={`bg-gray-100 border-b border-gray-200 text-xs py-2 px-2 lg:px-6 ${isHiddenOnMobile ? 'hidden lg:block' : ''}`}>

@@ -26,7 +26,7 @@ export default function AdminLayoutWrapper({
           setIsSidebarOpen={setIsSidebarOpen} 
         />
         
-        <div className="p-8 pt-0 flex-1 relative z-0">
+        <div className="p-8 pt-0 flex-1 relative">
           {children}
         </div>
       </main>

@@ -10,7 +10,7 @@ import { formatCurrency } from '@/utils/currency';
 export default function MainHeader() {
   const [isCartOpen, setIsCartOpen] = useState(false);
   const pathname = usePathname();
-  const isHiddenOnMobile = pathname?.startsWith('/product/') || pathname === '/categories';
+  const isHiddenOnMobile = pathname?.startsWith('/product/') || pathname === '/categories' || pathname?.startsWith('/account');
   
   const { items, getSubtotal } = useCartStore();
   const { items: wishlistItems } = useWishlistStore();
@@ -54,9 +54,9 @@ export default function MainHeader() {
           </div>
           
           <div className="flex items-center gap-2 lg:gap-4">
-            <button className="p-1.5 lg:p-2 text-gray-700 hover:text-primary transition-colors cursor-pointer">
+            <Link href="/account" className="p-1.5 lg:p-2 text-gray-700 hover:text-primary transition-colors cursor-pointer" title="My Account">
               <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg>
-            </button>
+            </Link>
             <Link href="/wishlist" className="p-1.5 lg:p-2 text-gray-700 hover:text-primary transition-colors relative cursor-pointer">
               <svg className="w-6 h-6 lg:w-6 lg:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" /></svg>
               {mounted && wishlistCount > 0 && <span className="absolute top-0 right-0 bg-primary text-white text-[10px] w-4 h-4 rounded-full flex items-center justify-center font-bold">{wishlistCount}</span>}
