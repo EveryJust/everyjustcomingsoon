@@ -108,7 +108,7 @@ export async function syncReferralStatuses(referrals: Referral[]): Promise<{ upd
 
   const synced = await Promise.all(
     referrals.map(async (r) => {
-      let item = { ...r };
+      const item = { ...r };
 
       // 1. Pending registration with no order placed -> check 30 days validity
       if (item.status === 'pending') {

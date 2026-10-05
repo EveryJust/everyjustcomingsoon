@@ -1,5 +1,6 @@
 'use client';
 import React, { useState } from 'react';
+import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { CURRENCIES } from '../utils/currency';
 import { LANGUAGES } from '../utils/language';
@@ -47,9 +48,9 @@ export default function TopBar() {
         
         {/* Right Side: Selectors */}
         <div className="flex items-center justify-end gap-2 lg:gap-4 flex-shrink-0 bg-gray-100 z-10 pl-2">
-          <a href="/orders" className="hidden lg:block hover:text-primary whitespace-nowrap">Track Order</a>
+          <Link href="/orders" className="hidden lg:block hover:text-primary whitespace-nowrap">Track Order</Link>
           <span className="hidden lg:inline text-gray-300">|</span>
-          <a href="/help" className="hidden lg:block hover:text-primary whitespace-nowrap">Help Center</a>
+          <Link href="/help" className="hidden lg:block hover:text-primary whitespace-nowrap">Help Center</Link>
           <span className="hidden lg:inline text-gray-300">|</span>
           <Dropdown 
             options={currencyOptions}
