@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { createClient } from '@/utils/supabase/server';
 import { createAdminClient } from '@/utils/supabase/admin';
 import { sendOrderConfirmationEmail } from '@/utils/email';
+import { processReferralOnOrder } from '@/utils/referralStorage';
 
 export async function POST(request: Request) {
   try {
@@ -147,7 +148,23 @@ export async function POST(request: Request) {
       }
     }
 
-    // 5. Send Confirmation Email asynchronously
+    // 5. Check and complete pending referral if order qualifies (above 100 rupees)
+    try {
+      const orderAmt = Number(totalAmount) || Number(subtotal) || 0;
+      if (orderAmt >= 100) {
+        await processReferralOnOrder({
+          customerId,
+          customerEmail,
+          orderId,
+          orderNumber,
+          orderAmount: orderAmt,
+        });
+      }
+    } catch (refErr) {
+      console.warn('Notice: Referral processing notice:', refErr);
+    }
+
+    // 6. Send Confirmation Email asynchronously
     let emailSent = false;
     try {
       const emailRes = await sendOrderConfirmationEmail({

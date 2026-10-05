@@ -32,6 +32,10 @@ export default function AdminSidebar({ isOpen }: AdminSidebarProps) {
     if (href === '/admin/orders' && pathname.startsWith('/admin/orders/')) {
       isActive = true;
     }
+    // Special case: Keep "Users" highlighted when viewing user details
+    if (href === '/admin/users' && pathname.startsWith('/admin/users/')) {
+      isActive = true;
+    }
     
     let className = `flex items-center gap-4 py-3 text-sm rounded-r-full text-white/70 hover:text-white hover:bg-white/10 transition-all ${isOpen ? 'px-6' : 'justify-center px-0 rounded-full'}`;
     

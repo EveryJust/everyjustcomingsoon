@@ -225,3 +225,73 @@ CREATE INDEX IF NOT EXISTS idx_reviews_order_id ON public.reviews(order_id);
 CREATE INDEX IF NOT EXISTS idx_reviews_created_at ON public.reviews(created_at DESC);
 CREATE INDEX IF NOT EXISTS idx_reviews_rating ON public.reviews(rating);
 
+-- Ensure delivered_at column exists on orders table
+ALTER TABLE public.orders ADD COLUMN IF NOT EXISTS delivered_at TIMESTAMPTZ;
+
+-- =========================================================================
+-- 6. REFERRALS TABLE & 30-DAY VALIDITY PROGRAM
+-- =========================================================================
+CREATE TABLE IF NOT EXISTS public.referrals (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    referrer_id UUID REFERENCES auth.users(id) ON DELETE CASCADE,
+    referrer_code TEXT NOT NULL,
+    referred_user_id UUID REFERENCES auth.users(id) ON DELETE SET NULL,
+    referred_user_email TEXT,
+    referred_user_name TEXT,
+    status TEXT NOT NULL DEFAULT 'pending' CHECK (status IN ('pending', 'order_placed', 'return_period', 'completed', 'cancelled', 'expired')),
+    order_id UUID REFERENCES public.orders(id) ON DELETE SET NULL,
+    order_number TEXT,
+    order_amount NUMERIC(10, 2),
+    reward_amount NUMERIC(10, 2) NOT NULL DEFAULT 50.00,
+    min_order_amount NUMERIC(10, 2) NOT NULL DEFAULT 100.00,
+    delivered_at TIMESTAMPTZ,
+    return_period_ends_at TIMESTAMPTZ,
+    paid_out BOOLEAN NOT NULL DEFAULT false,
+    expires_at TIMESTAMPTZ NOT NULL DEFAULT (NOW() + INTERVAL '30 days'),
+    completed_at TIMESTAMPTZ,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+-- In case referrals table already exists, ensure the new columns and updated status constraint exist
+ALTER TABLE public.referrals ADD COLUMN IF NOT EXISTS delivered_at TIMESTAMPTZ;
+ALTER TABLE public.referrals ADD COLUMN IF NOT EXISTS return_period_ends_at TIMESTAMPTZ;
+ALTER TABLE public.referrals ADD COLUMN IF NOT EXISTS paid_out BOOLEAN DEFAULT false;
+
+-- Drop old status check if it was restricted to ('pending', 'completed', 'expired')
+ALTER TABLE public.referrals DROP CONSTRAINT IF EXISTS referrals_status_check;
+ALTER TABLE public.referrals ADD CONSTRAINT referrals_status_check 
+    CHECK (status IN ('pending', 'order_placed', 'return_period', 'completed', 'cancelled', 'expired'));
+
+-- Referrals RLS
+ALTER TABLE public.referrals ENABLE ROW LEVEL SECURITY;
+
+DROP POLICY IF EXISTS "Allow public read access on referrals" ON public.referrals;
+DROP POLICY IF EXISTS "Allow insert for all on referrals" ON public.referrals;
+DROP POLICY IF EXISTS "Allow all for authenticated users on referrals" ON public.referrals;
+
+CREATE POLICY "Allow public read access on referrals"
+    ON public.referrals FOR SELECT
+    TO anon, authenticated
+    USING (true);
+
+CREATE POLICY "Allow insert for all on referrals"
+    ON public.referrals FOR INSERT
+    TO anon, authenticated
+    WITH CHECK (true);
+
+CREATE POLICY "Allow all for authenticated users on referrals"
+    ON public.referrals FOR ALL
+    TO authenticated
+    USING (true)
+    WITH CHECK (true);
+
+CREATE INDEX IF NOT EXISTS idx_referrals_referrer_id ON public.referrals(referrer_id);
+CREATE INDEX IF NOT EXISTS idx_referrals_referrer_code ON public.referrals(referrer_code);
+CREATE INDEX IF NOT EXISTS idx_referrals_referred_user_id ON public.referrals(referred_user_id);
+CREATE INDEX IF NOT EXISTS idx_referrals_status ON public.referrals(status);
+CREATE INDEX IF NOT EXISTS idx_referrals_created_at ON public.referrals(created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_referrals_expires_at ON public.referrals(expires_at);
+CREATE INDEX IF NOT EXISTS idx_referrals_return_period ON public.referrals(return_period_ends_at);
+
+

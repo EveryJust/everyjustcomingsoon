@@ -23,18 +23,36 @@ export async function PATCH(
     const userClient = await createClient();
     const supabase = adminClient || userClient;
 
+    const updatePayload: any = { 
+      status: status.toLowerCase(),
+      updated_at: new Date().toISOString() 
+    };
+
+    if (status.toLowerCase() === 'delivered') {
+      updatePayload.delivered_at = new Date().toISOString();
+    }
+
     const { data, error } = await supabase
       .from('orders')
-      .update({ 
-        status: status.toLowerCase(),
-        updated_at: new Date().toISOString() 
-      })
+      .update(updatePayload)
       .eq('id', id)
       .select()
       .single();
 
     if (error) {
       return NextResponse.json({ success: false, error: error.message }, { status: 500 });
+    }
+
+    // Update referral status for this order (starts 3-day return window on delivery)
+    try {
+      const { updateReferralOnOrderStatusChange } = await import('@/utils/referralStorage');
+      await updateReferralOnOrderStatusChange({
+        orderId: id,
+        orderNumber: data?.order_number,
+        newStatus: status.toLowerCase()
+      });
+    } catch (refErr) {
+      console.warn('Notice: Referral status sync notice:', refErr);
     }
 
     return NextResponse.json({ success: true, order: data });

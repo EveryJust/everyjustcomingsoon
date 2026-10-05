@@ -1,14 +1,15 @@
 'use client';
 
-import React, { useState } from 'react';
-import { useRouter } from 'next/navigation';
-import { ChevronLeft, Mail, Loader2 } from 'lucide-react';
+import React, { useState, useEffect, Suspense } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
+import { ChevronLeft, Mail, Loader2, Sparkles, Gift, CheckCircle2 } from 'lucide-react';
 import { createClient } from '@/utils/supabase/client';
 import toast from 'react-hot-toast';
 import { useAuthStore } from '@/store/useAuthStore';
 
-export default function LoginPage() {
+function LoginFormContent() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { initialize } = useAuthStore();
 
   const [step, setStep] = useState<'email' | 'otp'>('email');
@@ -17,7 +18,68 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
+  // Referral code state
+  const [referralCode, setReferralCode] = useState('');
+  const [showReferralInput, setShowReferralInput] = useState(false);
+  const [referralApplied, setReferralApplied] = useState(false);
+
   const supabase = createClient();
+
+  useEffect(() => {
+    // Check if referral code is in URL (e.g. ?ref=EJ123456 or ?referral=...)
+    const urlRef =
+      searchParams.get('ref') ||
+      searchParams.get('referral') ||
+      searchParams.get('code');
+
+    if (urlRef) {
+      const clean = urlRef.trim().toUpperCase();
+      setReferralCode(clean);
+      setShowReferralInput(true);
+      setReferralApplied(true);
+      try {
+        localStorage.setItem('everyjust_referral_code', clean);
+      } catch {
+        // Ignored
+      }
+    } else {
+      // Check if saved previously
+      try {
+        const saved = localStorage.getItem('everyjust_referral_code');
+        if (saved) {
+          setReferralCode(saved.toUpperCase());
+          setShowReferralInput(true);
+          setReferralApplied(true);
+        }
+      } catch {
+        // Ignored
+      }
+    }
+  }, [searchParams]);
+
+  const handleApplyReferral = () => {
+    if (!referralCode.trim()) return;
+    const clean = referralCode.trim().toUpperCase();
+    setReferralCode(clean);
+    setReferralApplied(true);
+    try {
+      localStorage.setItem('everyjust_referral_code', clean);
+    } catch {
+      // Ignored
+    }
+    toast.success(`Referral code ${clean} applied!`);
+  };
+
+  const handleRemoveReferral = () => {
+    setReferralCode('');
+    setReferralApplied(false);
+    try {
+      localStorage.removeItem('everyjust_referral_code');
+    } catch {
+      // Ignored
+    }
+    toast('Referral code removed', { icon: 'ℹ️' });
+  };
 
   const handleEmailSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -91,6 +153,28 @@ export default function LoginPage() {
       }
 
       if (data.session) {
+        // If a referral code was entered or auto-applied, link it to this user
+        if (referralCode.trim()) {
+          try {
+            await fetch('/api/referrals/apply', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                referralCode: referralCode.trim().toUpperCase(),
+                newUserId: data.session.user.id,
+                newUserEmail: data.session.user.email,
+              }),
+            });
+            try {
+              localStorage.removeItem('everyjust_referral_code');
+            } catch {
+              // Ignored
+            }
+          } catch (refErr) {
+            console.warn('Referral link error:', refErr);
+          }
+        }
+
         await initialize();
         toast.success('Successfully logged in.');
         router.push('/account');
@@ -108,6 +192,14 @@ export default function LoginPage() {
 
   const handleGoogleLogin = async () => {
     try {
+      // Save pending referral code before OAuth redirect if present
+      if (referralCode.trim()) {
+        try {
+          localStorage.setItem('everyjust_referral_code', referralCode.trim().toUpperCase());
+        } catch {
+          // Ignored
+        }
+      }
       setLoading(true);
       await supabase.auth.signInWithOAuth({
         provider: 'google',
@@ -123,8 +215,6 @@ export default function LoginPage() {
 
   return (
     <div className="relative min-h-screen bg-[#fcfdfa] flex flex-col justify-center items-center px-4 py-8 overflow-hidden select-none">
-      {/* Botanical Leaf Artworks */}
-      
       {/* Top Left Leaf Cluster */}
       <div className="absolute -top-6 -left-6 w-56 h-56 sm:w-72 sm:h-72 pointer-events-none z-0 opacity-85">
         <svg viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-full h-full">
@@ -256,13 +346,13 @@ export default function LoginPage() {
         <h1 className="text-3xl font-extrabold tracking-tight text-[#1b5e20] mb-1">
           {step === 'email' ? 'Welcome' : 'Enter Verification Code'}
         </h1>
-        <p className="text-xs sm:text-sm text-gray-500 font-medium mb-7">
+        <p className="text-xs sm:text-sm text-gray-500 font-medium mb-6">
           {step === 'email'
-            ? 'Sign in to your account'
+            ? 'Sign in or create your account'
             : `We sent a 6-digit code to ${email}`}
         </p>
 
-        {/* STEP 1: Email Box Only */}
+        {/* STEP 1: Email Box & Referral Code */}
         {step === 'email' && (
           <form onSubmit={handleEmailSubmit} className="w-full space-y-4">
             <div className="relative">
@@ -277,6 +367,75 @@ export default function LoginPage() {
                 placeholder="Email Address"
                 className="w-full pl-12 pr-4 py-4 bg-white border border-gray-200/90 rounded-2xl text-sm font-semibold text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent shadow-xs transition-all"
               />
+            </div>
+
+            {/* Referral Code Section */}
+            <div className="text-left">
+              {referralApplied && referralCode ? (
+                <div className="flex items-center justify-between p-3 bg-emerald-50 border border-emerald-200 rounded-xl text-xs text-emerald-800 font-semibold shadow-xs">
+                  <div className="flex items-center gap-2">
+                    <CheckCircle2 className="w-4 h-4 text-emerald-600 flex-shrink-0" />
+                    <span>
+                      Referral Code Applied: <strong className="font-mono text-emerald-950 font-bold">{referralCode}</strong>
+                    </span>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={handleRemoveReferral}
+                    className="text-[11px] text-gray-400 hover:text-rose-600 underline cursor-pointer ml-2"
+                  >
+                    Remove
+                  </button>
+                </div>
+              ) : (
+                <>
+                  {!showReferralInput ? (
+                    <button
+                      type="button"
+                      onClick={() => setShowReferralInput(true)}
+                      className="text-xs font-semibold text-emerald-700 hover:text-emerald-800 flex items-center gap-1.5 cursor-pointer py-1"
+                    >
+                      <Gift className="w-3.5 h-3.5 text-emerald-600" />
+                      <span>Have a referral code?</span>
+                    </button>
+                  ) : (
+                    <div className="space-y-1.5 p-3 bg-gray-50 border border-gray-200 rounded-xl">
+                      <label className="block text-[11px] font-bold text-gray-600 uppercase tracking-wider">
+                        Enter Referral Code
+                      </label>
+                      <div className="flex gap-2">
+                        <input
+                          type="text"
+                          value={referralCode}
+                          onChange={(e) => setReferralCode(e.target.value.toUpperCase())}
+                          placeholder="e.g. EJ123456"
+                          className="flex-1 px-3 py-2 bg-white border border-gray-200 rounded-lg text-xs font-mono font-bold text-gray-800 uppercase focus:outline-none focus:border-emerald-500"
+                        />
+                        <button
+                          type="button"
+                          onClick={handleApplyReferral}
+                          className="px-4 py-2 bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-bold rounded-lg transition-colors cursor-pointer"
+                        >
+                          Apply
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setShowReferralInput(false);
+                            setReferralCode('');
+                          }}
+                          className="px-2 text-xs text-gray-400 hover:text-gray-600"
+                        >
+                          ✕
+                        </button>
+                      </div>
+                      <p className="text-[10px] text-gray-500">
+                        Earn rewards on your first order above ₹100!
+                      </p>
+                    </div>
+                  )}
+                </>
+              )}
             </div>
 
             {error && (
@@ -296,7 +455,7 @@ export default function LoginPage() {
                   <span>Sending code...</span>
                 </>
               ) : (
-                'Login'
+                'Continue'
               )}
             </button>
           </form>
@@ -316,6 +475,13 @@ export default function LoginPage() {
                 className="appearance-none block w-full px-4 py-4 bg-white border border-gray-200/90 rounded-2xl text-center text-3xl tracking-[0.8em] font-black font-mono text-gray-900 placeholder:text-gray-300 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent shadow-xs transition-colors"
               />
             </div>
+
+            {referralApplied && referralCode && (
+              <p className="text-xs text-emerald-700 font-semibold flex items-center justify-center gap-1">
+                <Sparkles className="w-3.5 h-3.5" />
+                Referral code {referralCode} will be linked to your account.
+              </p>
+            )}
 
             {error && (
               <div className="p-3 bg-rose-50 border border-rose-200 rounded-xl text-xs font-semibold text-rose-600 text-left">
@@ -394,5 +560,17 @@ export default function LoginPage() {
         )}
       </div>
     </div>
+  );
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-[#fcfdfa] flex items-center justify-center">
+        <Loader2 className="w-8 h-8 animate-spin text-emerald-600" />
+      </div>
+    }>
+      <LoginFormContent />
+    </Suspense>
   );
 }

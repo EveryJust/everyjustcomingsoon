@@ -116,15 +116,38 @@ export async function getAdminOrderById(idOrNumber: string): Promise<{ order: Or
 // Update order status
 export async function updateAdminOrderStatus(id: string, status: string): Promise<{ success: boolean; error?: string }> {
   try {
+    // Attempt via API route first (which properly handles referral sync and admin permissions on server)
+    try {
+      const res = await fetch(`/api/admin/orders/${encodeURIComponent(id)}/status`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status })
+      });
+      if (res.ok) {
+        return { success: true };
+      }
+    } catch {
+      // Fall through to direct supabase update if fetch fails
+    }
+
     const supabase = createClient();
+    const updatePayload: any = { 
+      status: status.toLowerCase(), 
+      updated_at: new Date().toISOString() 
+    };
+    if (status.toLowerCase() === 'delivered') {
+      updatePayload.delivered_at = new Date().toISOString();
+    }
+
     const { error } = await supabase
       .from('orders')
-      .update({ status, updated_at: new Date().toISOString() })
+      .update(updatePayload)
       .eq('id', id);
 
     if (error) {
       return { success: false, error: error.message };
     }
+
     return { success: true };
   } catch (err: any) {
     return { success: false, error: err?.message };
