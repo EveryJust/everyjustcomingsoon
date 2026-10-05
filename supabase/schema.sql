@@ -172,3 +172,56 @@ VALUES
     ('FLAT100', 'Flat ₹100 discount on cart value above ₹899', 'fixed', 100.00, 899.00, NULL, true)
 ON CONFLICT (code) DO NOTHING;
 
+-- 5. REVIEWS TABLE
+CREATE TABLE IF NOT EXISTS public.reviews (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    product_id UUID REFERENCES public.products(id) ON DELETE CASCADE,
+    product_name TEXT NOT NULL,
+    product_image TEXT,
+    order_id UUID REFERENCES public.orders(id) ON DELETE SET NULL,
+    order_number TEXT,
+    user_id UUID REFERENCES auth.users(id) ON DELETE SET NULL,
+    user_name TEXT NOT NULL,
+    user_email TEXT,
+    user_phone TEXT,
+    user_avatar TEXT,
+    rating INTEGER NOT NULL CHECK (rating >= 1 AND rating <= 5),
+    title TEXT,
+    comment TEXT NOT NULL,
+    media JSONB DEFAULT '[]'::jsonb, -- Array of { url: string, type: 'image' | 'video' }
+    verified_purchase BOOLEAN NOT NULL DEFAULT true,
+    status TEXT NOT NULL DEFAULT 'approved' CHECK (status IN ('approved', 'pending', 'rejected', 'hidden')),
+    helpful_count INTEGER NOT NULL DEFAULT 0,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+-- Reviews RLS
+ALTER TABLE public.reviews ENABLE ROW LEVEL SECURITY;
+
+DROP POLICY IF EXISTS "Allow public read access on reviews" ON public.reviews;
+DROP POLICY IF EXISTS "Allow insert for all on reviews" ON public.reviews;
+DROP POLICY IF EXISTS "Allow all for authenticated users on reviews" ON public.reviews;
+
+CREATE POLICY "Allow public read access on reviews"
+    ON public.reviews FOR SELECT
+    TO anon, authenticated
+    USING (true);
+
+CREATE POLICY "Allow insert for all on reviews"
+    ON public.reviews FOR INSERT
+    TO anon, authenticated
+    WITH CHECK (true);
+
+CREATE POLICY "Allow all for authenticated users on reviews"
+    ON public.reviews FOR ALL
+    TO authenticated
+    USING (true)
+    WITH CHECK (true);
+
+CREATE INDEX IF NOT EXISTS idx_reviews_product_id ON public.reviews(product_id);
+CREATE INDEX IF NOT EXISTS idx_reviews_user_id ON public.reviews(user_id);
+CREATE INDEX IF NOT EXISTS idx_reviews_order_id ON public.reviews(order_id);
+CREATE INDEX IF NOT EXISTS idx_reviews_created_at ON public.reviews(created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_reviews_rating ON public.reviews(rating);
+

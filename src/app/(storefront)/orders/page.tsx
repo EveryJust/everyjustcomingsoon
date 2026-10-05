@@ -14,10 +14,15 @@ import {
   ArrowRight, 
   RefreshCw,
   ChevronRight,
-  X
+  X,
+  Star,
+  FileText,
+  MessageSquarePlus
 } from 'lucide-react';
 import { useAuthStore } from '@/store/useAuthStore';
 import { formatCurrency } from '@/utils/currency';
+import BillModal from '@/components/Orders/BillModal';
+import ReviewModal from '@/components/Orders/ReviewModal';
 
 interface OrderItem {
   id: string;
@@ -51,6 +56,13 @@ export default function OrdersPage() {
   const [searchQuery, setSearchQuery] = useState('');
   const [hasSearched, setHasSearched] = useState(false);
   const [mounted, setMounted] = useState(false);
+
+  // Modals state for Feedback and Bill Details
+  const [selectedBillOrder, setSelectedBillOrder] = useState<OrderRecord | null>(null);
+  const [isBillModalOpen, setIsBillModalOpen] = useState(false);
+  const [selectedReviewProduct, setSelectedReviewProduct] = useState<any>(null);
+  const [selectedReviewOrder, setSelectedReviewOrder] = useState<any>(null);
+  const [isReviewModalOpen, setIsReviewModalOpen] = useState(false);
 
   useEffect(() => {
     setMounted(true);
@@ -285,6 +297,76 @@ export default function OrdersPage() {
                     )}
                   </div>
 
+                  {/* Delivered Only: Feedback Option with 5 Stars & View Bill Details */}
+                  {order.status === 'delivered' && (
+                    <div 
+                      className="pt-2.5 pb-1 border-t border-emerald-100 bg-emerald-50/40 -mx-3.5 -mb-1 px-3.5 py-2 flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 rounded-b-xl"
+                      onClick={(e) => e.stopPropagation()}
+                    >
+                      <div className="flex items-center gap-2">
+                        <div className="flex items-center gap-0.5 text-amber-400">
+                          {[1, 2, 3, 4, 5].map((s) => (
+                            <button
+                              key={s}
+                              type="button"
+                              onClick={() => {
+                                const firstItem = order.order_items?.[0] || {
+                                  product_name: 'Delivered Product',
+                                  product_image: '/dash_camera.png',
+                                };
+                                setSelectedReviewProduct({
+                                  name: firstItem.product_name,
+                                  image: firstItem.product_image,
+                                  slug: firstItem.product_name.toLowerCase().replace(/[^a-z0-9]+/g, '-'),
+                                });
+                                setSelectedReviewOrder(order);
+                                setIsReviewModalOpen(true);
+                              }}
+                              className="hover:scale-125 transition-transform cursor-pointer p-0.5"
+                              title={`Rate ${s} Stars`}
+                            >
+                              <Star size={14} className="fill-amber-400 text-amber-400" />
+                            </button>
+                          ))}
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            const firstItem = order.order_items?.[0] || {
+                              product_name: 'Delivered Product',
+                              product_image: '/dash_camera.png',
+                            };
+                            setSelectedReviewProduct({
+                              name: firstItem.product_name,
+                              image: firstItem.product_image,
+                              slug: firstItem.product_name.toLowerCase().replace(/[^a-z0-9]+/g, '-'),
+                            });
+                            setSelectedReviewOrder(order);
+                            setIsReviewModalOpen(true);
+                          }}
+                          className="text-xs font-bold text-emerald-800 hover:text-emerald-950 underline underline-offset-2 flex items-center gap-1 cursor-pointer"
+                        >
+                          <MessageSquarePlus size={13} />
+                          <span>Add Your Feedback</span>
+                        </button>
+                      </div>
+
+                      <div className="flex items-center gap-2">
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setSelectedBillOrder(order);
+                            setIsBillModalOpen(true);
+                          }}
+                          className="inline-flex items-center gap-1 px-2.5 py-1 bg-white hover:bg-emerald-100 text-emerald-900 border border-emerald-300 text-[11px] font-bold rounded-lg transition-colors shadow-2xs cursor-pointer"
+                        >
+                          <FileText size={12} className="text-emerald-700" />
+                          <span>View Bill Details</span>
+                        </button>
+                      </div>
+                    </div>
+                  )}
+
                   {/* Bottom: Total & View Details */}
                   <div className="pt-2 border-t border-gray-100 flex items-center justify-between text-xs">
                     <div className="flex items-center gap-1">
@@ -337,6 +419,41 @@ export default function OrdersPage() {
             </Link>
           </div>
         )}
+
+      {/* View Bill Details Modal */}
+      {selectedBillOrder && (
+        <BillModal
+          isOpen={isBillModalOpen}
+          onClose={() => {
+            setIsBillModalOpen(false);
+            setSelectedBillOrder(null);
+          }}
+          order={selectedBillOrder}
+        />
+      )}
+
+      {/* 3-Step Review / Feedback Modal */}
+      {selectedReviewProduct && selectedReviewOrder && (
+        <ReviewModal
+          isOpen={isReviewModalOpen}
+          onClose={() => {
+            setIsReviewModalOpen(false);
+            setSelectedReviewProduct(null);
+            setSelectedReviewOrder(null);
+          }}
+          product={selectedReviewProduct}
+          order={selectedReviewOrder}
+          user={user}
+          onSuccess={() => {
+            const userPhone = user?.user_metadata?.phone || user?.phone || '';
+            const userEmail = user?.email || '';
+            const userId = user?.id || '';
+            if (userEmail || userPhone) {
+              fetchOrders({ email: userEmail, phone: userPhone, userId });
+            }
+          }}
+        />
+      )}
 
       </div>
     </div>

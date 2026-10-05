@@ -22,7 +22,7 @@ export async function middleware(request: NextRequest) {
   const path = request.nextUrl.pathname
 
   // List of protected routes that require ANY authentication
-  const isDashboardRoute = path.startsWith('/dashboard') || path.startsWith('/brands') || path.startsWith('/shop')
+  const isDashboardRoute = path.startsWith('/dashboard')
   
   // Admin routes
   const isAdminRoute = path.startsWith('/admin') && !path.startsWith('/admin/login')

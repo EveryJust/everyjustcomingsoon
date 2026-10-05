@@ -1,0 +1,113 @@
+[
+  {
+    "id": "rev-100",
+    "product_id": "3df4dbba-9416-4aa9-9f3f-12b32b237c55",
+    "product_name": "Plastic Soap Stand Holder | (Wall Mounted with Cover SOAP Dish) (Pack of 2)",
+    "product_slug": "plastic-soap-stand-holder",
+    "product_image": "/dash_camera.png",
+    "order_id": "7e221c52-3c17-4091-b6c7-05749a772ae4",
+    "order_number": "EJ-261002-8736",
+    "user_id": "f1f02932-e4f4-4c5b-ae1f-589ab0ccd47d",
+    "user_name": "Shamvee LP",
+    "user_email": "shamveelp007@gmail.com",
+    "user_phone": "+91 9494989798",
+    "user_avatar": null,
+    "rating": 5,
+    "title": "Super convenient and wall mount is strong!",
+    "comment": "The cover keeps the soap dry and clean. Adhesive wall tape holds firmly without drilling tiles. Very practical pack of 2 for both bathrooms.",
+    "media": [
+      {
+        "url": "/dash_camera.png",
+        "type": "image"
+      }
+    ],
+    "verified_purchase": true,
+    "status": "approved",
+    "helpful_count": 28,
+    "created_at": "2026-10-02T16:20:00.000Z",
+    "updated_at": "2026-10-02T16:20:00.000Z"
+  },
+  {
+    "id": "rev-101",
+    "product_id": null,
+    "product_name": "Premium Full HD Dash Camera Pro 4K",
+    "product_slug": "dash-camera-pro-4k",
+    "product_image": "/dash_camera.png",
+    "order_id": "7e221c52-3c17-4091-b6c7-05749a772ae4",
+    "order_number": "EJ-261002-8736",
+    "user_id": "f1f02932-e4f4-4c5b-ae1f-589ab0ccd47d",
+    "user_name": "Shamvee LP",
+    "user_email": "shamveelp007@gmail.com",
+    "user_phone": "+91 9494989798",
+    "user_avatar": null,
+    "rating": 5,
+    "title": "Outstanding quality & night vision clarity!",
+    "comment": "Installed it yesterday on my car. The night clarity and wide angle view is super crisp! Number plates are clearly visible even in low light conditions. Packaging was neat and delivery was completed within 3 days. Highly recommended EveryJust product.",
+    "media": [
+      {
+        "url": "/dash_camera.png",
+        "type": "image"
+      },
+      {
+        "url": "/promo_top_banner.png",
+        "type": "image"
+      }
+    ],
+    "verified_purchase": true,
+    "status": "approved",
+    "helpful_count": 42,
+    "created_at": "2026-10-02T16:20:00.000Z",
+    "updated_at": "2026-10-02T16:20:00.000Z"
+  },
+  {
+    "id": "rev-102",
+    "product_id": null,
+    "product_name": "Premium Full HD Dash Camera Pro 4K",
+    "product_slug": "dash-camera-pro-4k",
+    "product_image": "/dash_camera.png",
+    "order_id": null,
+    "order_number": "EJ-260928-1092",
+    "user_id": null,
+    "user_name": "Deepesh Kushwaha",
+    "user_email": "deepesh.k@gmail.com",
+    "user_phone": "+91 9823456789",
+    "user_avatar": null,
+    "rating": 5,
+    "title": "Value for money product",
+    "comment": "Product is very good I like it 👍 The material quality is top notch and the installation was very straightforward with the included 3M tape and car charger cable. Battery backup is also reliable.",
+    "media": [
+      {
+        "url": "/dash_camera.png",
+        "type": "image"
+      }
+    ],
+    "verified_purchase": true,
+    "status": "approved",
+    "helpful_count": 18,
+    "created_at": "2026-09-30T10:14:00.000Z",
+    "updated_at": "2026-09-30T10:14:00.000Z"
+  },
+  {
+    "id": "rev-103",
+    "product_id": null,
+    "product_name": "Premium Full HD Dash Camera Pro 4K",
+    "product_slug": "dash-camera-pro-4k",
+    "product_image": "/dash_camera.png",
+    "order_id": null,
+    "order_number": "EJ-260915-4421",
+    "user_id": null,
+    "user_name": "Ananya Sharma",
+    "user_email": "ananya.s@outlook.com",
+    "user_phone": "+91 9711223344",
+    "user_avatar": null,
+    "rating": 4,
+    "title": "Good dash cam, easy setup",
+    "comment": "Nice compact build and doesn't block the windshield view. Video loop recording works smoothly without dropping frames. Audio recording is also clear.",
+    "media": [],
+    "verified_purchase": true,
+    "status": "approved",
+    "helpful_count": 9,
+    "created_at": "2026-09-25T14:45:00.000Z",
+    "updated_at": "2026-09-25T14:45:00.000Z"
+  }
+]

@@ -1,7 +1,7 @@
 "use client";
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { LayoutDashboard, Users, Tag, Package, Settings, Plus, HelpCircle, DollarSign, BarChart3, ShoppingBag, Ticket } from 'lucide-react';
+import { LayoutDashboard, Users, Tag, Package, Settings, Plus, HelpCircle, DollarSign, BarChart3, ShoppingBag, Ticket, Star } from 'lucide-react';
 
 interface AdminSidebarProps {
   isOpen: boolean;
@@ -82,6 +82,7 @@ export default function AdminSidebar({ isOpen }: AdminSidebarProps) {
         {renderLink('/admin/categories', Tag, 'Categories')}
         {renderLink('/admin/products', Package, 'Products')}
         {renderLink('/admin/products/add', Plus, 'Add Product')}
+        {renderLink('/admin/reviews', Star, 'Reviews')}
         
         {/* Brands Link with Coming Soon Badge */}
         <Link href="/admin/brands" className={`flex items-center gap-4 py-3 text-sm rounded-r-full text-white/70 hover:text-white hover:bg-white/10 transition-all ${isOpen ? 'px-6' : 'justify-center px-0 rounded-full'}`} title="Brands">

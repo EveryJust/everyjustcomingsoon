@@ -23,11 +23,17 @@ import {
   Headphones,
   Calendar,
   CreditCard,
-  Building
+  Building,
+  Star,
+  MessageSquarePlus,
+  FileText
 } from 'lucide-react';
 import { formatCurrency } from '@/utils/currency';
 import { useCartStore } from '@/store/useCartStore';
+import { useAuthStore } from '@/store/useAuthStore';
 import toast from 'react-hot-toast';
+import BillModal from '@/components/Orders/BillModal';
+import ReviewModal from '@/components/Orders/ReviewModal';
 
 interface OrderItem {
   id: string;
@@ -67,6 +73,11 @@ export default function OrderDetailPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
+
+  const { user } = useAuthStore();
+  const [isBillModalOpen, setIsBillModalOpen] = useState(false);
+  const [selectedReviewProduct, setSelectedReviewProduct] = useState<any>(null);
+  const [isReviewModalOpen, setIsReviewModalOpen] = useState(false);
 
   const { addItem } = useCartStore();
 
@@ -212,6 +223,15 @@ export default function OrderDetailPage() {
           </button>
 
           <div className="flex items-center gap-2">
+            {order.status === 'delivered' && (
+              <button
+                onClick={() => setIsBillModalOpen(true)}
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-emerald-50 text-emerald-800 border border-emerald-300 text-xs font-bold hover:bg-emerald-100 transition-colors shadow-xs cursor-pointer"
+              >
+                <FileText size={13} className="text-emerald-700" />
+                <span>View Bill Details</span>
+              </button>
+            )}
             <button
               onClick={handlePrint}
               className="hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-gray-200 text-xs font-bold text-gray-700 hover:bg-gray-50 transition-colors shadow-xs cursor-pointer"
@@ -383,14 +403,37 @@ export default function OrderDetailPage() {
                         </span>
                       </div>
 
-                      <button
-                        type="button"
-                        onClick={() => handleReorder(item)}
-                        className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-gray-200 text-xs font-bold text-gray-700 hover:bg-primary hover:text-white hover:border-primary transition-all shadow-xs cursor-pointer"
-                      >
-                        <RotateCcw size={12} />
-                        <span>Buy Again</span>
-                      </button>
+                      <div className="flex items-center gap-2">
+                        {order.status === 'delivered' && (
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setSelectedReviewProduct({
+                                id: item.id,
+                                name: item.product_name,
+                                image: item.product_image,
+                                slug: item.product_name.toLowerCase().replace(/[^a-z0-9]+/g, '-'),
+                              });
+                              setIsReviewModalOpen(true);
+                            }}
+                            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-amber-50 text-amber-900 border border-amber-200 text-xs font-bold hover:bg-amber-100 transition-all shadow-xs cursor-pointer"
+                          >
+                            <div className="flex items-center gap-0.5 text-amber-500">
+                              <Star size={12} className="fill-amber-400" />
+                            </div>
+                            <span>Add Your Feedback</span>
+                          </button>
+                        )}
+
+                        <button
+                          type="button"
+                          onClick={() => handleReorder(item)}
+                          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-gray-200 text-xs font-bold text-gray-700 hover:bg-primary hover:text-white hover:border-primary transition-all shadow-xs cursor-pointer"
+                        >
+                          <RotateCcw size={12} />
+                          <span>Buy Again</span>
+                        </button>
+                      </div>
                     </div>
                   </div>
                 ))}
@@ -504,6 +547,7 @@ export default function OrderDetailPage() {
             </div>
 
             {/* Security Guarantee */}
+            {/* Security Guarantee */}
             <div className="p-4 rounded-2xl bg-gray-50 border border-gray-200/80 flex items-center gap-3 text-xs text-gray-600">
               <ShieldCheck size={20} className="text-primary flex-shrink-0" />
               <span>100% Genuine EveryJust Guarantee. Inspect parcel at doorstep before paying.</span>
@@ -511,6 +555,30 @@ export default function OrderDetailPage() {
           </div>
         </div>
       </div>
+
+      {/* View Bill Details Modal */}
+      {order && (
+        <BillModal
+          isOpen={isBillModalOpen}
+          onClose={() => setIsBillModalOpen(false)}
+          order={order}
+        />
+      )}
+
+      {/* 3-Step Review / Feedback Modal */}
+      {selectedReviewProduct && order && (
+        <ReviewModal
+          isOpen={isReviewModalOpen}
+          onClose={() => {
+            setIsReviewModalOpen(false);
+            setSelectedReviewProduct(null);
+          }}
+          product={selectedReviewProduct}
+          order={order}
+          user={user}
+        />
+      )}
+
     </div>
   );
 }

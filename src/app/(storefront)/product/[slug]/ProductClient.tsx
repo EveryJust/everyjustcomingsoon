@@ -7,6 +7,7 @@ import { formatCurrency } from '@/utils/currency';
 import { useCartStore } from '@/store/useCartStore';
 import { useWishlistStore } from '@/store/useWishlistStore';
 import ProductImageGallery from '@/components/Product/ProductImageGallery';
+import ProductReviews from '@/components/Product/ProductReviews';
 import { ShoppingCart } from 'lucide-react';
 import toast from 'react-hot-toast';
 
@@ -237,118 +238,44 @@ export default function ProductClient({ product, similarProducts }: { product: a
           </div>
 
           {/* Customer Ratings & Reviews */}
-          <div className="bg-white p-4 lg:p-6 lg:rounded-xl shadow-sm">
-             <h3 className="font-bold text-gray-900 text-[16px] mb-5">Customer Ratings & Reviews</h3>
-             
-             {/* Summary */}
-             <div className="flex gap-4 items-center mb-6 border-b border-gray-100 pb-6">
-               <div className="flex flex-col items-center">
-                 <div className="bg-[#0f8853] text-white rounded-lg flex items-center justify-center gap-1.5 w-24 h-20 mb-2">
-                   <span className="text-[28px] font-bold">4.1</span>
-                   <svg className="w-5 h-5 mt-1" fill="currentColor" viewBox="0 0 20 20">
-                     <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-                   </svg>
-                 </div>
-                 <div className="text-[11px] text-gray-500">3,809 ratings</div>
-                 <div className="text-[11px] text-gray-500">1,465 reviews</div>
-               </div>
-               
-               <div className="flex-1 flex flex-col gap-1.5">
-                 {[
-                   { label: 'Very Good', color: 'bg-[#0f8853]', w: '70%', count: '2,283' },
-                   { label: 'Good', color: 'bg-[#37b75f]', w: '30%', count: '724' },
-                   { label: 'Ok-Ok', color: 'bg-yellow-400', w: '15%', count: '378' },
-                   { label: 'Bad', color: 'bg-orange-500', w: '5%', count: '125' },
-                   { label: 'Very Bad', color: 'bg-red-500', w: '10%', count: '299' },
-                 ].map((bar, i) => (
-                   <div key={i} className="flex items-center gap-2 text-[11px]">
-                     <div className="w-14 text-gray-600 font-medium">{bar.label}</div>
-                     <div className="flex-1 h-1 bg-gray-200 rounded-full overflow-hidden">
-                       <div className={`h-full ${bar.color}`} style={{ width: bar.w }}></div>
-                     </div>
-                     <div className="w-8 text-right text-gray-400">{bar.count}</div>
-                   </div>
-                 ))}
-               </div>
-             </div>
-
-             {/* Real Photos */}
-             <div className="mb-6">
-               <h4 className="font-semibold text-gray-800 mb-3 text-[14px]">Real Photos (389)</h4>
-               <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
-                 {[1,2,3].map(i => (
-                   <div key={i} className="w-[100px] h-[100px] rounded-lg bg-gray-200 flex-shrink-0 bg-cover bg-center" style={{backgroundImage: "url('/promo_top_banner.png')"}}></div>
-                 ))}
-                 <div className="w-[100px] h-[100px] rounded-lg bg-gray-900 flex-shrink-0 bg-cover bg-center relative flex items-center justify-center cursor-pointer" style={{backgroundImage: "url('/promo_top_banner.png')"}}>
-                   <div className="absolute inset-0 bg-black/70 rounded-lg"></div>
-                   <div className="relative text-white font-bold text-center leading-tight">
-                     <span className="text-xl">+385</span><br/>More
-                   </div>
-                 </div>
-               </div>
-             </div>
-
-             {/* Single Review */}
-             <div className="mb-4">
-               <div className="flex items-center gap-2 mb-2.5 text-xs">
-                 <div className="bg-[#0f8853] text-white font-bold px-1.5 py-0.5 rounded flex items-center gap-0.5 text-[11px]">
-                   5 <svg className="w-2.5 h-2.5" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>
-                 </div>
-                 <span className="font-semibold text-gray-800 text-[13px]">Very Good</span>
-                 <span className="text-gray-300 mx-1">•</span>
-                 <span className="text-gray-400">Posted on 21 Jul, 2025</span>
-               </div>
-               
-               <div className="flex gap-4 mb-3">
-                 <div className="flex-1 text-[13px] text-gray-700 leading-snug">
-                   Product is very good I like it 👍 The material is good But the box is...<span className="text-primary cursor-pointer">Read More</span>
-                   <div className="text-gray-500 text-xs mt-3 font-medium">~Deepesh Kushwaha</div>
-                 </div>
-                 <div className="flex flex-col gap-2">
-                   <div className="flex gap-2">
-                     <div className="w-[50px] h-[50px] rounded border border-gray-200 bg-cover bg-center" style={{backgroundImage: "url('/promo_top_banner.png')"}}></div>
-                     <div className="w-[50px] h-[50px] rounded bg-gray-900 relative flex items-center justify-center bg-cover bg-center cursor-pointer" style={{backgroundImage: "url('/promo_top_banner.png')"}}>
-                       <div className="absolute inset-0 bg-black/60 rounded"></div>
-                       <div className="relative text-white font-bold text-sm">+3</div>
-                     </div>
-                   </div>
-                 </div>
-               </div>
-               
-               <button className="flex items-center gap-1.5 text-gray-600 text-[13px] mt-1 font-medium hover:text-gray-900">
-                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M14 10h4.764a2 2 0 011.789 2.894l-3.5 7A2 2 0 0115.263 21h-4.017c-.163 0-.326-.02-.485-.06L7 20m7-10V5a2 2 0 00-2-2h-.095c-.5 0-.905.405-.905.905 0 .714-.211 1.412-.608 2.006L7 11v9m7-10h-2M7 20H5a2 2 0 01-2-2v-6a2 2 0 012-2h2.5"/></svg>
-                 Helpful (53)
-               </button>
-             </div>
-             
-             <div className="pt-5 pb-1">
-               <button className="text-primary font-bold text-[13px] flex items-center gap-2 uppercase tracking-wide">
-                 VIEW ALL REVIEWS 
-                 <div className="bg-primary text-white rounded-full p-0.5">
-                   <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M9 5l7 7-7 7" /></svg>
-                 </div>
-               </button>
-             </div>
-          </div>
+          <ProductReviews productId={product.id} productSlug={product.slug} productName={product.name} />
 
           {/* Seller Box */}
-          <div className="bg-white p-4 lg:p-6 lg:rounded-xl shadow-sm flex items-center justify-between cursor-pointer group mt-2">
+          <Link 
+            href="/brand/everyjust"
+            className="bg-white p-4 lg:p-5 lg:rounded-xl shadow-sm flex items-center justify-between cursor-pointer group mt-2 border border-gray-100 hover:border-gray-200 hover:shadow-md transition-all"
+          >
              <div className="flex items-center gap-3">
-               <div className="w-10 h-10 rounded-full bg-[#f8f9ff] flex items-center justify-center text-blue-400 border border-blue-50">
-                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" /></svg>
+               <div className="w-12 h-12 rounded-full bg-gradient-to-tr from-gray-900 via-gray-800 to-gray-700 flex items-center justify-center text-white shadow-sm font-black text-sm tracking-wider flex-shrink-0 border-2 border-primary/30">
+                 EJ
                </div>
                <div>
-                 <div className="text-gray-600 text-[11px] mb-0.5">Sold by</div>
-                 <div className="font-semibold text-gray-900 text-[15px] uppercase tracking-wide">IMP EYEWEAR</div>
-                 <div className="flex items-center gap-1 mt-1">
-                   <div className="border border-[#0f8853] text-[#0f8853] font-bold px-1.5 py-0.5 rounded flex items-center gap-0.5 text-[10px]">
-                     4.2 <svg className="w-2.5 h-2.5" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>
+                 <div className="flex items-center gap-1.5 mb-0.5">
+                   <span className="text-gray-500 text-[11px] font-medium">Sold by</span>
+                   <span className="inline-flex items-center gap-0.5 text-[10px] font-semibold text-emerald-700 bg-emerald-50 px-1.5 py-0.5 rounded-full">
+                     <svg className="w-3 h-3 text-emerald-600 fill-current" viewBox="0 0 20 20">
+                       <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                     </svg>
+                     Verified Official
+                   </span>
+                 </div>
+                 <div className="font-bold text-gray-900 text-[15px] tracking-wide flex items-center gap-1.5 group-hover:text-primary transition-colors">
+                   EveryJust
+                   <span className="text-[10px] uppercase font-bold tracking-wider px-1.5 py-0.5 bg-primary/10 text-primary rounded-full">Official Flagship Store</span>
+                 </div>
+                 <div className="flex items-center gap-2 mt-1">
+                   <div className="bg-[#0f8853] text-white font-bold px-1.5 py-0.5 rounded flex items-center gap-0.5 text-[11px] shadow-xs">
+                     4.9 <svg className="w-2.5 h-2.5 fill-current" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>
                    </div>
+                   <span className="text-[11px] text-gray-500 font-medium">14,280+ Ratings • 100% Genuine</span>
                  </div>
                </div>
              </div>
-             <svg className="w-5 h-5 text-gray-400 group-hover:text-gray-600 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" /></svg>
-          </div>
+             <div className="flex items-center gap-1 text-primary font-semibold text-xs group-hover:translate-x-1 transition-all">
+               <span className="hidden sm:inline">View Store</span>
+               <svg className="w-5 h-5 text-gray-400 group-hover:text-primary transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" /></svg>
+             </div>
+          </Link>
 
           {/* Delivery Box */}
           <div className="bg-white px-4 py-5 lg:p-6 lg:rounded-xl shadow-sm mt-2">

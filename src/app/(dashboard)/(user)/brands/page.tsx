@@ -1,5 +1,6 @@
 'use client';
 import React, { useState } from 'react';
+import Link from 'next/link';
 import Dropdown from '@/components/Dropdown';
 
 export default function BrandsPage() {
@@ -12,14 +13,24 @@ export default function BrandsPage() {
     { label: 'Home & Living', value: 'home_living' }
   ];
   const mockBrands = [
-    { id: 1, name: "Nexus Electronics", category: "Electronics & Gadgets", description: "Top tier consumer electronics and smart home devices.", logoColor: "bg-blue-600" },
-    { id: 2, name: "Urban Threads", category: "Clothes & Apparel", description: "Sustainable and trendy urban street fashion.", logoColor: "bg-emerald-600" },
-    { id: 3, name: "Vitality Health", category: "Health & Wellness", description: "Organic supplements and holistic wellness products.", logoColor: "bg-orange-500" },
-    { id: 4, name: "Luxe Timepieces", category: "Jewelry & Watches", description: "Precision crafted luxury watches and accessories.", logoColor: "bg-gray-900" },
-    { id: 5, name: "GigaToys", category: "Toys & Kids", description: "Educational and fun toys for all ages.", logoColor: "bg-red-500" },
-    { id: 6, name: "HomeHaven", category: "Home & Kitchen", description: "Modern furniture and essential home decor.", logoColor: "bg-indigo-600" },
-    { id: 7, name: "Tread & Trail", category: "Sports & Outdoors", description: "High-performance outdoor and camping gear.", logoColor: "bg-teal-700" },
-    { id: 8, name: "Gourmet Pantry", category: "Groceries & Gourmet Food", description: "Artisan snacks and premium imported foods.", logoColor: "bg-amber-700" },
+    { 
+      id: 0, 
+      name: "EveryJust", 
+      category: "Official Flagship Store", 
+      description: "Verified flagship storefront offering curated electronics, premium fashion, lifestyle and everyday essentials.", 
+      logoColor: "bg-gradient-to-tr from-gray-900 to-primary", 
+      href: "/brand/everyjust",
+      isOfficial: true,
+      rating: 4.9
+    },
+    { id: 1, name: "Nexus Electronics", category: "Electronics & Gadgets", description: "Top tier consumer electronics and smart home devices.", logoColor: "bg-blue-600", href: "/brand/everyjust" },
+    { id: 2, name: "Urban Threads", category: "Clothes & Apparel", description: "Sustainable and trendy urban street fashion.", logoColor: "bg-emerald-600", href: "/brand/everyjust" },
+    { id: 3, name: "Vitality Health", category: "Health & Wellness", description: "Organic supplements and holistic wellness products.", logoColor: "bg-orange-500", href: "/brand/everyjust" },
+    { id: 4, name: "Luxe Timepieces", category: "Jewelry & Watches", description: "Precision crafted luxury watches and accessories.", logoColor: "bg-gray-900", href: "/brand/everyjust" },
+    { id: 5, name: "GigaToys", category: "Toys & Kids", description: "Educational and fun toys for all ages.", logoColor: "bg-red-500", href: "/brand/everyjust" },
+    { id: 6, name: "HomeHaven", category: "Home & Kitchen", description: "Modern furniture and essential home decor.", logoColor: "bg-indigo-600", href: "/brand/everyjust" },
+    { id: 7, name: "Tread & Trail", category: "Sports & Outdoors", description: "High-performance outdoor and camping gear.", logoColor: "bg-teal-700", href: "/brand/everyjust" },
+    { id: 8, name: "Gourmet Pantry", category: "Groceries & Gourmet Food", description: "Artisan snacks and premium imported foods.", logoColor: "bg-amber-700", href: "/brand/everyjust" },
   ];
 
   return (
@@ -76,19 +87,34 @@ export default function BrandsPage() {
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
           {mockBrands.map((brand) => (
-            <div key={brand.id} className="bg-white border border-gray-100 rounded-lg p-6 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.05)] hover:shadow-[0_8px_30px_-4px_rgba(0,0,0,0.1)] transition-all duration-300 group flex flex-col h-full hover:-translate-y-1 cursor-pointer">
-              {/* Logo Placeholder */}
-              <div className={`w-16 h-16 rounded-lg ${brand.logoColor} text-white flex items-center justify-center text-2xl font-black mb-6 shadow-sm`}>
-                {brand.name.charAt(0)}
+            <div key={brand.id} className="bg-white border border-gray-100 rounded-lg p-6 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.05)] hover:shadow-[0_8px_30px_-4px_rgba(0,0,0,0.1)] transition-all duration-300 group flex flex-col h-full hover:-translate-y-1">
+              <div className="flex items-start justify-between mb-4">
+                {/* Logo Placeholder */}
+                <div className={`w-16 h-16 rounded-lg ${brand.logoColor} text-white flex items-center justify-center text-xl font-black shadow-sm`}>
+                  {brand.name === 'EveryJust' ? 'EJ' : brand.name.charAt(0)}
+                </div>
+                {brand.isOfficial && (
+                  <span className="bg-primary/10 text-primary text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider">
+                    Official
+                  </span>
+                )}
+                {brand.rating && (
+                  <span className="bg-[#0f8853] text-white text-[11px] font-bold px-2 py-0.5 rounded flex items-center gap-1 shadow-xs">
+                    {brand.rating} ★
+                  </span>
+                )}
               </div>
               
-              <span className="text-xs font-bold text-primary uppercase tracking-wider mb-2 block">{brand.category}</span>
-              <h3 className="text-xl font-bold text-gray-900 mb-3 group-hover:text-primary transition-colors">{brand.name}</h3>
-              <p className="text-gray-500 text-sm mb-8 flex-grow">{brand.description}</p>
+              <span className="text-xs font-bold text-primary uppercase tracking-wider mb-1 block">{brand.category}</span>
+              <h3 className="text-xl font-bold text-gray-900 mb-2 group-hover:text-primary transition-colors">{brand.name}</h3>
+              <p className="text-gray-500 text-sm mb-6 flex-grow">{brand.description}</p>
               
-              <button className="w-full py-3 border-2 border-gray-900 text-gray-900 font-bold text-sm tracking-wider uppercase rounded-sm group-hover:bg-gray-900 group-hover:text-white transition-colors mt-auto">
+              <Link 
+                href={brand.href || '/brand/everyjust'}
+                className="w-full py-3 border-2 border-gray-900 text-gray-900 font-bold text-sm tracking-wider uppercase rounded-sm group-hover:bg-gray-900 group-hover:text-white transition-colors mt-auto text-center block"
+              >
                 View Store
-              </button>
+              </Link>
             </div>
           ))}
         </div>

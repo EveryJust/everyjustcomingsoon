@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, Suspense } from 'react';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import { formatCurrency } from '@/utils/currency';
@@ -20,7 +20,7 @@ import {
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 
-export default function OrderConfirmationPage() {
+function OrderConfirmationContent() {
   const searchParams = useSearchParams();
   const orderNumberParam = searchParams.get('orderNumber') || searchParams.get('order_number') || '';
   const [copied, setCopied] = useState(false);
@@ -243,3 +243,16 @@ export default function OrderConfirmationPage() {
     </div>
   );
 }
+
+export default function OrderConfirmationPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center py-20">
+        <div className="w-8 h-8 border-3 border-primary border-t-transparent rounded-full animate-spin"></div>
+      </div>
+    }>
+      <OrderConfirmationContent />
+    </Suspense>
+  );
+}
+
